@@ -158,7 +158,7 @@ const RuleOf72 = () => {
           <p className="mt-1 text-xs text-muted-foreground">
             What {fmt(a)} becomes if left untouched.
           </p>
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
             {milestones.map((m, i) => (
               <li
                 key={i}
