@@ -26,6 +26,7 @@ import Onboarding from "./pages/Onboarding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { OnlineStatusWatcher } from "./hooks/useOnlineStatus";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <OnlineStatusWatcher />
         <BrowserRouter>
           <AuthProvider>
             <Routes>
