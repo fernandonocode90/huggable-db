@@ -443,6 +443,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      set_audio_duration_if_missing: {
+        Args: { _audio_id: string; _duration: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

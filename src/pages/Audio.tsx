@@ -181,6 +181,13 @@ const Audio = () => {
               el.currentTime = resumeAt;
               setPosition(resumeAt);
             }
+            // Backfill duration_seconds in the database if missing (no-op if already set).
+            if (data && el.duration > 0 && Number.isFinite(el.duration)) {
+              supabase.rpc("set_audio_duration_if_missing", {
+                _audio_id: data.id,
+                _duration: Math.round(el.duration),
+              }).then(() => { /* silent */ });
+            }
           });
           el.addEventListener("timeupdate", () => {
             setPosition(el.currentTime);
