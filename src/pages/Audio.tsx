@@ -620,7 +620,7 @@ const Audio = () => {
         }
       }
     };
-  }, [audio, sourceUrl, userId, requestedDay, playbackRate, refreshProgress, toast]);
+  }, [audio, sourceUrl, userId, requestedDay, refreshProgress, toast]);
 
   useEffect(() => {
     const onVis = () => {
