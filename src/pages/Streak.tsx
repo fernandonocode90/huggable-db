@@ -147,6 +147,7 @@ const Streak = () => {
       const date = new Date(today);
       date.setDate(today.getDate() - offset);
       let dayNumber = 0;
+      let beforeStart = false;
       if (startDate) {
         // Compare by calendar date (year/month/day) to avoid timezone drift.
         const start = new Date(
@@ -159,15 +160,18 @@ const Streak = () => {
           (cell.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
         dayNumber = diffDays + 1;
+        beforeStart = cell.getTime() < start.getTime();
       }
       const entry = progressMap[dayNumber];
       const pct = entry?.pct ?? 0;
       const completed = entry?.completed ?? false;
-      const status: DayCell["status"] = completed
-        ? "done"
-        : pct > 0
-          ? "partial"
-          : "none";
+      const status: DayCell["status"] = beforeStart
+        ? "before"
+        : completed
+          ? "done"
+          : pct > 0
+            ? "partial"
+            : "none";
       return { date, dayNumber, status, pct };
     };
 
