@@ -261,7 +261,7 @@ Deno.serve(async (req) => {
         .select("*", { count: "exact", head: true })
         .eq("translation", translation);
 
-      if ((count ?? 0) > 30000) {
+      if ((count ?? 0) >= 23000) {
         return new Response(
           JSON.stringify({
             ok: true,
@@ -276,7 +276,7 @@ Deno.serve(async (req) => {
     }
 
     const rows = await fetchTranslationRows(translation);
-    if (rows.length < 30000) {
+    if (rows.length < 23000) {
       return new Response(
         JSON.stringify({ error: "Source returned too few verses", got: rows.length }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
