@@ -58,4 +58,16 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "query-vendor": ["@tanstack/react-query", "@tanstack/query-core"],
+          "supabase-vendor": ["@supabase/supabase-js"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 }));
