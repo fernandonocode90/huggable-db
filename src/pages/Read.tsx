@@ -421,6 +421,16 @@ const Read = () => {
       if (pendingVerse == null) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
+      // Prefetch next chapter (or first chapter of next book) silently.
+      setTimeout(() => {
+        if (chapter < book.chapters) {
+          prefetchChapter(translation, bookKey, chapter + 1);
+        } else {
+          const idx = BOOKS.findIndex((b) => b.key === bookKey);
+          const nextBook = BOOKS[idx + 1];
+          if (nextBook) prefetchChapter(translation, nextBook.key, 1);
+        }
+      }, 600);
     })();
   }, [bookKey, chapter, translation, book, historyLoaded]);
 
