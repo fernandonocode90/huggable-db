@@ -269,6 +269,19 @@ const Audio = () => {
             setPlaying(false);
             if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
           });
+          el.addEventListener("waiting", () => setBuffering(true));
+          el.addEventListener("stalled", () => setBuffering(true));
+          el.addEventListener("canplay", () => setBuffering(false));
+          el.addEventListener("playing", () => setBuffering(false));
+          el.addEventListener("error", () => {
+            setBuffering(false);
+            setPlaying(false);
+            toast({
+              title: "Playback error",
+              description: "We couldn't play this audio. Please retry.",
+              variant: "destructive",
+            });
+          });
           audioRef.current = el;
 
           // Media Session API (lockscreen / hardware controls) — #12
