@@ -499,7 +499,7 @@ const Audio = () => {
             className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40 transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-wait"
             style={{ boxShadow: "0 0 30px hsl(var(--primary) / 0.4)" }}
           >
-            {!signedUrl ? (
+            {!signedUrl || buffering ? (
               <Loader2 className="h-7 w-7 animate-spin" />
             ) : playing ? (
               <Pause className="h-8 w-8 fill-primary" strokeWidth={0} />
