@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -43,6 +50,23 @@ interface AdminUser {
 
 const PAGE = 25;
 
+type Segment =
+  | "all"
+  | "inactive_7d"
+  | "inactive_30d"
+  | "completed_30plus"
+  | "stuck_at_day"
+  | "admins";
+
+const SEGMENT_LABEL: Record<Segment, string> = {
+  all: "Todos",
+  inactive_7d: "Inativos 7+ dias",
+  inactive_30d: "Inativos 30+ dias",
+  completed_30plus: "Super-fãs (30+ completos)",
+  stuck_at_day: "Parados num dia X",
+  admins: "Admins",
+};
+
 const Users = () => {
   const { user: me } = useAuth();
   const navigate = useNavigate();
@@ -51,15 +75,23 @@ const Users = () => {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [segment, setSegment] = useState<Segment>("all");
+  const [stuckDay, setStuckDay] = useState<string>("3");
+  const [exporting, setExporting] = useState(false);
 
-  const load = async (q: string, p: number) => {
+  const callList = (q: string, p: number, seg: Segment, sd: string, limit = PAGE) =>
+    supabase.rpc("admin_list_users_segmented", {
+      _search: q || null,
+      _segment: seg === "all" ? null : seg,
+      _stuck_day: seg === "stuck_at_day" ? Number(sd) || null : null,
+      _limit: limit,
+      _offset: p * PAGE,
+    });
+
+  const load = async (q: string, p: number, seg: Segment, sd: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("admin_list_users", {
-        _search: q || null,
-        _limit: PAGE,
-        _offset: p * PAGE,
-      });
+      const { data, error } = await callList(q, p, seg, sd);
       if (error) throw error;
       const list = (data ?? []) as AdminUser[];
       setRows(list);
@@ -72,15 +104,15 @@ const Users = () => {
   };
 
   useEffect(() => {
-    void load(search, page);
+    void load(search, page, segment, stuckDay);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, segment, stuckDay]);
 
   // debounce search
   useEffect(() => {
     const t = setTimeout(() => {
       setPage(0);
-      void load(search, 0);
+      void load(search, 0, segment, stuckDay);
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,7 +126,7 @@ const Users = () => {
       });
       if (error) throw error;
       toast.success(u.is_admin ? "Admin role removed" : "Promoted to admin");
-      void load(search, page);
+      void load(search, page, segment, stuckDay);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     }
@@ -105,13 +137,13 @@ const Users = () => {
       const { error } = await supabase.rpc("admin_reset_user_streak", { _user_id: u.id });
       if (error) throw error;
       toast.success("Streak reset");
-      void load(search, page);
+      void load(search, page, segment, stuckDay);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     }
   };
 
-  const exportCsv = () => {
+  const buildCsv = (list: AdminUser[]) => {
     const header = [
       "id",
       "email",
@@ -124,7 +156,7 @@ const Users = () => {
       "total_completions",
       "is_admin",
     ];
-    const lines = rows.map((r) =>
+    const lines = list.map((r) =>
       header
         .map((k) => {
           const v = (r as unknown as Record<string, unknown>)[k] ?? "";
@@ -133,14 +165,53 @@ const Users = () => {
         })
         .join(","),
     );
-    const csv = [header.join(","), ...lines].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    return [header.join(","), ...lines].join("\n");
+  };
+
+  const downloadBlob = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `users-page-${page + 1}.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportCurrentPage = () => {
+    downloadBlob(buildCsv(rows), `users-page-${page + 1}.csv`);
+  };
+
+  /** Exports ALL filtered users (paginated under the hood). */
+  const exportAll = async () => {
+    if (total === 0) return;
+    setExporting(true);
+    try {
+      const all: AdminUser[] = [];
+      const pageSize = 500;
+      const pages = Math.ceil(total / pageSize);
+      for (let i = 0; i < pages; i++) {
+        const { data, error } = await supabase.rpc("admin_list_users_segmented", {
+          _search: search || null,
+          _segment: segment === "all" ? null : segment,
+          _stuck_day: segment === "stuck_at_day" ? Number(stuckDay) || null : null,
+          _limit: pageSize,
+          _offset: i * pageSize,
+        });
+        if (error) throw error;
+        all.push(...((data ?? []) as AdminUser[]));
+      }
+      const stamp = new Date().toISOString().slice(0, 10);
+      downloadBlob(
+        buildCsv(all),
+        `users-${segment}-${stamp}.csv`,
+      );
+      toast.success(`Exportados ${all.length} usuários`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao exportar");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE));
@@ -151,24 +222,68 @@ const Users = () => {
         <div>
           <h1 className="font-display text-3xl text-foreground">Users</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {total} total · page {page + 1} of {totalPages}
+            {total} {SEGMENT_LABEL[segment].toLowerCase()} · página {page + 1} de {totalPages}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="mr-1.5 h-3.5 w-3.5" /> Export page (CSV)
+          <Button variant="outline" size="sm" onClick={exportCurrentPage} disabled={rows.length === 0}>
+            <Download className="mr-1.5 h-3.5 w-3.5" /> Página (CSV)
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportAll} disabled={exporting || total === 0}>
+            {exporting ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Tudo ({total})
           </Button>
         </div>
       </div>
 
-      <div className="relative max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by email or name…"
-          className="pl-9"
-        />
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative max-w-md flex-1 min-w-[220px]">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por email ou nome…"
+            className="pl-9"
+          />
+        </div>
+
+        <Select
+          value={segment}
+          onValueChange={(v) => {
+            setSegment(v as Segment);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[230px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(SEGMENT_LABEL) as Segment[]).map((s) => (
+              <SelectItem key={s} value={s}>
+                {SEGMENT_LABEL[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {segment === "stuck_at_day" && (
+          <Input
+            type="number"
+            min={1}
+            value={stuckDay}
+            onChange={(e) => {
+              setStuckDay(e.target.value);
+              setPage(0);
+            }}
+            className="w-24"
+            placeholder="Dia"
+          />
+        )}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border/40 bg-card/40 backdrop-blur">
@@ -196,7 +311,7 @@ const Users = () => {
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                  No users found.
+                  Nenhum usuário neste segmento.
                 </TableCell>
               </TableRow>
             ) : (

@@ -23,7 +23,9 @@ import {
   Flame,
   ShieldCheck,
   TrendingUp,
+  Download,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface Stats {
@@ -119,13 +121,36 @@ const Overview = () => {
   }
   if (!stats) return null;
 
+  const exportMetrics = () => {
+    if (!stats) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const lines: string[] = ["section,metric,value"];
+    Object.entries(stats).forEach(([k, v]) => lines.push(`overview,${k},${v}`));
+    signups.forEach((r) => lines.push(`signups,${r.day},${r.count}`));
+    completions.forEach((r) => lines.push(`completions,${r.day},${r.count}`));
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `metrics-${stamp}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Métricas exportadas");
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-foreground">Overview</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Real-time snapshot of your community.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">Overview</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Real-time snapshot of your community.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={exportMetrics}>
+          <Download className="mr-1.5 h-3.5 w-3.5" /> Exportar métricas (CSV)
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

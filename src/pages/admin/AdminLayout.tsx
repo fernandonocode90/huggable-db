@@ -13,6 +13,9 @@ import {
   Crown,
   Settings as SettingsIcon,
   Megaphone,
+  Activity,
+  AlertCircle,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +27,9 @@ const NAV = [
   { to: "/admin/bible", label: "Bible Content", icon: Library },
   { to: "/admin/engagement", label: "Engagement", icon: Megaphone },
   { to: "/admin/reminders", label: "Reminders", icon: Bell },
+  { to: "/admin/moderation", label: "Moderation", icon: ShieldAlert },
+  { to: "/admin/health", label: "Health", icon: Activity },
+  { to: "/admin/errors", label: "Errors", icon: AlertCircle },
   { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
   { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
 ];
