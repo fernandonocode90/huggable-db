@@ -42,6 +42,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -1354,11 +1355,20 @@ const Read = () => {
                   </TabsList>
                   <TabsContent value={libraryTab} className="mt-4 space-y-2">
                     {visible.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-6">
-                        {allBookmarks.length === 0
-                          ? "No favorites, highlights or notes yet. Tap any verse to start."
-                          : "Nothing here yet for this filter."}
-                      </p>
+                      allBookmarks.length === 0 ? (
+                        <div className="py-2">
+                          <EmptyState
+                            icon={BookmarkIcon}
+                            eyebrow="Your library"
+                            title="A blank page, full of promise"
+                            description="Tap any verse while reading to favorite it, highlight it, or add a note. Your saved verses will live here."
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-6">
+                          Nothing here yet for this filter.
+                        </p>
+                      )
                     )}
                     {visible.map((b) => (
                       <button

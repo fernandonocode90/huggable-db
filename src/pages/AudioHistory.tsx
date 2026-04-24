@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Check, Circle, Lock, Loader2, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Circle, Lock, Loader2, Play, Headphones } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
+import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
@@ -192,8 +193,13 @@ const AudioHistory = () => {
         )}
 
         {!loading && audios.length === 0 && (
-          <li className="glass-card rounded-2xl px-5 py-8 text-center text-sm text-muted-foreground">
-            No audios released in this month.
+          <li>
+            <EmptyState
+              icon={Headphones}
+              eyebrow="Nothing yet"
+              title="A quiet month"
+              description="No teachings were released in this month. Browse another month above to see your past or upcoming days."
+            />
           </li>
         )}
 
