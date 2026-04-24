@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       audio_progress: {
         Row: {
           audio_id: string
@@ -426,6 +456,66 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_audio_metrics: {
+        Args: never
+        Returns: {
+          audio_id: string
+          avg_progress: number
+          completion_rate: number
+          completions: number
+          day_number: number
+          title: string
+          total_plays: number
+        }[]
+      }
+      admin_get_calculator_stats: { Args: never; Returns: Json }
+      admin_get_completions_by_day: {
+        Args: { _days?: number }
+        Returns: {
+          count: number
+          day: string
+        }[]
+      }
+      admin_get_overview_stats: { Args: never; Returns: Json }
+      admin_get_reminder_stats: { Args: never; Returns: Json }
+      admin_get_signups_by_day: {
+        Args: { _days?: number }
+        Returns: {
+          count: number
+          day: string
+        }[]
+      }
+      admin_get_translation_counts: {
+        Args: never
+        Returns: {
+          translation: string
+          verse_count: number
+        }[]
+      }
+      admin_list_users: {
+        Args: { _limit?: number; _offset?: number; _search?: string }
+        Returns: {
+          best_streak: number
+          created_at: string
+          current_day: number
+          current_streak: number
+          display_name: string
+          email: string
+          id: string
+          is_admin: boolean
+          last_sign_in_at: string
+          total_completions: number
+          total_count: number
+        }[]
+      }
+      admin_reset_user_streak: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      admin_set_user_role: {
+        Args: { _make_admin: boolean; _user_id: string }
+        Returns: undefined
+      }
       get_current_day: { Args: { _user_id: string }; Returns: number }
       get_user_streak: { Args: { _user_id: string }; Returns: number }
       get_week_preview: {
@@ -442,6 +532,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _entity_id?: string
+          _entity_type?: string
+          _metadata?: Json
+        }
+        Returns: undefined
       }
       set_audio_duration_if_missing: {
         Args: { _audio_id: string; _duration: number }
