@@ -232,6 +232,10 @@ const Audio = () => {
           });
           el.addEventListener("timeupdate", () => {
             setPosition(el.currentTime);
+            // If timeupdate keeps firing while not paused, audio is actually
+            // playing — force-clear any stuck buffering state (mobile browsers
+            // sometimes leave `waiting` lingering after playback resumes).
+            if (!el.paused) clearBuffering();
 
             // Persist position every ~5s for resume next session.
             if (
