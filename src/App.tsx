@@ -11,6 +11,7 @@ import AudioHistory from "./pages/AudioHistory.tsx";
 import Read from "./pages/Read.tsx";
 import Tools from "./pages/Tools.tsx";
 import Calculator from "./pages/Calculator.tsx";
+import Mortgage from "./pages/Mortgage.tsx";
 import Profile from "./pages/Profile.tsx";
 import Streak from "./pages/Streak.tsx";
 import Privacy from "./pages/Privacy.tsx";
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
               <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
               <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
+              <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
               <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />

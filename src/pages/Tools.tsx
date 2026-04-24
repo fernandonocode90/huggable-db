@@ -1,4 +1,4 @@
-import { Calculator as CalculatorIcon, Sparkles } from "lucide-react";
+import { Calculator as CalculatorIcon, Home, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
 
@@ -20,7 +20,13 @@ const tools: ToolCard[] = [
     desc: "Plan investments with inflation in mind.",
     to: "/tools/calculator",
   },
-  { kind: "soon" },
+  {
+    kind: "active",
+    icon: Home,
+    title: "Mortgage + Extra",
+    desc: "Simulate financing with extra amortization.",
+    to: "/tools/mortgage",
+  },
   { kind: "soon" },
   { kind: "soon" },
 ];
