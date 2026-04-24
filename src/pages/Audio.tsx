@@ -140,6 +140,7 @@ const Audio = () => {
 
           // Prefer cached blob if available (offline-first)
           let playableUrl = url;
+          let alreadyCached = false;
           try {
             const isCached = await isAudioCached(url);
             if (isCached) {
@@ -149,9 +150,17 @@ const Audio = () => {
                 blobUrlRef.current = blobUrl;
               }
               setCached(true);
+              alreadyCached = true;
             }
           } catch {
             /* preview/iframe — caches API blocked */
+          }
+
+          // Auto-cache in background for instant replays next time.
+          if (!alreadyCached) {
+            void downloadAudio(url).then((ok) => {
+              if (!cancelled && ok) setCached(true);
+            }).catch(() => { /* silent */ });
           }
 
           const el = new window.Audio(playableUrl);
