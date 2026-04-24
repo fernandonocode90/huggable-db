@@ -78,7 +78,7 @@ const NetWorth = () => {
       : 0;
 
   return (
-    <AppShell>
+    <AppShell maxWidthClass="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
       <header className="animate-fade-up flex items-center justify-between gap-3">
         <button
           onClick={() => navigate("/tools")}
@@ -99,88 +99,92 @@ const NetWorth = () => {
         <HelpDialog />
       </header>
 
-      <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15">
-            <Scale className="h-5 w-5 text-primary" strokeWidth={1.5} />
+      <div className="mt-6 grid animate-fade-up gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <section className="glass-card rounded-3xl p-5 lg:sticky lg:top-6 lg:self-start">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15">
+              <Scale className="h-5 w-5 text-primary" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                Your net worth
+              </p>
+              <p
+                className={`font-display text-3xl ${totals.net >= 0 ? "gold-text" : "text-destructive"}`}
+              >
+                {fmt(totals.net)}
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              Your net worth
-            </p>
-            <p
-              className={`font-display text-3xl ${totals.net >= 0 ? "gold-text" : "text-destructive"}`}
-            >
-              {fmt(totals.net)}
-            </p>
-          </div>
-        </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <MiniStat label="Total assets" value={fmt(totals.assets)} tone="positive" />
-          <MiniStat label="Total liabilities" value={fmt(totals.liabilities)} tone="negative" />
-        </div>
-
-        <div className="mt-4">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Debt as % of assets</span>
-            <span>{ratio.toFixed(0)}%</span>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <MiniStat label="Total assets" value={fmt(totals.assets)} tone="positive" />
+            <MiniStat label="Total liabilities" value={fmt(totals.liabilities)} tone="negative" />
           </div>
-          <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted/30">
-            <div
-              className={`h-full rounded-full transition-[width] duration-500 ${
-                ratio < 50
-                  ? "bg-gradient-to-r from-primary/70 to-primary"
-                  : ratio < 80
-                    ? "bg-gradient-to-r from-accent/70 to-accent"
-                    : "bg-gradient-to-r from-destructive/70 to-destructive"
-              }`}
-              style={{ width: `${ratio}%` }}
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>Debt as % of assets</span>
+              <span>{ratio.toFixed(0)}%</span>
+            </div>
+            <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted/30">
+              <div
+                className={`h-full rounded-full transition-[width] duration-500 ${
+                  ratio < 50
+                    ? "bg-gradient-to-r from-primary/70 to-primary"
+                    : ratio < 80
+                      ? "bg-gradient-to-r from-accent/70 to-accent"
+                      : "bg-gradient-to-r from-destructive/70 to-destructive"
+                }`}
+                style={{ width: `${ratio}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 flex justify-end">
+            <Button type="button" variant="outline" size="sm" onClick={reset} className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Reset
+            </Button>
+          </div>
+        </section>
+
+        <div className="flex flex-col gap-6">
+          <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Column
+              title="Assets"
+              subtitle="What you own"
+              color="positive"
+              items={assets}
+              total={totals.assets}
+              fmt={fmt}
+              onChange={(id, p) => updateItem("a", id, p)}
+              onRemove={(id) => removeItem("a", id)}
+              onAdd={() => addItem("a")}
             />
-          </div>
+            <Column
+              title="Liabilities"
+              subtitle="What you owe"
+              color="negative"
+              items={liabilities}
+              total={totals.liabilities}
+              fmt={fmt}
+              onChange={(id, p) => updateItem("l", id, p)}
+              onRemove={(id) => removeItem("l", id)}
+              onAdd={() => addItem("l")}
+            />
+          </section>
+
+          <section className="glass-card rounded-3xl p-5">
+            <h2 className="font-display text-base text-foreground">The cold mirror</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Income shows what flows through your hands. Net worth shows what
+              actually <em>stays</em>. The number above is the only honest measure
+              of wealth — the rest is appearance.
+            </p>
+          </section>
         </div>
-
-        <div className="mt-5 flex justify-end">
-          <Button type="button" variant="outline" size="sm" onClick={reset} className="gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
-        </div>
-      </section>
-
-      <section className="mt-6 grid animate-fade-up grid-cols-1 gap-4 lg:grid-cols-2">
-        <Column
-          title="Assets"
-          subtitle="What you own"
-          color="positive"
-          items={assets}
-          total={totals.assets}
-          fmt={fmt}
-          onChange={(id, p) => updateItem("a", id, p)}
-          onRemove={(id) => removeItem("a", id)}
-          onAdd={() => addItem("a")}
-        />
-        <Column
-          title="Liabilities"
-          subtitle="What you owe"
-          color="negative"
-          items={liabilities}
-          total={totals.liabilities}
-          fmt={fmt}
-          onChange={(id, p) => updateItem("l", id, p)}
-          onRemove={(id) => removeItem("l", id)}
-          onAdd={() => addItem("l")}
-        />
-      </section>
-
-      <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <h2 className="font-display text-base text-foreground">The cold mirror</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Income shows what flows through your hands. Net worth shows what
-          actually <em>stays</em>. The number above is the only honest measure
-          of wealth — the rest is appearance.
-        </p>
-      </section>
+      </div>
     </AppShell>
   );
 };
