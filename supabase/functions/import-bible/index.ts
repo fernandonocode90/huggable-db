@@ -1,6 +1,10 @@
-// Edge function: imports a full Bible translation into bible_verses
-// Triggered manually by an admin. Downloads from public-domain sources and
-// bulk-inserts in batches. Idempotent: skips books already fully present.
+// Edge function: imports a full Bible translation into bible_verses.
+// Triggered manually by an admin from the Admin Sanctuary.
+//
+// Sources (all free / public domain or open-data):
+//   - KJV     -> bolls.life chapter API
+//   - RVR1909 -> bolls.life chapter API (translation slug RV1909)
+//   - ACF (PT)-> thiagobodruk/biblia (single JSON for the whole Bible)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -10,51 +14,75 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Maps internal book_key -> the book id used by each upstream source.
-// Source A: github.com/wldeh/bible-api (one JSON per chapter, lowercase OSIS-ish)
-// Source B: github.com/scrollmapper/bible_databases (single JSON file per version)
-
-// We use scrollmapper because it ships the full Bible per version in one file.
-// URL pattern: https://raw.githubusercontent.com/scrollmapper/bible_databases/master/json/<VERSION>.json
-// The JSON shape is: { metadata: {...}, verses: [{book_name, book, chapter, verse, text}, ...] }
-
-// Mapping from scrollmapper book numbers (1..66) to our book_key
-const BOOK_NUM_TO_KEY: Record<number, string> = {
-  1: "genesis", 2: "exodus", 3: "leviticus", 4: "numbers", 5: "deuteronomy",
-  6: "joshua", 7: "judges", 8: "ruth", 9: "1samuel", 10: "2samuel",
-  11: "1kings", 12: "2kings", 13: "1chronicles", 14: "2chronicles",
-  15: "ezra", 16: "nehemiah", 17: "esther", 18: "job", 19: "psalms",
-  20: "proverbs", 21: "ecclesiastes", 22: "songofsolomon", 23: "isaiah",
-  24: "jeremiah", 25: "lamentations", 26: "ezekiel", 27: "daniel",
-  28: "hosea", 29: "joel", 30: "amos", 31: "obadiah", 32: "jonah",
-  33: "micah", 34: "nahum", 35: "habakkuk", 36: "zephaniah", 37: "haggai",
-  38: "zechariah", 39: "malachi",
-  40: "matthew", 41: "mark", 42: "luke", 43: "john", 44: "acts",
-  45: "romans", 46: "1corinthians", 47: "2corinthians", 48: "galatians",
-  49: "ephesians", 50: "philippians", 51: "colossians",
-  52: "1thessalonians", 53: "2thessalonians", 54: "1timothy", 55: "2timothy",
-  56: "titus", 57: "philemon", 58: "hebrews", 59: "james",
-  60: "1peter", 61: "2peter", 62: "1john", 63: "2john", 64: "3john",
-  65: "jude", 66: "revelation",
-};
-
-// Translation -> upstream URLs (try in order until one succeeds)
-const SOURCES: Record<string, string[]> = {
-  kjv: [
-    "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/json/t_kjv.json",
-    "https://bible-api.deno.dev/api/kjv.json",
-  ],
-  rvr1909: [
-    "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/json/t_rvr.json",
-    "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/json/t_rva.json",
-  ],
-  // Almeida (Portuguese, public domain) — using ARC-style file from scrollmapper.
-  // Stored under key "acf" for compatibility with existing app code.
-  acf: [
-    "https://raw.githubusercontent.com/thiagobodruk/biblia/master/json/acf.json",
-    "https://raw.githubusercontent.com/thiagobodruk/biblia/master/json/aa.json",
-  ],
-};
+// (book_num, book_key, chapter_count) — canonical 66-book order
+const BOOKS: { num: number; key: string; chapters: number }[] = [
+  { num: 1, key: "genesis", chapters: 50 },
+  { num: 2, key: "exodus", chapters: 40 },
+  { num: 3, key: "leviticus", chapters: 27 },
+  { num: 4, key: "numbers", chapters: 36 },
+  { num: 5, key: "deuteronomy", chapters: 34 },
+  { num: 6, key: "joshua", chapters: 24 },
+  { num: 7, key: "judges", chapters: 21 },
+  { num: 8, key: "ruth", chapters: 4 },
+  { num: 9, key: "1samuel", chapters: 31 },
+  { num: 10, key: "2samuel", chapters: 24 },
+  { num: 11, key: "1kings", chapters: 22 },
+  { num: 12, key: "2kings", chapters: 25 },
+  { num: 13, key: "1chronicles", chapters: 29 },
+  { num: 14, key: "2chronicles", chapters: 36 },
+  { num: 15, key: "ezra", chapters: 10 },
+  { num: 16, key: "nehemiah", chapters: 13 },
+  { num: 17, key: "esther", chapters: 10 },
+  { num: 18, key: "job", chapters: 42 },
+  { num: 19, key: "psalms", chapters: 150 },
+  { num: 20, key: "proverbs", chapters: 31 },
+  { num: 21, key: "ecclesiastes", chapters: 12 },
+  { num: 22, key: "songofsolomon", chapters: 8 },
+  { num: 23, key: "isaiah", chapters: 66 },
+  { num: 24, key: "jeremiah", chapters: 52 },
+  { num: 25, key: "lamentations", chapters: 5 },
+  { num: 26, key: "ezekiel", chapters: 48 },
+  { num: 27, key: "daniel", chapters: 12 },
+  { num: 28, key: "hosea", chapters: 14 },
+  { num: 29, key: "joel", chapters: 3 },
+  { num: 30, key: "amos", chapters: 9 },
+  { num: 31, key: "obadiah", chapters: 1 },
+  { num: 32, key: "jonah", chapters: 4 },
+  { num: 33, key: "micah", chapters: 7 },
+  { num: 34, key: "nahum", chapters: 3 },
+  { num: 35, key: "habakkuk", chapters: 3 },
+  { num: 36, key: "zephaniah", chapters: 3 },
+  { num: 37, key: "haggai", chapters: 2 },
+  { num: 38, key: "zechariah", chapters: 14 },
+  { num: 39, key: "malachi", chapters: 4 },
+  { num: 40, key: "matthew", chapters: 28 },
+  { num: 41, key: "mark", chapters: 16 },
+  { num: 42, key: "luke", chapters: 24 },
+  { num: 43, key: "john", chapters: 21 },
+  { num: 44, key: "acts", chapters: 28 },
+  { num: 45, key: "romans", chapters: 16 },
+  { num: 46, key: "1corinthians", chapters: 16 },
+  { num: 47, key: "2corinthians", chapters: 13 },
+  { num: 48, key: "galatians", chapters: 6 },
+  { num: 49, key: "ephesians", chapters: 6 },
+  { num: 50, key: "philippians", chapters: 4 },
+  { num: 51, key: "colossians", chapters: 4 },
+  { num: 52, key: "1thessalonians", chapters: 5 },
+  { num: 53, key: "2thessalonians", chapters: 3 },
+  { num: 54, key: "1timothy", chapters: 6 },
+  { num: 55, key: "2timothy", chapters: 4 },
+  { num: 56, key: "titus", chapters: 3 },
+  { num: 57, key: "philemon", chapters: 1 },
+  { num: 58, key: "hebrews", chapters: 13 },
+  { num: 59, key: "james", chapters: 5 },
+  { num: 60, key: "1peter", chapters: 5 },
+  { num: 61, key: "2peter", chapters: 3 },
+  { num: 62, key: "1john", chapters: 5 },
+  { num: 63, key: "2john", chapters: 1 },
+  { num: 64, key: "3john", chapters: 1 },
+  { num: 65, key: "jude", chapters: 1 },
+  { num: 66, key: "revelation", chapters: 22 },
+];
 
 interface VerseRow {
   translation: string;
@@ -65,85 +93,98 @@ interface VerseRow {
   text: string;
 }
 
-async function fetchJson(urls: string[]): Promise<any> {
-  let lastErr: unknown;
-  for (const url of urls) {
-    try {
-      const r = await fetch(url);
-      if (!r.ok) {
-        lastErr = new Error(`${url} -> ${r.status}`);
-        continue;
-      }
-      return await r.json();
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-  throw lastErr ?? new Error("no source available");
+// Strip Strong's tags like <S>1234</S>, <i>...</i>, <pb/> etc.
+function cleanText(t: string): string {
+  return t
+    .replace(/<S>\d+<\/S>/g, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function parseScrollmapper(json: any, translation: string): VerseRow[] {
-  // shape: { resultset: { row: [{ field: [id, b, c, v, text] }] } } OR { verses: [...] }
+async function fetchBollsTranslation(
+  slug: string,
+  translation: string,
+  onProgress?: (done: number, total: number) => void
+): Promise<VerseRow[]> {
   const out: VerseRow[] = [];
-  if (Array.isArray(json?.verses)) {
-    for (const v of json.verses) {
-      const bookNum = Number(v.book ?? v.book_number);
-      const key = BOOK_NUM_TO_KEY[bookNum];
-      if (!key) continue;
-      out.push({
-        translation,
-        book_key: key,
-        book_order: bookNum,
-        chapter: Number(v.chapter),
-        verse: Number(v.verse),
-        text: String(v.text ?? "").trim(),
-      });
+  const totalChapters = BOOKS.reduce((s, b) => s + b.chapters, 0);
+  let doneChapters = 0;
+
+  // Fetch in parallel batches of 8 chapters at a time
+  const tasks: { book: typeof BOOKS[number]; chapter: number }[] = [];
+  for (const book of BOOKS) {
+    for (let c = 1; c <= book.chapters; c++) {
+      tasks.push({ book, chapter: c });
     }
-    return out;
   }
-  if (json?.resultset?.row) {
-    for (const r of json.resultset.row) {
-      const f = r.field;
-      const bookNum = Number(f[1]);
-      const key = BOOK_NUM_TO_KEY[bookNum];
-      if (!key) continue;
-      out.push({
-        translation,
-        book_key: key,
-        book_order: bookNum,
-        chapter: Number(f[2]),
-        verse: Number(f[3]),
-        text: String(f[4] ?? "").trim(),
-      });
-    }
-    return out;
+
+  const BATCH = 8;
+  for (let i = 0; i < tasks.length; i += BATCH) {
+    const slice = tasks.slice(i, i + BATCH);
+    const results = await Promise.all(
+      slice.map(async ({ book, chapter }) => {
+        const url = `https://bolls.life/get-text/${slug}/${book.num}/${chapter}/`;
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return [];
+          const data = await r.json();
+          if (!Array.isArray(data)) return [];
+          return data.map((v: { verse: number; text: string }) => ({
+            translation,
+            book_key: book.key,
+            book_order: book.num,
+            chapter,
+            verse: Number(v.verse),
+            text: cleanText(String(v.text ?? "")),
+          })) as VerseRow[];
+        } catch {
+          return [];
+        }
+      })
+    );
+    for (const rows of results) out.push(...rows);
+    doneChapters += slice.length;
+    onProgress?.(doneChapters, totalChapters);
   }
+
   return out;
 }
 
-function parseThiagoBodruk(json: any, translation: string): VerseRow[] {
-  // shape: [{ abbrev, name, chapters: [[v1, v2, ...], ...] }, ...] (66 books in canonical order)
+// Parses thiagobodruk/biblia format: array of 66 books, each with `chapters: string[][]`
+function parseThiagoBodruk(json: unknown, translation: string): VerseRow[] {
   if (!Array.isArray(json)) return [];
   const out: VerseRow[] = [];
-  json.forEach((book: any, idx: number) => {
-    const bookNum = idx + 1;
-    const key = BOOK_NUM_TO_KEY[bookNum];
-    if (!key) return;
-    const chapters: string[][] = book.chapters ?? [];
+  json.forEach((book: { chapters?: string[][] }, idx: number) => {
+    const meta = BOOKS[idx];
+    if (!meta) return;
+    const chapters = book.chapters ?? [];
     chapters.forEach((verses, ci) => {
       verses.forEach((text, vi) => {
         out.push({
           translation,
-          book_key: key,
-          book_order: bookNum,
+          book_key: meta.key,
+          book_order: meta.num,
           chapter: ci + 1,
           verse: vi + 1,
-          text: String(text ?? "").trim(),
+          text: cleanText(String(text ?? "")),
         });
       });
     });
   });
   return out;
+}
+
+async function fetchAlmeidaPT(translation: string): Promise<VerseRow[]> {
+  const r = await fetch(
+    "https://raw.githubusercontent.com/thiagobodruk/biblia/master/json/acf.json"
+  );
+  if (!r.ok) throw new Error(`thiagobodruk acf.json -> ${r.status}`);
+  // File is encoded as ISO-8859-1 in the repo; force UTF-8 by reading bytes
+  const buf = await r.arrayBuffer();
+  const text = new TextDecoder("iso-8859-1").decode(buf);
+  const json = JSON.parse(text);
+  return parseThiagoBodruk(json, translation);
 }
 
 Deno.serve(async (req) => {
@@ -183,14 +224,14 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const translation: string = body.translation;
     const force: boolean = !!body.force;
-    if (!translation || !SOURCES[translation]) {
+    const valid = ["kjv", "rvr1909", "acf"];
+    if (!valid.includes(translation)) {
       return new Response(
         JSON.stringify({ error: "translation must be one of: kjv, rvr1909, acf" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Skip if already populated (unless force=true)
     if (!force) {
       const { count } = await supabase
         .from("bible_verses")
@@ -204,7 +245,7 @@ Deno.serve(async (req) => {
             inserted: 0,
             skipped: true,
             existing: count,
-            message: `Translation already loaded (${count} verses). Pass force=true to reimport.`,
+            message: `Already loaded (${count} verses). Pass force=true to reimport.`,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -212,19 +253,22 @@ Deno.serve(async (req) => {
     }
 
     // Download
-    const json = await fetchJson(SOURCES[translation]);
+    let rows: VerseRow[] = [];
+    if (translation === "kjv") {
+      rows = await fetchBollsTranslation("KJV", translation);
+    } else if (translation === "rvr1909") {
+      rows = await fetchBollsTranslation("RV1909", translation);
+    } else if (translation === "acf") {
+      rows = await fetchAlmeidaPT(translation);
+    }
 
-    // Try both parsers
-    let rows = parseScrollmapper(json, translation);
-    if (rows.length < 1000) rows = parseThiagoBodruk(json, translation);
     if (rows.length < 1000) {
       return new Response(
-        JSON.stringify({ error: "Failed to parse upstream data", got: rows.length }),
+        JSON.stringify({ error: "Upstream returned too few verses", got: rows.length }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // If force, wipe existing rows for this translation first
     if (force) {
       await supabase.from("bible_verses").delete().eq("translation", translation);
     }
@@ -249,13 +293,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        ok: true,
-        translation,
-        inserted,
-        total: rows.length,
-        source: SOURCES[translation][0],
-      }),
+      JSON.stringify({ ok: true, translation, inserted, total: rows.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
