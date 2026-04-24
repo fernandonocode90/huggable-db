@@ -484,9 +484,20 @@ const Admin = () => {
       </form>
 
       <section className="mt-6 animate-fade-up">
-        <h2 className="font-display text-lg text-foreground mb-3">Registered audios</h2>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <h2 className="font-display text-lg text-foreground">Registered audios</h2>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {filteredAudios.length}/{audios.length}
+          </span>
+        </div>
+        <Input
+          placeholder="Search by day, title…"
+          value={audioSearch}
+          onChange={(e) => setAudioSearch(e.target.value)}
+          className="mb-3"
+        />
         <ul className="space-y-2">
-          {audios.map((a) => (
+          {filteredAudios.slice(0, audioVisible).map((a) => (
             <li
               key={a.id}
               className={`glass-card rounded-2xl p-4 flex items-center justify-between gap-3 ${
@@ -523,8 +534,22 @@ const Admin = () => {
               </button>
             </li>
           ))}
-          {audios.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No audios yet.</p>}
+          {filteredAudios.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              {audios.length === 0 ? "No audios yet." : "No matches."}
+            </p>
+          )}
         </ul>
+        {filteredAudios.length > audioVisible && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setAudioVisible((v) => v + 20)}
+            className="w-full mt-3"
+          >
+            Load more ({filteredAudios.length - audioVisible} remaining)
+          </Button>
+        )}
       </section>
 
       <section className="mt-10 animate-fade-up">
