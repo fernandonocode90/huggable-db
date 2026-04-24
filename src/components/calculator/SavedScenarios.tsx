@@ -35,29 +35,49 @@ interface Props {
   onLoad: (s: SavedScenario) => void;
 }
 
+const CACHE_KEY = "swc:scenarios";
+
+const readCache = (userId: string | null): SavedScenario[] | null => {
+  if (!userId) return null;
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { userId: string; data: SavedScenario[] };
+    return parsed.userId === userId ? parsed.data : null;
+  } catch { return null; }
+};
+
 export const SavedScenarios = ({ current, formatCurrency, onLoad }: Props) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [scenarios, setScenarios] = useState<SavedScenario[]>([]);
-  const [loading, setLoading] = useState(false);
+  const userId = user?.id ?? null;
+  const [cached] = useState(() => readCache(userId));
+  const [scenarios, setScenarios] = useState<SavedScenario[]>(cached ?? []);
+  // Only show the loading state when we don't have anything to show yet.
+  const [loading, setLoading] = useState(!cached);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
-    setLoading(true);
+    // Select only the columns we render — avoids transferring updated_at, etc.
     const { data, error } = await supabase
       .from("calculator_simulations")
-      .select("*")
+      .select("id,name,initial_amount,monthly_contribution,annual_rate,years,total_final,created_at")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(50);
     setLoading(false);
     if (error) {
       toast({ title: "Couldn't load scenarios", description: error.message, variant: "destructive" });
       return;
     }
-    setScenarios((data ?? []) as SavedScenario[]);
+    const list = (data ?? []) as SavedScenario[];
+    setScenarios(list);
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ userId: user.id, data: list }));
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
