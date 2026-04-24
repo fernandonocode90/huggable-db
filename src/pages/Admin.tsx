@@ -72,6 +72,37 @@ const Admin = () => {
     reflection_text: "",
   });
 
+  const [audioSearch, setAudioSearch] = useState("");
+  const [audioVisible, setAudioVisible] = useState(20);
+  const [devSearch, setDevSearch] = useState("");
+  const [devVisible, setDevVisible] = useState(20);
+
+  const filteredAudios = useMemo(() => {
+    const q = audioSearch.trim().toLowerCase();
+    if (!q) return audios;
+    return audios.filter(
+      (a) =>
+        String(a.day_number ?? "").includes(q) ||
+        a.title.toLowerCase().includes(q) ||
+        (a.subtitle ?? "").toLowerCase().includes(q),
+    );
+  }, [audios, audioSearch]);
+
+  const filteredDevotionals = useMemo(() => {
+    const q = devSearch.trim().toLowerCase();
+    if (!q) return devotionals;
+    return devotionals.filter(
+      (d) =>
+        String(d.day_number).includes(q) ||
+        (d.verse_reference ?? "").toLowerCase().includes(q) ||
+        (d.verse_text ?? "").toLowerCase().includes(q),
+    );
+  }, [devotionals, devSearch]);
+
+  // Reset pagination when search changes
+  useEffect(() => setAudioVisible(20), [audioSearch]);
+  useEffect(() => setDevVisible(20), [devSearch]);
+
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [user, loading, navigate]);
