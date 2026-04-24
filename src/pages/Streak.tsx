@@ -369,63 +369,6 @@ const Streak = () => {
         </div>
       </section>
 
-      {/* Heatmap */}
-      <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <h2 className="font-display text-lg text-foreground">Last 90 days</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Each square is one day. Brighter means more progress.
-        </p>
-
-        {(() => {
-          const cols = Math.ceil(heatmap.length / 7);
-          const cellPx = 16; // fixed size so squares are always big enough on real phones
-          const gridWidth = cols * (cellPx + 4); // cell + gap
-          return (
-            <div className="-mx-2 mt-4 overflow-x-auto px-2 pb-1">
-              <div style={{ width: gridWidth }}>
-                {/* Month labels */}
-                <div
-                  className="grid gap-1 text-[10px] text-muted-foreground"
-                  style={{ gridTemplateColumns: `repeat(${cols}, ${cellPx}px)` }}
-                >
-                  {Array.from({ length: cols }).map((_, col) => {
-                    const label = monthLabels.find((m) => m.col === col)?.label ?? "";
-                    return (
-                      <span key={col} className="truncate text-center">
-                        {label}
-                      </span>
-                    );
-                  })}
-                </div>
-
-                <div
-                  className="mt-1 grid grid-flow-col grid-rows-7 gap-1"
-                  style={{ gridAutoColumns: `${cellPx}px` }}
-                >
-                  {heatmap.map((c, i) => (
-                    <div
-                      key={i}
-                      title={heatmapTooltip(c)}
-                      style={{ width: cellPx, height: cellPx }}
-                      className={cn("!rounded-[2px]", heatmapColor(c))}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        <div className="mt-4 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
-          <span className="mr-1">Less</span>
-          <span className="h-3 w-3 !rounded-[2px] bg-muted/30" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary/30" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary/55" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary/75" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary" />
-          <span className="ml-1">More</span>
-        </div>
-      </section>
 
       {/* Lifetime stats */}
       <section className="mt-6 grid animate-fade-up grid-cols-2 gap-3">
