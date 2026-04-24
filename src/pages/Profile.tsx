@@ -16,10 +16,21 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string | null>(null);
+  // Hydrate from sessionStorage so revisits are instant — no flash of initials.
+  const PROFILE_CACHE_KEY = "swc:profile";
+  const cached = (() => {
+    try {
+      const raw = sessionStorage.getItem(PROFILE_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { userId: string; avatar_url: string | null; display_name: string | null };
+      if (user && parsed.userId !== user.id) return null;
+      return parsed;
+    } catch { return null; }
+  })();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(cached?.avatar_url ?? null);
+  const [displayName, setDisplayName] = useState<string | null>(cached?.display_name ?? null);
   const [uploading, setUploading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(!cached);
 
   useEffect(() => {
     if (!user) return;
@@ -32,6 +43,12 @@ const Profile = () => {
       if (data) {
         setAvatarUrl(data.avatar_url);
         setDisplayName(data.display_name);
+        try {
+          sessionStorage.setItem(
+            PROFILE_CACHE_KEY,
+            JSON.stringify({ userId: user.id, avatar_url: data.avatar_url, display_name: data.display_name }),
+          );
+        } catch { /* ignore */ }
       }
       setProfileLoading(false);
     })();

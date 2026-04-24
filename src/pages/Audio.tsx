@@ -86,7 +86,9 @@ const Audio = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setLoading(true);
+      // Only show the full skeleton on the very first load. When switching
+      // days the previous player UI stays visible until the new one is ready,
+      // avoiding a jarring flash to skeleton between days.
       setPlaying(false);
       setPosition(0);
       setDuration(0);
