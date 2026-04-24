@@ -20,6 +20,7 @@ import Profile from "./pages/Profile.tsx";
 import Streak from "./pages/Streak.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Terms from "./pages/Terms.tsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
 import Auth from "./pages/Auth.tsx";
 import Admin from "./pages/Admin.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
