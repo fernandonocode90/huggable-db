@@ -78,7 +78,7 @@ const NetWorth = () => {
       : 0;
 
   return (
-    <AppShell>
+    <AppShell maxWidthClass="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
       <header className="animate-fade-up flex items-center justify-between gap-3">
         <button
           onClick={() => navigate("/tools")}
