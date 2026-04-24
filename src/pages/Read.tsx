@@ -763,6 +763,7 @@ const Read = () => {
         </div>
       </header>
 
+      {historyLoaded && (
       <div className="mt-5 flex gap-2 animate-fade-up">
         <Select
           value={bookKey}
@@ -821,7 +822,9 @@ const Read = () => {
           </SelectContent>
         </Select>
       </div>
+      )}
 
+      {historyLoaded && (
       <div className="mt-3 flex items-center justify-between gap-2 animate-fade-up">
         <div className="flex items-center gap-1">
           <Button
@@ -858,13 +861,14 @@ const Read = () => {
           </Button>
         </div>
       </div>
+      )}
 
       <article
         className="glass-card mt-5 rounded-3xl p-6 animate-fade-up"
         style={{ fontSize: FONT_SIZES[fontIdx] }}
       >
-        <h2 className="font-display text-2xl text-foreground mb-4">
-          {reference || `${bookDisplayName(book, translation)} ${chapter}`}
+        <h2 className="font-display text-2xl text-foreground mb-4 min-h-[2rem]">
+          {historyLoaded ? reference : ""}
         </h2>
         {loading && (
           <div className="space-y-3" aria-label="Loading chapter">
