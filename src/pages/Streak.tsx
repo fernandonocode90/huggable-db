@@ -373,23 +373,42 @@ const Streak = () => {
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-lg text-foreground">Last 90 days</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Each square is a day. Brighter means more progress.
+          Each square is one day. Brighter means more progress.
         </p>
-        <div className="mt-4 grid grid-flow-col grid-rows-7 gap-1">
+
+        {/* Month labels */}
+        <div
+          className="mt-4 grid gap-1 text-[10px] text-muted-foreground"
+          style={{ gridTemplateColumns: `repeat(${Math.ceil(heatmap.length / 7)}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: Math.ceil(heatmap.length / 7) }).map((_, col) => {
+            const label = monthLabels.find((m) => m.col === col)?.label ?? "";
+            return (
+              <span key={col} className="truncate text-center">
+                {label}
+              </span>
+            );
+          })}
+        </div>
+
+        <div className="mt-1 grid grid-flow-col grid-rows-7 gap-1">
           {heatmap.map((c, i) => (
             <div
               key={i}
-              title={`${dayKey(c.date)} — ${c.status === "done" ? "completed" : c.status === "partial" ? `${Math.round(c.pct)}%` : "no activity"}`}
-              className={`aspect-square w-full rounded-sm ${statusColor(c.status)}`}
+              title={heatmapTooltip(c)}
+              className={cn("aspect-square w-full !rounded-[2px]", heatmapColor(c))}
             />
           ))}
         </div>
-        <div className="mt-4 flex items-center justify-end gap-2 text-[10px] text-muted-foreground">
-          <span>Less</span>
-          <span className="h-3 w-3 rounded-sm bg-muted/30" />
-          <span className="h-3 w-3 rounded-sm bg-primary/40" />
-          <span className="h-3 w-3 rounded-sm bg-primary" />
-          <span>More</span>
+
+        <div className="mt-4 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
+          <span className="mr-1">Less</span>
+          <span className="h-3 w-3 !rounded-[2px] bg-muted/30" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary/30" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary/55" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary/75" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary" />
+          <span className="ml-1">More</span>
         </div>
       </section>
 
