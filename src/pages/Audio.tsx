@@ -117,6 +117,7 @@ const Audio = () => {
       if (cancelled) return;
       if (data) {
         setAudio(data);
+        currentAudioRef.current = data;
         // Show the player UI immediately — don't keep the skeleton up
         // while the signed URL / progress fetch round-trip completes.
         setLoading(false);
@@ -282,6 +283,7 @@ const Audio = () => {
         }
       } else {
         setAudio(null);
+        currentAudioRef.current = null;
       }
       setLoading(false);
     })();
@@ -289,7 +291,8 @@ const Audio = () => {
       cancelled = true;
       // Persist final position so resume works even if the user just navigated away.
       const el = audioRef.current;
-      if (el && userId && audio) {
+      const currentAudio = currentAudioRef.current;
+      if (el && userId && currentAudio) {
         const pct = el.duration > 0
           ? Math.min(100, (el.currentTime / el.duration) * 100)
           : 0;
@@ -298,8 +301,8 @@ const Audio = () => {
           .upsert(
             {
               user_id: userId,
-              audio_id: audio.id,
-              day_number: audio.day_number ?? requestedDay,
+              audio_id: currentAudio.id,
+              day_number: currentAudio.day_number ?? requestedDay,
               progress_pct: pct,
               completed: completedRef.current,
               last_position_seconds: Math.floor(el.currentTime),
