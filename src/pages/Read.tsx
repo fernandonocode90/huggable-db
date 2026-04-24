@@ -763,6 +763,7 @@ const Read = () => {
         </div>
       </header>
 
+      {historyLoaded && (
       <div className="mt-5 flex gap-2 animate-fade-up">
         <Select
           value={bookKey}
@@ -821,6 +822,7 @@ const Read = () => {
           </SelectContent>
         </Select>
       </div>
+      )}
 
       <div className="mt-3 flex items-center justify-between gap-2 animate-fade-up">
         <div className="flex items-center gap-1">
