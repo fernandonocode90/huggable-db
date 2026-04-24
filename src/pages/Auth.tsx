@@ -29,7 +29,7 @@ const Auth = () => {
     try {
       if (mode === "signup") {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -38,7 +38,16 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("Account created! You can sign in now.");
+        if (data.session) {
+          // Auto-login: confirmação de email desativada — entra direto.
+          toast.success("Welcome!");
+          // O onAuthStateChange + useEffect cuidam do redirect.
+        } else {
+          // Confirmação de email ativa — volta pro login com aviso claro.
+          toast.success("Check your email to confirm your account, then sign in.");
+          setMode("signin");
+          setPassword("");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
