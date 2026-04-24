@@ -4,6 +4,7 @@ import "./index.css";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 
 const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+const pathname = window.location.pathname.replace(/\.html$/, "");
 const isRecoveryLink = hashParams.get("type") === "recovery" && !!hashParams.get("access_token");
 
 const pendingSpaRedirect = sessionStorage.getItem("spa-redirect");
@@ -24,8 +25,12 @@ if (pendingSpaRedirect) {
   } catch {
     // Ignore malformed redirect payloads.
   }
-} else if (isRecoveryLink && window.location.pathname === "/") {
+} else if (isRecoveryLink && pathname === "/") {
   window.history.replaceState({}, "", `/reset-password${window.location.hash}`);
+} else if (pathname === "/auth" && window.location.pathname.endsWith(".html")) {
+  window.history.replaceState({}, "", `/auth${window.location.search}${window.location.hash}`);
+} else if (pathname === "/reset-password" && window.location.pathname.endsWith(".html")) {
+  window.history.replaceState({}, "", `/reset-password${window.location.search}${window.location.hash}`);
 }
 
 createRoot(document.getElementById("root")!).render(
