@@ -3,6 +3,26 @@ import App from "./App.tsx";
 import "./index.css";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 
+const pendingSpaRedirect = sessionStorage.getItem("spa-redirect");
+
+if (pendingSpaRedirect) {
+  sessionStorage.removeItem("spa-redirect");
+
+  try {
+    const { pathname, search, hash } = JSON.parse(pendingSpaRedirect) as {
+      pathname?: string;
+      search?: string;
+      hash?: string;
+    };
+
+    if (pathname) {
+      window.history.replaceState({}, "", `${pathname}${search ?? ""}${hash ?? ""}`);
+    }
+  } catch {
+    // Ignore malformed redirect payloads.
+  }
+}
+
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <App />
