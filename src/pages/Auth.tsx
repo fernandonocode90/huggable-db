@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NightBackground } from "@/components/swc/NightBackground";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -18,6 +26,9 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate("/", { replace: true });
@@ -82,6 +93,25 @@ const Auth = () => {
     }
   };
 
+  const sendReset = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setForgotBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Check your email for the reset link.");
+      setForgotOpen(false);
+      setForgotEmail("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+    } finally {
+      setForgotBusy(false);
+    }
+  };
+
   return (
     <NightBackground>
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
@@ -113,6 +143,19 @@ const Auth = () => {
           <Button type="submit" disabled={busy} className="w-full">
             {busy ? "..." : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
+
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={() => {
+                setForgotEmail(email);
+                setForgotOpen(true);
+              }}
+              className="block w-full text-center text-xs text-muted-foreground hover:text-primary"
+            >
+              Forgot your password?
+            </button>
+          )}
 
           <div className="relative py-2">
             <div className="absolute inset-0 flex items-center">
@@ -169,6 +212,38 @@ const Auth = () => {
           )}
         </form>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset your password</DialogTitle>
+            <DialogDescription>
+              Enter the email tied to your account. We'll send you a link to choose a new password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={sendReset} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="forgot-email">Email</Label>
+              <Input
+                id="forgot-email"
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setForgotOpen(false)} disabled={forgotBusy}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={forgotBusy}>
+                {forgotBusy ? "Sending…" : "Send reset link"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </NightBackground>
   );
 };
