@@ -684,8 +684,20 @@ const Admin = () => {
           </Button>
         </form>
 
-        <ul className="mt-4 space-y-2">
-          {devotionals.map((d) => (
+        <div className="mt-6 flex items-center justify-between gap-3 mb-3">
+          <h3 className="font-display text-base text-foreground">Saved devotionals</h3>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {filteredDevotionals.length}/{devotionals.length}
+          </span>
+        </div>
+        <Input
+          placeholder="Search by day, reference…"
+          value={devSearch}
+          onChange={(e) => setDevSearch(e.target.value)}
+          className="mb-3"
+        />
+        <ul className="space-y-2">
+          {filteredDevotionals.slice(0, devVisible).map((d) => (
             <li
               key={d.id}
               className={`glass-card rounded-2xl p-4 flex items-start justify-between gap-3 ${
@@ -715,10 +727,22 @@ const Admin = () => {
               </button>
             </li>
           ))}
-          {devotionals.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-6">No devotionals yet.</p>
+          {filteredDevotionals.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              {devotionals.length === 0 ? "No devotionals yet." : "No matches."}
+            </p>
           )}
         </ul>
+        {filteredDevotionals.length > devVisible && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setDevVisible((v) => v + 20)}
+            className="w-full mt-3"
+          >
+            Load more ({filteredDevotionals.length - devVisible} remaining)
+          </Button>
+        )}
       </section>
     </AppShell>
   );
