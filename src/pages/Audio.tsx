@@ -46,6 +46,7 @@ interface DailyAudio {
 
 const Audio = () => {
   const { user, isAdmin } = useAuth();
+  const userId = user?.id ?? null;
   const { currentDay, refresh: refreshProgress } = useProgress();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -115,11 +116,11 @@ const Audio = () => {
         setAudio(data);
         // load existing progress
         let resumeAt = 0;
-        if (user) {
+        if (userId) {
           const { data: prog } = await supabase
             .from("audio_progress")
             .select("completed,last_position_seconds")
-            .eq("user_id", user.id)
+            .eq("user_id", userId)
             .eq("audio_id", data.id)
             .maybeSingle();
           if (prog?.completed) {
@@ -139,6 +140,7 @@ const Audio = () => {
 
           // Prefer cached blob if available (offline-first)
           let playableUrl = url;
+          let alreadyCached = false;
           try {
             const isCached = await isAudioCached(url);
             if (isCached) {
@@ -148,9 +150,17 @@ const Audio = () => {
                 blobUrlRef.current = blobUrl;
               }
               setCached(true);
+              alreadyCached = true;
             }
           } catch {
             /* preview/iframe — caches API blocked */
+          }
+
+          // Auto-cache in background for instant replays next time.
+          if (!alreadyCached) {
+            void downloadAudio(url).then((ok) => {
+              if (!cancelled && ok) setCached(true);
+            }).catch(() => { /* silent */ });
           }
 
           const el = new window.Audio(playableUrl);
@@ -169,7 +179,7 @@ const Audio = () => {
 
             // Persist position every ~5s for resume next session.
             if (
-              user &&
+              userId &&
               data &&
               el.currentTime - lastSavedPosRef.current >= 5
             ) {
@@ -181,7 +191,7 @@ const Audio = () => {
                 .from("audio_progress")
                 .upsert(
                   {
-                    user_id: user.id,
+                    user_id: userId,
                     audio_id: data.id,
                     day_number: data.day_number ?? requestedDay,
                     progress_pct: livePct,
@@ -196,7 +206,7 @@ const Audio = () => {
             // mark complete at >=90%
             if (
               !completedRef.current &&
-              user &&
+              userId &&
               data &&
               el.duration > 0 &&
               el.currentTime / el.duration >= 0.9
@@ -208,7 +218,7 @@ const Audio = () => {
                 .from("audio_progress")
                 .upsert(
                   {
-                    user_id: user.id,
+                    user_id: userId,
                     audio_id: data.id,
                     day_number: data.day_number ?? requestedDay,
                     progress_pct: pct,
@@ -272,7 +282,7 @@ const Audio = () => {
       cancelled = true;
       // Persist final position so resume works even if the user just navigated away.
       const el = audioRef.current;
-      if (el && user && audio) {
+      if (el && userId && audio) {
         const pct = el.duration > 0
           ? Math.min(100, (el.currentTime / el.duration) * 100)
           : 0;
@@ -280,7 +290,7 @@ const Audio = () => {
           .from("audio_progress")
           .upsert(
             {
-              user_id: user.id,
+              user_id: userId,
               audio_id: audio.id,
               day_number: audio.day_number ?? requestedDay,
               progress_pct: pct,
@@ -307,7 +317,7 @@ const Audio = () => {
         }
       }
     };
-  }, [requestedDay, user]);
+  }, [requestedDay, userId]);
 
   const toggle = () => {
     if (!audioRef.current) return;
