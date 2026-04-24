@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Play, Trash2, Upload, BookOpen, Save, X, Loader2 } from "lucide-react";
+import { Play, Trash2, Upload, BookOpen, Save, X, Loader2, Download, Globe } from "lucide-react";
 import { BIBLE_BOOKS, BIBLE_BOOK_BY_KEY, fetchVerseRange, buildReference } from "@/lib/bible-books";
 
 interface Audio {
@@ -57,6 +57,9 @@ const Admin = () => {
     prayer_text: "",
   });
 
+  const [bibleStats, setBibleStats] = useState<Record<string, number>>({});
+  const [importBusy, setImportBusy] = useState<string | null>(null);
+
   const [devotionals, setDevotionals] = useState<Devotional[]>([]);
   const [devBusy, setDevBusy] = useState(false);
   const [verseLoading, setVerseLoading] = useState(false);
@@ -91,10 +94,46 @@ const Admin = () => {
     setDevotionals(data ?? []);
   };
 
+  const refreshBibleStats = async () => {
+    const translations = ["kjv", "rvr1909", "acf"];
+    const stats: Record<string, number> = {};
+    await Promise.all(
+      translations.map(async (t) => {
+        const { count } = await supabase
+          .from("bible_verses")
+          .select("*", { count: "exact", head: true })
+          .eq("translation", t);
+        stats[t] = count ?? 0;
+      })
+    );
+    setBibleStats(stats);
+  };
+
+  const importTranslation = async (translation: string, force = false) => {
+    setImportBusy(translation);
+    try {
+      const { data, error } = await supabase.functions.invoke("import-bible", {
+        body: { translation, force },
+      });
+      if (error) throw error;
+      if (data?.skipped) {
+        toast.info(`${translation.toUpperCase()}: already loaded (${data.existing} verses)`);
+      } else {
+        toast.success(`${translation.toUpperCase()}: imported ${data?.inserted ?? 0} verses`);
+      }
+      refreshBibleStats();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setImportBusy(null);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       refresh();
       refreshDevotionals();
+      refreshBibleStats();
     }
   }, [isAdmin]);
 
