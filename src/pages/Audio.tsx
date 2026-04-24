@@ -141,10 +141,19 @@ const Audio = () => {
             resumeAt = prog.last_position_seconds;
           }
         }
-        const { data: signed } = await supabase.functions.invoke("r2-get-audio-url", {
+        const { data: signed, error: signedErr } = await supabase.functions.invoke("r2-get-audio-url", {
           body: { key: data.r2_key },
         });
-        if (!cancelled && signed?.url) {
+        if (cancelled) return;
+        if (signedErr || !signed?.url) {
+          toast({
+            title: "Couldn't load audio",
+            description: "Please check your connection and try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        {
           const url = signed.url as string;
           setSignedUrl(url);
 
@@ -174,7 +183,8 @@ const Audio = () => {
           }
 
           const el = new window.Audio(playableUrl);
-          el.preload = "metadata";
+          el.preload = "auto";
+          el.crossOrigin = "anonymous";
           el.playbackRate = playbackRate;
           el.addEventListener("loadedmetadata", () => {
             setDuration(el.duration);
