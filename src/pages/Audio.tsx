@@ -435,6 +435,8 @@ const Audio = () => {
           )
           .then(() => {});
       }
+      const cleanup = (audioRef.current as (HTMLAudioElement & { __swcCleanup?: () => void }) | null)?.__swcCleanup;
+      if (cleanup) cleanup();
       audioRef.current?.pause();
       audioRef.current = null;
       if (blobUrlRef.current) {
