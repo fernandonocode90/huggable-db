@@ -35,6 +35,9 @@ import AdminAuditLog from "./pages/admin/AuditLog.tsx";
 import AdminSettings from "./pages/admin/Settings.tsx";
 import AdminUserDetail from "./pages/admin/UserDetail.tsx";
 import AdminEngagement from "./pages/admin/Engagement.tsx";
+import AdminHealth from "./pages/admin/Health.tsx";
+import AdminClientErrors from "./pages/admin/ClientErrors.tsx";
+import AdminModeration from "./pages/admin/Moderation.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
@@ -89,6 +92,9 @@ const App = () => (
                     <Route path="reminders" element={<AdminReminders />} />
                     <Route path="engagement" element={<AdminEngagement />} />
                     <Route path="settings" element={<AdminSettings />} />
+                    <Route path="health" element={<AdminHealth />} />
+                    <Route path="errors" element={<AdminClientErrors />} />
+                    <Route path="moderation" element={<AdminModeration />} />
                     <Route path="audit" element={<AdminAuditLog />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
