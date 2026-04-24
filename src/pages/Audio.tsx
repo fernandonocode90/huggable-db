@@ -299,10 +299,11 @@ const Audio = () => {
             setPlaying(false);
             if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
           });
-          el.addEventListener("waiting", () => setBuffering(true));
-          el.addEventListener("stalled", () => setBuffering(true));
-          el.addEventListener("canplay", () => setBuffering(false));
-          el.addEventListener("playing", () => setBuffering(false));
+          el.addEventListener("waiting", () => showBufferingDebounced());
+          el.addEventListener("stalled", () => showBufferingDebounced());
+          el.addEventListener("canplay", () => clearBuffering());
+          el.addEventListener("playing", () => clearBuffering());
+          el.addEventListener("seeked", () => clearBuffering());
 
           // Retry logic: when network errors / stalls happen (mobile background,
           // expired signed URL, flaky connection), try cached blob first, then
