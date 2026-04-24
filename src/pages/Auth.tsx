@@ -93,6 +93,25 @@ const Auth = () => {
     }
   };
 
+  const sendReset = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setForgotBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Check your email for the reset link.");
+      setForgotOpen(false);
+      setForgotEmail("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+    } finally {
+      setForgotBusy(false);
+    }
+  };
+
   return (
     <NightBackground>
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
@@ -124,6 +143,19 @@ const Auth = () => {
           <Button type="submit" disabled={busy} className="w-full">
             {busy ? "..." : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
+
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={() => {
+                setForgotEmail(email);
+                setForgotOpen(true);
+              }}
+              className="block w-full text-center text-xs text-muted-foreground hover:text-primary"
+            >
+              Forgot your password?
+            </button>
+          )}
 
           <div className="relative py-2">
             <div className="absolute inset-0 flex items-center">
