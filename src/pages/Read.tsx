@@ -45,6 +45,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 
 type Book = { key: string; name: string; chapters: number; testament: "OT" | "NT" };
@@ -209,6 +210,7 @@ function bookDisplayName(book: Book, translation: Translation) {
 const Read = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [translation, setTranslation] = useState<Translation>("kjv");
@@ -1057,6 +1059,7 @@ const Read = () => {
                           reference: ref,
                           text: activeVerse.text,
                           translation: trLabel,
+                          theme,
                         });
                         const filename = `${ref.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.png`;
                         const result = await shareOrDownloadVerse(blob, filename);
