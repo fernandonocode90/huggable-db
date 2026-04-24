@@ -470,6 +470,10 @@ const Audio = () => {
       if (cleanup) cleanup();
       audioRef.current?.pause();
       audioRef.current = null;
+      if (bufferingTimerRef.current) {
+        clearTimeout(bufferingTimerRef.current);
+        bufferingTimerRef.current = null;
+      }
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
