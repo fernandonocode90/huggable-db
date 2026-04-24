@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Play, Trash2, Upload, BookOpen, Save, X, Loader2, Download, Globe } from "lucide-react";
+import { Play, Trash2, Upload, BookOpen, Save, X, Loader2 } from "lucide-react";
 import { BIBLE_BOOKS, BIBLE_BOOK_BY_KEY, fetchVerseRange, buildReference } from "@/lib/bible-books";
 
 interface Audio {
@@ -57,13 +57,11 @@ const Admin = () => {
     prayer_text: "",
   });
 
-  const [bibleStats, setBibleStats] = useState<Record<string, number>>({});
-  const [importBusy, setImportBusy] = useState<string | null>(null);
-
   const [devotionals, setDevotionals] = useState<Devotional[]>([]);
   const [devBusy, setDevBusy] = useState(false);
   const [verseLoading, setVerseLoading] = useState(false);
   const [editingDevotionalId, setEditingDevotionalId] = useState<string | null>(null);
+  const [autoBibleImportState, setAutoBibleImportState] = useState<"idle" | "running" | "done">("idle");
   const [devForm, setDevForm] = useState({
     day_number: "",
     book_key: "",
@@ -94,47 +92,51 @@ const Admin = () => {
     setDevotionals(data ?? []);
   };
 
-  const refreshBibleStats = async () => {
-    const translations = ["kjv", "rvr1909", "acf"];
-    const stats: Record<string, number> = {};
-    await Promise.all(
-      translations.map(async (t) => {
-        const { count } = await supabase
-          .from("bible_verses")
-          .select("*", { count: "exact", head: true })
-          .eq("translation", t);
-        stats[t] = count ?? 0;
-      })
-    );
-    setBibleStats(stats);
-  };
+  const ensureBibleImported = async () => {
+    if (!isAdmin || autoBibleImportState !== "idle") return;
 
-  const importTranslation = async (translation: string, force = false) => {
-    setImportBusy(translation);
+    setAutoBibleImportState("running");
     try {
-      const { data, error } = await supabase.functions.invoke("import-bible", {
-        body: { translation, force },
-      });
-      if (error) throw error;
-      if (data?.skipped) {
-        toast.info(`${translation.toUpperCase()}: already loaded (${data.existing} verses)`);
-      } else {
-        toast.success(`${translation.toUpperCase()}: imported ${data?.inserted ?? 0} verses`);
+      const translations = ["kjv", "acf", "rvr1909"] as const;
+      const counts = await Promise.all(
+        translations.map(async (translation) => {
+          const { count } = await supabase
+            .from("bible_verses")
+            .select("*", { count: "exact", head: true })
+            .eq("translation", translation);
+          return { translation, count: count ?? 0 };
+        })
+      );
+
+      const missing = counts
+        .filter(({ count }) => count < 30000)
+        .map(({ translation }) => translation);
+
+      for (const translation of missing) {
+        const { data, error } = await supabase.functions.invoke("import-bible", {
+          body: { translation, force: false },
+        });
+        if (error) throw error;
+        if (!data?.ok && !data?.skipped) {
+          throw new Error(`Import failed for ${translation}`);
+        }
       }
-      refreshBibleStats();
+
+      if (missing.length > 0) {
+        toast.success("Bíblias importadas no banco de dados.");
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Import failed");
+      toast.error(err instanceof Error ? err.message : "Falha ao importar a Bíblia");
     } finally {
-      setImportBusy(null);
+      setAutoBibleImportState("done");
     }
   };
 
   useEffect(() => {
-    if (isAdmin) {
-      refresh();
-      refreshDevotionals();
-      refreshBibleStats();
-    }
+    if (!isAdmin) return;
+    refresh();
+    refreshDevotionals();
+    void ensureBibleImported();
   }, [isAdmin]);
 
   const resetAudioForm = () => {
@@ -395,59 +397,6 @@ const Admin = () => {
           Manage daily audios
         </p>
       </header>
-
-      <section className="glass-card mt-6 rounded-3xl p-5 animate-fade-up">
-        <div className="flex items-center gap-2 mb-3">
-          <Globe className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-lg text-foreground">Bible library</h2>
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Import the full Bible into Supabase for instant offline-friendly reading. ~31k verses per translation.
-        </p>
-        <div className="space-y-2">
-          {[
-            { key: "kjv", label: "KJV — English", flag: "🇬🇧" },
-            { key: "acf", label: "Almeida — Português", flag: "🇧🇷" },
-            { key: "rvr1909", label: "RVR1909 — Español", flag: "🇪🇸" },
-          ].map((t) => {
-            const count = bibleStats[t.key] ?? 0;
-            const loaded = count > 30000;
-            const busyNow = importBusy === t.key;
-            return (
-              <div
-                key={t.key}
-                className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/30 p-3"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xl">{t.flag}</span>
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">{t.label}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {count.toLocaleString()} verses {loaded && "✓"}
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant={loaded ? "outline" : "default"}
-                  disabled={busyNow}
-                  onClick={() => importTranslation(t.key, loaded)}
-                >
-                  {busyNow ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : loaded ? (
-                    <>Reimport</>
-                  ) : (
-                    <>
-                      <Download className="h-3 w-3 mr-1" /> Import
-                    </>
-                  )}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
       <form onSubmit={submit} className="glass-card mt-6 rounded-3xl p-5 space-y-3 animate-fade-up">
         <div className="flex items-center justify-between">
