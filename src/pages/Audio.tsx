@@ -116,11 +116,11 @@ const Audio = () => {
         setAudio(data);
         // load existing progress
         let resumeAt = 0;
-        if (user) {
+        if (userId) {
           const { data: prog } = await supabase
             .from("audio_progress")
             .select("completed,last_position_seconds")
-            .eq("user_id", user.id)
+            .eq("user_id", userId)
             .eq("audio_id", data.id)
             .maybeSingle();
           if (prog?.completed) {
