@@ -278,6 +278,61 @@ const Privacy = () => {
         )}
       </section>
 
+      {/* Pre-prompt: explain *before* the native permission dialog */}
+      <Dialog open={prePromptOpen} onOpenChange={setPrePromptOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BellRing className="h-5 w-5 text-primary" />
+              Stay on your daily journey
+            </DialogTitle>
+            <DialogDescription className="space-y-2 pt-2">
+              <span className="block">
+                Solomon Wealth Code can send you a single, gentle reminder
+                each day at the time you choose — so you never miss your
+                teaching, scripture and prayer.
+              </span>
+              <span className="block">
+                We never send marketing, ads or anything else. You can turn
+                this off here at any time.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setPrePromptOpen(false)}
+              disabled={reminders.saving}
+            >
+              Not now
+            </Button>
+            <Button
+              onClick={async () => {
+                setPrePromptOpen(false);
+                const res = await saveReminders({
+                  enabled: true,
+                  time: reminders.time,
+                });
+                if (res.ok) {
+                  toast({
+                    title: "Reminders on",
+                    description: `We'll nudge you around ${reminders.time}.`,
+                  });
+                } else {
+                  toast({
+                    title: "Reminder note",
+                    description: res.error,
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Password */}
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <div className="flex items-center gap-3">
