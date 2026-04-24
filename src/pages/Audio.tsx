@@ -62,6 +62,7 @@ const Audio = () => {
   const [cached, setCached] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadPct, setDownloadPct] = useState(0);
+  const [buffering, setBuffering] = useState(false);
   const completedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedPosRef = useRef(0);
@@ -100,6 +101,7 @@ const Audio = () => {
       setCached(false);
       setDownloading(false);
       setDownloadPct(0);
+      setBuffering(false);
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
@@ -139,10 +141,19 @@ const Audio = () => {
             resumeAt = prog.last_position_seconds;
           }
         }
-        const { data: signed } = await supabase.functions.invoke("r2-get-audio-url", {
+        const { data: signed, error: signedErr } = await supabase.functions.invoke("r2-get-audio-url", {
           body: { key: data.r2_key },
         });
-        if (!cancelled && signed?.url) {
+        if (cancelled) return;
+        if (signedErr || !signed?.url) {
+          toast({
+            title: "Couldn't load audio",
+            description: "Please check your connection and try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        {
           const url = signed.url as string;
           setSignedUrl(url);
 
@@ -172,7 +183,7 @@ const Audio = () => {
           }
 
           const el = new window.Audio(playableUrl);
-          el.preload = "metadata";
+          el.preload = "auto";
           el.playbackRate = playbackRate;
           el.addEventListener("loadedmetadata", () => {
             setDuration(el.duration);
@@ -258,6 +269,19 @@ const Audio = () => {
             setPlaying(false);
             if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
           });
+          el.addEventListener("waiting", () => setBuffering(true));
+          el.addEventListener("stalled", () => setBuffering(true));
+          el.addEventListener("canplay", () => setBuffering(false));
+          el.addEventListener("playing", () => setBuffering(false));
+          el.addEventListener("error", () => {
+            setBuffering(false);
+            setPlaying(false);
+            toast({
+              title: "Playback error",
+              description: "We couldn't play this audio. Please retry.",
+              variant: "destructive",
+            });
+          });
           audioRef.current = el;
 
           // Media Session API (lockscreen / hardware controls) — #12
@@ -337,10 +361,30 @@ const Audio = () => {
   }, [requestedDay, userId]);
 
   const toggle = () => {
-    if (!audioRef.current) return;
-    // The element's own play/pause listeners will sync `playing` state.
-    if (playing) audioRef.current.pause();
-    else void audioRef.current.play();
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) {
+      el.pause();
+      return;
+    }
+    // Show buffering immediately if the audio isn't ready yet so the user
+    // gets feedback even before the browser fires `waiting`.
+    if (el.readyState < 3) setBuffering(true);
+    const p = el.play();
+    if (p && typeof p.catch === "function") {
+      p.catch((err) => {
+        setBuffering(false);
+        setPlaying(false);
+        // Autoplay errors are usually safe to ignore; surface real failures.
+        if (err?.name !== "AbortError" && err?.name !== "NotAllowedError") {
+          toast({
+            title: "Couldn't start playback",
+            description: "Tap play again or refresh the page.",
+            variant: "destructive",
+          });
+        }
+      });
+    }
   };
   const seek = (delta: number) => {
     if (!audioRef.current) return;
@@ -455,7 +499,7 @@ const Audio = () => {
             className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40 transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-wait"
             style={{ boxShadow: "0 0 30px hsl(var(--primary) / 0.4)" }}
           >
-            {!signedUrl ? (
+            {!signedUrl || buffering ? (
               <Loader2 className="h-7 w-7 animate-spin" />
             ) : playing ? (
               <Pause className="h-8 w-8 fill-primary" strokeWidth={0} />
