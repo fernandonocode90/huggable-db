@@ -1,1 +1,4 @@
 project_id = "daecduwilaeyarofouey"
+
+[functions.admin-broadcast-push]
+verify_jwt = false

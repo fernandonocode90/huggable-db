@@ -34,6 +34,7 @@ import AdminReminders from "./pages/admin/Reminders.tsx";
 import AdminAuditLog from "./pages/admin/AuditLog.tsx";
 import AdminSettings from "./pages/admin/Settings.tsx";
 import AdminUserDetail from "./pages/admin/UserDetail.tsx";
+import AdminEngagement from "./pages/admin/Engagement.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
@@ -86,6 +87,7 @@ const App = () => (
                     <Route path="devotionals" element={<AdminDevotionals />} />
                     <Route path="bible" element={<AdminBibleContent />} />
                     <Route path="reminders" element={<AdminReminders />} />
+                    <Route path="engagement" element={<AdminEngagement />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="audit" element={<AdminAuditLog />} />
                   </Route>

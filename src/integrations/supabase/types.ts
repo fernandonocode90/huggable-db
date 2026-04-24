@@ -551,6 +551,16 @@ export type Database = {
           day: string
         }[]
       }
+      admin_get_dropoff_by_day: {
+        Args: never
+        Returns: {
+          completed: number
+          day_number: number
+          dropoff_rate: number
+          reached: number
+          title: string
+        }[]
+      }
       admin_get_overview_stats: { Args: never; Returns: Json }
       admin_get_reminder_stats: { Args: never; Returns: Json }
       admin_get_signups_by_day: {
