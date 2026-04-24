@@ -533,8 +533,25 @@ const Audio = () => {
     }
   };
   const seek = (delta: number) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + delta));
+    const el = audioRef.current;
+    if (!el) return;
+    // Use the element's own duration (more reliable than React state on mobile,
+    // which may lag behind by a frame or be 0 if metadata just loaded).
+    const dur = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : duration;
+    const target = Math.max(0, Math.min(dur > 0 ? dur - 0.1 : 0, el.currentTime + delta));
+    const wasPlaying = !el.paused;
+    try {
+      // On iOS/Android, seeking on a detached <audio> element while it's
+      // actively playing can be ignored. Pause → seek → resume reliably moves
+      // the playhead. Doing it synchronously preserves the user-gesture chain.
+      if (wasPlaying) el.pause();
+      el.currentTime = target;
+      setPosition(target);
+      if (wasPlaying) {
+        const p = el.play();
+        if (p && typeof p.catch === "function") p.catch(() => { /* noop */ });
+      }
+    } catch { /* noop */ }
   };
   const restart = () => {
     const el = audioRef.current;
