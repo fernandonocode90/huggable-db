@@ -61,6 +61,7 @@ const Admin = () => {
   const [devBusy, setDevBusy] = useState(false);
   const [verseLoading, setVerseLoading] = useState(false);
   const [editingDevotionalId, setEditingDevotionalId] = useState<string | null>(null);
+  const [autoBibleImportState, setAutoBibleImportState] = useState<"idle" | "running" | "done">("idle");
   const [devForm, setDevForm] = useState({
     day_number: "",
     book_key: "",
@@ -91,11 +92,51 @@ const Admin = () => {
     setDevotionals(data ?? []);
   };
 
-  useEffect(() => {
-    if (isAdmin) {
-      refresh();
-      refreshDevotionals();
+  const ensureBibleImported = async () => {
+    if (!isAdmin || autoBibleImportState !== "idle") return;
+
+    setAutoBibleImportState("running");
+    try {
+      const translations = ["kjv", "acf", "rvr1909"] as const;
+      const counts = await Promise.all(
+        translations.map(async (translation) => {
+          const { count } = await supabase
+            .from("bible_verses")
+            .select("*", { count: "exact", head: true })
+            .eq("translation", translation);
+          return { translation, count: count ?? 0 };
+        })
+      );
+
+      const missing = counts
+        .filter(({ count }) => count < 30000)
+        .map(({ translation }) => translation);
+
+      for (const translation of missing) {
+        const { data, error } = await supabase.functions.invoke("import-bible", {
+          body: { translation, force: false },
+        });
+        if (error) throw error;
+        if (!data?.ok && !data?.skipped) {
+          throw new Error(`Import failed for ${translation}`);
+        }
+      }
+
+      if (missing.length > 0) {
+        toast.success("Bíblias importadas no banco de dados.");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao importar a Bíblia");
+    } finally {
+      setAutoBibleImportState("done");
     }
+  };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    refresh();
+    refreshDevotionals();
+    void ensureBibleImported();
   }, [isAdmin]);
 
   const resetAudioForm = () => {
