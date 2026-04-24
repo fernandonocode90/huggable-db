@@ -184,7 +184,6 @@ const Audio = () => {
 
           const el = new window.Audio(playableUrl);
           el.preload = "auto";
-          el.crossOrigin = "anonymous";
           el.playbackRate = playbackRate;
           el.addEventListener("loadedmetadata", () => {
             setDuration(el.duration);
