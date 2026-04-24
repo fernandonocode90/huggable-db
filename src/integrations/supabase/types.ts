@@ -44,6 +44,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       audio_progress: {
         Row: {
           audio_id: string
@@ -430,6 +451,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_admin_notes: {
+        Row: {
+          admin_id: string
+          created_at: string
+          id: string
+          note: string
+          user_id: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          id?: string
+          note: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_bans: {
+        Row: {
+          banned_by: string
+          created_at: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_by: string
+          created_at?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_by?: string
+          created_at?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -456,6 +522,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_user_note: {
+        Args: { _note: string; _user_id: string }
+        Returns: string
+      }
+      admin_ban_user: {
+        Args: { _reason: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_delete_user_note: { Args: { _note_id: string }; Returns: undefined }
       admin_get_audio_metrics: {
         Args: never
         Returns: {
@@ -492,6 +567,11 @@ export type Database = {
           verse_count: number
         }[]
       }
+      admin_get_user_detail: { Args: { _user_id: string }; Returns: Json }
+      admin_gift_streak: {
+        Args: { _new_best_streak: number; _user_id: string }
+        Returns: undefined
+      }
       admin_list_users: {
         Args: { _limit?: number; _offset?: number; _search?: string }
         Returns: {
@@ -512,11 +592,22 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      admin_set_app_setting: {
+        Args: { _key: string; _value: Json }
+        Returns: undefined
+      }
+      admin_set_user_day: {
+        Args: { _new_day: number; _user_id: string }
+        Returns: undefined
+      }
       admin_set_user_role: {
         Args: { _make_admin: boolean; _user_id: string }
         Returns: undefined
       }
+      admin_unban_user: { Args: { _user_id: string }; Returns: undefined }
+      admin_wipe_user_data: { Args: { _user_id: string }; Returns: undefined }
       get_current_day: { Args: { _user_id: string }; Returns: number }
+      get_public_app_settings: { Args: never; Returns: Json }
       get_user_streak: { Args: { _user_id: string }; Returns: number }
       get_week_preview: {
         Args: { _from_day: number; _to_day: number }
