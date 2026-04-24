@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
+import { Disclaimer } from "@/components/Disclaimer";
 
 type ToolCard =
   | {
@@ -125,6 +126,7 @@ const Tools = () => {
           </li>
         ))}
       </ul>
+      <Disclaimer variant="financial" />
     </AppShell>
   );
 };

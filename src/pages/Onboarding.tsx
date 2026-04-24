@@ -5,6 +5,7 @@ import {
   BookOpen,
   Calculator as CalcIcon,
   Headphones,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,12 @@ const SLIDES: Slide[] = [
     eyebrow: "Practical tools",
     title: "See your wealth grow",
     body: "A compound-interest calculator turns intention into a clear, visual plan you can save and revisit.",
+  },
+  {
+    icon: ShieldCheck,
+    eyebrow: "A gentle note",
+    title: "Wisdom, not advice",
+    body: "Solomon Wealth Code offers biblical teachings and educational tools — not professional financial, legal, or spiritual advice. Always consult a qualified expert for personal decisions.",
   },
 ];
 
