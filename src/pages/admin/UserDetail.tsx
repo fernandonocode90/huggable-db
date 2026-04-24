@@ -115,7 +115,7 @@ const UserDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const run = async (label: string, fn: () => Promise<{ error: unknown }>) => {
+  const run = async (label: string, fn: () => PromiseLike<{ error: unknown }>) => {
     setBusy(true);
     try {
       const { error } = await fn();

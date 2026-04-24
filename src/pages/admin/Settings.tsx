@@ -59,12 +59,12 @@ const Settings = () => {
     void load();
   }, []);
 
-  const save = async (key: "maintenance" | "global_banner", value: object) => {
+  const save = async (key: "maintenance" | "global_banner", value: Record<string, unknown>) => {
     setSaving(key);
     try {
       const { error } = await supabase.rpc("admin_set_app_setting", {
         _key: key,
-        _value: value,
+        _value: value as never,
       });
       if (error) throw error;
       toast.success("Configuração salva");
