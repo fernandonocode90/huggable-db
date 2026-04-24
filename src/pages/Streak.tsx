@@ -138,8 +138,8 @@ const Streak = () => {
     }
   }, [streak, bestStreak, user]);
 
-  // Build last 14 days bars + last 90 days heatmap
-  const { bars, heatmap } = useMemo(() => {
+  // Build last 14 days bars
+  const bars = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -147,7 +147,6 @@ const Streak = () => {
       const date = new Date(today);
       date.setDate(today.getDate() - offset);
       let dayNumber = 0;
-      let beforeStart = false;
       if (startDate) {
         // Compare by calendar date (year/month/day) to avoid timezone drift.
         const start = new Date(
@@ -160,28 +159,21 @@ const Streak = () => {
           (cell.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
         dayNumber = diffDays + 1;
-        beforeStart = cell.getTime() < start.getTime();
       }
       const entry = progressMap[dayNumber];
       const pct = entry?.pct ?? 0;
       const completed = entry?.completed ?? false;
-      const status: DayCell["status"] = beforeStart
-        ? "before"
-        : completed
-          ? "done"
-          : pct > 0
-            ? "partial"
-            : "none";
+      const status: DayCell["status"] = completed
+        ? "done"
+        : pct > 0
+          ? "partial"
+          : "none";
       return { date, dayNumber, status, pct };
     };
 
-    const bars: DayCell[] = [];
-    for (let i = 13; i >= 0; i--) bars.push(buildCell(i));
-
-    const heatmap: DayCell[] = [];
-    for (let i = 89; i >= 0; i--) heatmap.push(buildCell(i));
-
-    return { bars, heatmap };
+    const result: DayCell[] = [];
+    for (let i = 13; i >= 0; i--) result.push(buildCell(i));
+    return result;
   }, [progressMap, startDate]);
 
   const saveReminder = async () => {
