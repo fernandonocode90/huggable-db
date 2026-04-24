@@ -152,7 +152,7 @@ const Index = () => {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-primary">
-                Todays focus
+                Today’s focus
               </p>
               <div className="mt-2 flex items-end gap-3">
                 <span className="font-display text-5xl leading-none gold-text">{currentDay}</span>
@@ -196,7 +196,7 @@ const Index = () => {
       <section className="mt-6 animate-fade-up" style={{ animationDelay: "130ms" }}>
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Todays reading</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Today’s reading</p>
             <h2 className="mt-1 font-display text-2xl text-foreground">Scripture & reflection</h2>
           </div>
           <button
@@ -241,7 +241,7 @@ const Index = () => {
             </>
           ) : (
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Todays devotional is not published yet, but you can continue from your last reading and keep the streak alive.
+              Today’s devotional is not published yet, but you can continue from your last reading and keep the streak alive.
             </p>
           )}
         </div>
