@@ -36,7 +36,7 @@ const Welcome = () => {
               <span className="text-foreground">Wealth Code</span>
             </h1>
             <p className="mt-5 text-sm uppercase tracking-[0.28em] text-primary/90">
-              Mode · Deep Sanctuary
+              Biblical Wisdom · Lasting Wealth
             </p>
           </div>
 
