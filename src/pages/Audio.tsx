@@ -361,10 +361,30 @@ const Audio = () => {
   }, [requestedDay, userId]);
 
   const toggle = () => {
-    if (!audioRef.current) return;
-    // The element's own play/pause listeners will sync `playing` state.
-    if (playing) audioRef.current.pause();
-    else void audioRef.current.play();
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) {
+      el.pause();
+      return;
+    }
+    // Show buffering immediately if the audio isn't ready yet so the user
+    // gets feedback even before the browser fires `waiting`.
+    if (el.readyState < 3) setBuffering(true);
+    const p = el.play();
+    if (p && typeof p.catch === "function") {
+      p.catch((err) => {
+        setBuffering(false);
+        setPlaying(false);
+        // Autoplay errors are usually safe to ignore; surface real failures.
+        if (err?.name !== "AbortError" && err?.name !== "NotAllowedError") {
+          toast({
+            title: "Couldn't start playback",
+            description: "Tap play again or refresh the page.",
+            variant: "destructive",
+          });
+        }
+      });
+    }
   };
   const seek = (delta: number) => {
     if (!audioRef.current) return;
