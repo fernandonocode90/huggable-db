@@ -114,6 +114,9 @@ const Audio = () => {
       if (cancelled) return;
       if (data) {
         setAudio(data);
+        // Show the player UI immediately — don't keep the skeleton up
+        // while the signed URL / progress fetch round-trip completes.
+        setLoading(false);
         // load existing progress
         let resumeAt = 0;
         if (userId) {
@@ -123,6 +126,7 @@ const Audio = () => {
             .eq("user_id", userId)
             .eq("audio_id", data.id)
             .maybeSingle();
+          if (cancelled) return;
           if (prog?.completed) {
             setCompleted(true);
             completedRef.current = true;
