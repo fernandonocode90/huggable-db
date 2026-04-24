@@ -167,7 +167,7 @@ const EmergencyFund = () => {
         </div>
       </section>
 
-      <section className="mt-6 space-y-3">
+      <section className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {tiers.map((t, i) => {
           const pct = t.target > 0 ? Math.min(100, (s / t.target) * 100) : 0;
           const months = monthsToReach(t.target);
