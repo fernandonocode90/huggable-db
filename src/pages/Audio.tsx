@@ -70,6 +70,8 @@ const Audio = () => {
   const blobUrlRef = useRef<string | null>(null);
   const currentAudioRef = useRef<DailyAudio | null>(null);
   const bufferingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSeekTargetRef = useRef<number | null>(null);
+  const seekOperationRef = useRef(0);
 
   const showBufferingDebounced = () => {
     if (bufferingTimerRef.current) return;
@@ -231,6 +233,14 @@ const Audio = () => {
             }
           });
           el.addEventListener("timeupdate", () => {
+            const pendingSeekTarget = pendingSeekTargetRef.current;
+            if (pendingSeekTarget != null) {
+              // Mobile browsers can emit a stale timeupdate from the old playhead
+              // right after a seek/restart. Ignore it until the decoder lands
+              // near the requested target.
+              if (Math.abs(el.currentTime - pendingSeekTarget) > 0.75) return;
+              pendingSeekTargetRef.current = null;
+            }
             setPosition(el.currentTime);
             // If timeupdate keeps firing while not paused, audio is actually
             // playing — force-clear any stuck buffering state (mobile browsers
@@ -536,51 +546,83 @@ const Audio = () => {
       });
     }
   };
-  const seek = (delta: number) => {
+  const performSeek = (targetTime: number, shouldResume: boolean) => {
     const el = audioRef.current;
     if (!el) return;
-    // Use the element's own duration (more reliable than React state on mobile,
-    // which may lag behind by a frame or be 0 if metadata just loaded).
+    const operation = seekOperationRef.current + 1;
+    seekOperationRef.current = operation;
     const dur = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : duration;
-    const target = Math.max(0, Math.min(dur > 0 ? dur - 0.1 : 0, el.currentTime + delta));
-    const wasPlaying = !el.paused;
+    const maxTime = dur > 0 ? dur - 0.1 : 0;
+    const target = Math.max(0, Math.min(maxTime, targetTime));
+
+    pendingSeekTargetRef.current = target;
+    clearBuffering();
+    setPosition(target);
+    setPlaying(false);
+    lastSavedPosRef.current = target;
+
     try {
-      // On iOS/Android, seeking on a detached <audio> element while it's
-      // actively playing can be ignored. Pause → seek → resume reliably moves
-      // the playhead. Doing it synchronously preserves the user-gesture chain.
-      if (wasPlaying) el.pause();
-      el.currentTime = target;
+      el.pause();
+    } catch {
+      /* noop */
+    }
+
+    let settled = false;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = () => {
+      el.removeEventListener("seeked", handleSeeked);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+    };
+
+    const finish = () => {
+      if (settled || seekOperationRef.current != operation) return;
+      settled = true;
+      pendingSeekTargetRef.current = null;
+      try {
+        el.currentTime = target;
+      } catch {
+        /* noop */
+      }
       setPosition(target);
-      if (wasPlaying) {
+      setPlaying(false);
+      if (shouldResume) {
         const p = el.play();
         if (p && typeof p.catch === "function") p.catch(() => { /* noop */ });
       }
-    } catch { /* noop */ }
+      cleanup();
+    };
+
+    const handleSeeked = () => finish();
+
+    el.addEventListener("seeked", handleSeeked);
+
+    try {
+      el.currentTime = target;
+    } catch {
+      /* noop */
+    }
+
+    fallbackTimer = setTimeout(() => {
+      try {
+        if (seekOperationRef.current === operation && Math.abs(el.currentTime - target) > 0.5) {
+          el.currentTime = target;
+        }
+      } catch {
+        /* noop */
+      }
+      finish();
+    }, 180);
   };
-  const restart = () => {
+
+  const seek = (delta: number) => {
     const el = audioRef.current;
     if (!el) return;
-    try {
-      // On mobile, setting currentTime while the element is playing is often
-      // ignored (especially on detached <audio> + blob/streamed sources).
-      // Pause first so the decoder accepts the seek, then leave it paused —
-      // the user must tap Play to start over.
-      el.pause();
-      el.currentTime = 0;
-      setPosition(0);
-      setPlaying(false);
-      lastSavedPosRef.current = 0;
-      // Safety: some browsers don't fire `seeked` immediately on detached
-      // elements. Re-assert currentTime on the next tick.
-      setTimeout(() => {
-        try {
-          if (audioRef.current && audioRef.current.currentTime > 0.5) {
-            audioRef.current.currentTime = 0;
-            setPosition(0);
-          }
-        } catch { /* noop */ }
-      }, 50);
-    } catch { /* noop */ }
+    performSeek(el.currentTime + delta, !el.paused);
+  };
+
+  const restart = () => {
+    performSeek(0, false);
   };
 
   const progress = duration ? (position / duration) * 100 : 0;
