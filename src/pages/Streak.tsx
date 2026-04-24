@@ -376,30 +376,45 @@ const Streak = () => {
           Each square is one day. Brighter means more progress.
         </p>
 
-        {/* Month labels */}
-        <div
-          className="mt-4 grid gap-1 text-[10px] text-muted-foreground"
-          style={{ gridTemplateColumns: `repeat(${Math.ceil(heatmap.length / 7)}, minmax(0, 1fr))` }}
-        >
-          {Array.from({ length: Math.ceil(heatmap.length / 7) }).map((_, col) => {
-            const label = monthLabels.find((m) => m.col === col)?.label ?? "";
-            return (
-              <span key={col} className="truncate text-center">
-                {label}
-              </span>
-            );
-          })}
-        </div>
+        {(() => {
+          const cols = Math.ceil(heatmap.length / 7);
+          const cellPx = 16; // fixed size so squares are always big enough on real phones
+          const gridWidth = cols * (cellPx + 4); // cell + gap
+          return (
+            <div className="-mx-2 mt-4 overflow-x-auto px-2 pb-1">
+              <div style={{ width: gridWidth }}>
+                {/* Month labels */}
+                <div
+                  className="grid gap-1 text-[10px] text-muted-foreground"
+                  style={{ gridTemplateColumns: `repeat(${cols}, ${cellPx}px)` }}
+                >
+                  {Array.from({ length: cols }).map((_, col) => {
+                    const label = monthLabels.find((m) => m.col === col)?.label ?? "";
+                    return (
+                      <span key={col} className="truncate text-center">
+                        {label}
+                      </span>
+                    );
+                  })}
+                </div>
 
-        <div className="mt-1 grid grid-flow-col grid-rows-7 gap-1">
-          {heatmap.map((c, i) => (
-            <div
-              key={i}
-              title={heatmapTooltip(c)}
-              className={cn("aspect-square w-full !rounded-[2px]", heatmapColor(c))}
-            />
-          ))}
-        </div>
+                <div
+                  className="mt-1 grid grid-flow-col grid-rows-7 gap-1"
+                  style={{ gridAutoColumns: `${cellPx}px` }}
+                >
+                  {heatmap.map((c, i) => (
+                    <div
+                      key={i}
+                      title={heatmapTooltip(c)}
+                      style={{ width: cellPx, height: cellPx }}
+                      className={cn("!rounded-[2px]", heatmapColor(c))}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="mt-4 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
           <span className="mr-1">Less</span>
