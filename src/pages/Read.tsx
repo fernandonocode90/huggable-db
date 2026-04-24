@@ -353,7 +353,7 @@ const Read = () => {
       .then(({ data }) => {
         if (data) {
           const resumeData = {
-            translation: data.translation as Translation,
+            translation: "kjv" as Translation,
             book_key: data.book_key,
             chapter: data.chapter,
             verse: (data as { verse?: number }).verse ?? 1,
@@ -364,7 +364,6 @@ const Read = () => {
           // navigation, so it won't re-trigger a save.
           if (!userNavigatedRef.current) {
             if (BOOKS.some((b) => b.key === resumeData.book_key)) {
-              setTranslation(resumeData.translation);
               setBookKey(resumeData.book_key);
               setChapter(resumeData.chapter);
               if (resumeData.verse > 1) setPendingVerse(resumeData.verse);
