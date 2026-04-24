@@ -72,6 +72,37 @@ const Admin = () => {
     reflection_text: "",
   });
 
+  const [audioSearch, setAudioSearch] = useState("");
+  const [audioVisible, setAudioVisible] = useState(20);
+  const [devSearch, setDevSearch] = useState("");
+  const [devVisible, setDevVisible] = useState(20);
+
+  const filteredAudios = useMemo(() => {
+    const q = audioSearch.trim().toLowerCase();
+    if (!q) return audios;
+    return audios.filter(
+      (a) =>
+        String(a.day_number ?? "").includes(q) ||
+        a.title.toLowerCase().includes(q) ||
+        (a.subtitle ?? "").toLowerCase().includes(q),
+    );
+  }, [audios, audioSearch]);
+
+  const filteredDevotionals = useMemo(() => {
+    const q = devSearch.trim().toLowerCase();
+    if (!q) return devotionals;
+    return devotionals.filter(
+      (d) =>
+        String(d.day_number).includes(q) ||
+        (d.verse_reference ?? "").toLowerCase().includes(q) ||
+        (d.verse_text ?? "").toLowerCase().includes(q),
+    );
+  }, [devotionals, devSearch]);
+
+  // Reset pagination when search changes
+  useEffect(() => setAudioVisible(20), [audioSearch]);
+  useEffect(() => setDevVisible(20), [devSearch]);
+
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [user, loading, navigate]);
@@ -453,9 +484,20 @@ const Admin = () => {
       </form>
 
       <section className="mt-6 animate-fade-up">
-        <h2 className="font-display text-lg text-foreground mb-3">Registered audios</h2>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <h2 className="font-display text-lg text-foreground">Registered audios</h2>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {filteredAudios.length}/{audios.length}
+          </span>
+        </div>
+        <Input
+          placeholder="Search by day, title…"
+          value={audioSearch}
+          onChange={(e) => setAudioSearch(e.target.value)}
+          className="mb-3"
+        />
         <ul className="space-y-2">
-          {audios.map((a) => (
+          {filteredAudios.slice(0, audioVisible).map((a) => (
             <li
               key={a.id}
               className={`glass-card rounded-2xl p-4 flex items-center justify-between gap-3 ${
@@ -492,8 +534,22 @@ const Admin = () => {
               </button>
             </li>
           ))}
-          {audios.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No audios yet.</p>}
+          {filteredAudios.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              {audios.length === 0 ? "No audios yet." : "No matches."}
+            </p>
+          )}
         </ul>
+        {filteredAudios.length > audioVisible && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setAudioVisible((v) => v + 20)}
+            className="w-full mt-3"
+          >
+            Load more ({filteredAudios.length - audioVisible} remaining)
+          </Button>
+        )}
       </section>
 
       <section className="mt-10 animate-fade-up">
@@ -628,8 +684,20 @@ const Admin = () => {
           </Button>
         </form>
 
-        <ul className="mt-4 space-y-2">
-          {devotionals.map((d) => (
+        <div className="mt-6 flex items-center justify-between gap-3 mb-3">
+          <h3 className="font-display text-base text-foreground">Saved devotionals</h3>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {filteredDevotionals.length}/{devotionals.length}
+          </span>
+        </div>
+        <Input
+          placeholder="Search by day, reference…"
+          value={devSearch}
+          onChange={(e) => setDevSearch(e.target.value)}
+          className="mb-3"
+        />
+        <ul className="space-y-2">
+          {filteredDevotionals.slice(0, devVisible).map((d) => (
             <li
               key={d.id}
               className={`glass-card rounded-2xl p-4 flex items-start justify-between gap-3 ${
@@ -659,10 +727,22 @@ const Admin = () => {
               </button>
             </li>
           ))}
-          {devotionals.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-6">No devotionals yet.</p>
+          {filteredDevotionals.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              {devotionals.length === 0 ? "No devotionals yet." : "No matches."}
+            </p>
           )}
         </ul>
+        {filteredDevotionals.length > devVisible && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setDevVisible((v) => v + 20)}
+            className="w-full mt-3"
+          >
+            Load more ({filteredDevotionals.length - devVisible} remaining)
+          </Button>
+        )}
       </section>
     </AppShell>
   );
