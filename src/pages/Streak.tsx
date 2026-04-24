@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 type DayCell = {
   date: Date;
   dayNumber: number;
-  status: "none" | "partial" | "done";
+  status: "none" | "partial" | "done" | "before";
   pct: number;
 };
 
