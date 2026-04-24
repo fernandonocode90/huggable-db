@@ -218,7 +218,7 @@ const Audio = () => {
                 .from("audio_progress")
                 .upsert(
                   {
-                    user_id: user.id,
+                    user_id: userId,
                     audio_id: data.id,
                     day_number: data.day_number ?? requestedDay,
                     progress_pct: pct,
