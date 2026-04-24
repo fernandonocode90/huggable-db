@@ -48,7 +48,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       injectManifest: {
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+        globPatterns: ["**/*.{js,css,html,svg,ico,woff2}", "pwa-*.png", "favicon.png", "apple-touch-icon.png"],
+        // Don't precache the heavy bible files (3.9MB) — they load on-demand and cache via runtime SWR
+        globIgnores: ["**/bible/**", "**/*.tsv.gz", "**/*.json.gz"],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
     }),
   ].filter(Boolean),
