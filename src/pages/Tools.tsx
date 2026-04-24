@@ -1,4 +1,12 @@
-import { Calculator as CalculatorIcon, Home, Sparkles } from "lucide-react";
+import {
+  Calculator as CalculatorIcon,
+  Home,
+  Hourglass,
+  PieChart,
+  Scale,
+  Shield,
+  Sparkles,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
 
@@ -27,8 +35,34 @@ const tools: ToolCard[] = [
     desc: "Simulate financing with extra amortization.",
     to: "/tools/mortgage",
   },
-  { kind: "soon" },
-  { kind: "soon" },
+  {
+    kind: "active",
+    icon: PieChart,
+    title: "Budget 50/30/20",
+    desc: "Split your income with steward's wisdom.",
+    to: "/tools/budget",
+  },
+  {
+    kind: "active",
+    icon: Shield,
+    title: "Emergency Fund",
+    desc: "Build the fortress before the storm.",
+    to: "/tools/emergency-fund",
+  },
+  {
+    kind: "active",
+    icon: Scale,
+    title: "Net Worth",
+    desc: "The cold mirror of true wealth.",
+    to: "/tools/net-worth",
+  },
+  {
+    kind: "active",
+    icon: Hourglass,
+    title: "Rule of 72",
+    desc: "How fast your money doubles.",
+    to: "/tools/rule-of-72",
+  },
 ];
 
 const Tools = () => {
