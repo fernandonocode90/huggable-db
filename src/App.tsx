@@ -29,7 +29,7 @@ import AdminUsers from "./pages/admin/Users.tsx";
 import AdminAudios from "./pages/admin/Audios.tsx";
 import AdminDevotionals from "./pages/admin/Devotionals.tsx";
 import AdminBibleContent from "./pages/admin/BibleContent.tsx";
-import AdminCalculators from "./pages/admin/Calculators.tsx";
+
 import AdminReminders from "./pages/admin/Reminders.tsx";
 import AdminAuditLog from "./pages/admin/AuditLog.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
@@ -76,7 +76,7 @@ const App = () => (
                 <Route path="audios" element={<AdminAudios />} />
                 <Route path="devotionals" element={<AdminDevotionals />} />
                 <Route path="bible" element={<AdminBibleContent />} />
-                <Route path="calculators" element={<AdminCalculators />} />
+                
                 <Route path="reminders" element={<AdminReminders />} />
                 <Route path="audit" element={<AdminAuditLog />} />
               </Route>

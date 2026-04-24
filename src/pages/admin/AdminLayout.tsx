@@ -7,7 +7,6 @@ import {
   Headphones,
   BookOpen,
   Library,
-  Calculator,
   Bell,
   ScrollText,
   ArrowLeft,
@@ -21,7 +20,6 @@ const NAV = [
   { to: "/admin/audios", label: "Audios", icon: Headphones },
   { to: "/admin/devotionals", label: "Devotionals", icon: BookOpen },
   { to: "/admin/bible", label: "Bible Content", icon: Library },
-  { to: "/admin/calculators", label: "Calculators", icon: Calculator },
   { to: "/admin/reminders", label: "Reminders", icon: Bell },
   { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
 ];
