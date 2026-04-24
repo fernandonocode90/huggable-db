@@ -306,22 +306,22 @@ const Streak = () => {
         <p className="mt-1 text-xs text-muted-foreground">
           Bar height shows how far you got each day.
         </p>
-        <div className="mt-5 flex h-32 items-end justify-between gap-1.5">
+        <div className="mt-5 flex h-36 items-stretch justify-between gap-1.5">
           {bars.map((c, i) => (
             <div
               key={i}
-              className="flex flex-1 flex-col items-center gap-1.5"
+              className="flex h-full flex-1 flex-col items-center gap-1.5"
               title={`${dayKey(c.date)} — ${c.status === "done" ? "completed" : c.status === "partial" ? `${Math.round(c.pct)}%` : "no activity"}`}
             >
               <div className="flex h-full w-full items-end">
                 <div
                   className={`w-full rounded-t-md transition-all ${statusColor(c.status)}`}
                   style={{
-                    height: `${Math.max(6, c.status === "done" ? 100 : c.pct)}%`,
+                    height: `${Math.max(8, c.status === "done" ? 100 : c.pct)}%`,
                   }}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[10px] leading-none text-muted-foreground">
                 {dayLabel(c.date)}
               </span>
             </div>
