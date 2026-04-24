@@ -69,6 +69,22 @@ const Audio = () => {
   const lastSavedPosRef = useRef(0);
   const blobUrlRef = useRef<string | null>(null);
   const currentAudioRef = useRef<DailyAudio | null>(null);
+  const bufferingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showBufferingDebounced = () => {
+    if (bufferingTimerRef.current) return;
+    bufferingTimerRef.current = setTimeout(() => {
+      setBuffering(true);
+      bufferingTimerRef.current = null;
+    }, 450);
+  };
+  const clearBuffering = () => {
+    if (bufferingTimerRef.current) {
+      clearTimeout(bufferingTimerRef.current);
+      bufferingTimerRef.current = null;
+    }
+    setBuffering(false);
+  };
 
   const requestedDay = Number(searchParams.get("day")) || currentDay;
 
