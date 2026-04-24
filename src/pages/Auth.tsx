@@ -99,7 +99,7 @@ const Auth = () => {
     setForgotBusy(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/`,
       });
       if (error) throw error;
       toast.success("Check your email for the reset link.");
