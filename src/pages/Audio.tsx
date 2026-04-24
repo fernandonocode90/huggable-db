@@ -282,7 +282,7 @@ const Audio = () => {
       cancelled = true;
       // Persist final position so resume works even if the user just navigated away.
       const el = audioRef.current;
-      if (el && user && audio) {
+      if (el && userId && audio) {
         const pct = el.duration > 0
           ? Math.min(100, (el.currentTime / el.duration) * 100)
           : 0;
@@ -290,7 +290,7 @@ const Audio = () => {
           .from("audio_progress")
           .upsert(
             {
-              user_id: user.id,
+              user_id: userId,
               audio_id: audio.id,
               day_number: audio.day_number ?? requestedDay,
               progress_pct: pct,
