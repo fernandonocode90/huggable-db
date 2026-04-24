@@ -141,9 +141,22 @@ const Audio = () => {
             resumeAt = prog.last_position_seconds;
           }
         }
-        const { data: signed, error: signedErr } = await supabase.functions.invoke("r2-get-audio-url", {
-          body: { key: data.r2_key },
-        });
+        let signed: { url?: string } | null = null;
+        let signedErr: unknown = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const res = await supabase.functions.invoke("r2-get-audio-url", {
+            body: { key: data.r2_key },
+          });
+          if (cancelled) return;
+          if (!res.error && res.data?.url) {
+            signed = res.data as { url: string };
+            signedErr = null;
+            break;
+          }
+          signedErr = res.error;
+          // exponential backoff: 400ms, 800ms, 1600ms
+          await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
+        }
         if (cancelled) return;
         if (signedErr || !signed?.url) {
           toast({
