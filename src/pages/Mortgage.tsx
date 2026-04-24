@@ -57,7 +57,7 @@ const DEFAULTS = {
   extraFrequency: "monthly" as ExtraFrequency,
   extraStartMonth: 1,
   extraEffect: "reduce-term" as ExtraEffect,
-  currency: "BRL",
+  currency: "USD",
 };
 
 const num = (v: string) => {
@@ -264,15 +264,12 @@ const Mortgage = () => {
 
           <div className="space-y-1.5">
             <Label>Currency</Label>
-            <Select value={currency} onValueChange={setCurrency}>
+            <Select value={currency} onValueChange={setCurrency} disabled>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BRL">BRL — Brazilian Real</SelectItem>
                 <SelectItem value="USD">USD — US Dollar</SelectItem>
-                <SelectItem value="EUR">EUR — Euro</SelectItem>
-                <SelectItem value="GBP">GBP — British Pound</SelectItem>
               </SelectContent>
             </Select>
           </div>
