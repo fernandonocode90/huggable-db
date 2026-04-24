@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2 } from "lucide-react";
+import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -44,6 +45,7 @@ const PAGE = 25;
 
 const Users = () => {
   const { user: me } = useAuth();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -229,6 +231,14 @@ const Users = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Ver detalhes"
+                        onClick={() => navigate(`/admin/users/${u.id}`)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
