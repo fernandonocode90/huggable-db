@@ -9,6 +9,7 @@ import {
   Loader2,
   Pause,
   Play,
+  RefreshCw,
   RotateCcw,
   RotateCw,
   Trash2,
