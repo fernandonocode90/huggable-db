@@ -384,9 +384,8 @@ const Read = () => {
     if (!qBook && !qChapter && !qVerse && !qTranslation) return;
     // A deep link IS an intentional navigation — allow it to be persisted.
     userNavigatedRef.current = true;
-    if (qTranslation && TRANSLATIONS.some((t) => t.value === qTranslation)) {
-      setTranslation(qTranslation);
-    }
+    // Translation locked to kjv for now; ignore qTranslation
+    void qTranslation;
     if (qBook && BOOKS.some((b) => b.key === qBook)) {
       setBookKey(qBook);
     }
