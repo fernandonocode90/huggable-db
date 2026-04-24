@@ -259,8 +259,44 @@ const Streak = () => {
   const statusColor = (s: DayCell["status"]) => {
     if (s === "done") return "bg-primary";
     if (s === "partial") return "bg-primary/40";
+    if (s === "before") return "bg-muted/10";
     return "bg-muted/30";
   };
+
+  // Gradient heatmap: 5 levels based on pct (0/25/50/75/100).
+  const heatmapColor = (c: DayCell) => {
+    if (c.status === "before") return "bg-muted/10 ring-1 ring-inset ring-muted/20";
+    if (c.status === "done" || c.pct >= 90) return "bg-primary";
+    if (c.pct >= 65) return "bg-primary/75";
+    if (c.pct >= 35) return "bg-primary/55";
+    if (c.pct > 0) return "bg-primary/30";
+    return "bg-muted/30";
+  };
+
+  const heatmapTooltip = (c: DayCell) => {
+    if (c.status === "before") return `${dayKey(c.date)} — before you started`;
+    if (c.status === "done") return `${dayKey(c.date)} — completed`;
+    if (c.status === "partial") return `${dayKey(c.date)} — ${Math.round(c.pct)}%`;
+    return `${dayKey(c.date)} — no activity`;
+  };
+
+  // Month labels for the heatmap (1 label per month change, aligned to columns of 7).
+  const monthLabels = useMemo(() => {
+    const labels: Array<{ col: number; label: string }> = [];
+    let lastMonth = -1;
+    heatmap.forEach((c, idx) => {
+      const col = Math.floor(idx / 7);
+      const m = c.date.getMonth();
+      if (m !== lastMonth) {
+        labels.push({
+          col,
+          label: c.date.toLocaleDateString("en-US", { month: "short" }),
+        });
+        lastMonth = m;
+      }
+    });
+    return labels;
+  }, [heatmap]);
 
   return (
     <AppShell>
