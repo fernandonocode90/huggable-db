@@ -260,8 +260,41 @@ const Read = () => {
   const [pendingResumeVerse, setPendingResumeVerse] = useState<number | null>(null);
   const [sharingVerse, setSharingVerse] = useState(false);
 
-  // In-memory cache: key = `${translation}:${bookKey}:${chapter}` -> verses
+  // Two-tier cache:
+  //  - In-memory Map (instant, lives during session)
+  //  - localStorage (survives reloads; capped to ~50 chapters via LRU)
   const chapterCacheRef = useState(() => new Map<string, Verse[]>())[0];
+
+  const lsKey = (t: Translation, bk: string, ch: number) => `bv:${t}:${bk}:${ch}`;
+  const LS_INDEX_KEY = "bv:index";
+  const LS_MAX = 50;
+
+  const readLS = (t: Translation, bk: string, ch: number): Verse[] | null => {
+    try {
+      const raw = localStorage.getItem(lsKey(t, bk, ch));
+      if (!raw) return null;
+      return JSON.parse(raw) as Verse[];
+    } catch {
+      return null;
+    }
+  };
+
+  const writeLS = (t: Translation, bk: string, ch: number, vs: Verse[]) => {
+    try {
+      const k = lsKey(t, bk, ch);
+      localStorage.setItem(k, JSON.stringify(vs));
+      const idxRaw = localStorage.getItem(LS_INDEX_KEY);
+      const idx: string[] = idxRaw ? JSON.parse(idxRaw) : [];
+      const next = [k, ...idx.filter((x) => x !== k)].slice(0, LS_MAX);
+      localStorage.setItem(LS_INDEX_KEY, JSON.stringify(next));
+      // Evict any keys beyond the cap
+      idx.slice(LS_MAX - 1).forEach((old) => {
+        if (!next.includes(old)) localStorage.removeItem(old);
+      });
+    } catch {
+      // quota exceeded — ignore silently
+    }
+  };
 
   const fetchChapterVerses = async (
     t: Translation,
@@ -271,6 +304,11 @@ const Read = () => {
     const cacheKey = `${t}:${bk}:${ch}`;
     const cached = chapterCacheRef.get(cacheKey);
     if (cached) return cached;
+    const ls = readLS(t, bk, ch);
+    if (ls && ls.length > 0) {
+      chapterCacheRef.set(cacheKey, ls);
+      return ls;
+    }
     try {
       const { data, error } = await supabase
         .from("bible_verses")
@@ -282,10 +320,20 @@ const Read = () => {
       if (error) throw error;
       const vs: Verse[] = (data ?? []).map((r) => ({ verse: r.verse, text: r.text }));
       chapterCacheRef.set(cacheKey, vs);
+      if (vs.length > 0) writeLS(t, bk, ch, vs);
       return vs;
     } catch {
       return [];
     }
+  };
+
+  // Prefetch a chapter silently in the background (next chapter)
+  const prefetchChapter = (t: Translation, bk: string, ch: number) => {
+    const cacheKey = `${t}:${bk}:${ch}`;
+    if (chapterCacheRef.has(cacheKey)) return;
+    if (readLS(t, bk, ch)) return;
+    // fire and forget
+    void fetchChapterVerses(t, bk, ch);
   };
 
   // Load reading history once on mount. If the user has prior history AND
