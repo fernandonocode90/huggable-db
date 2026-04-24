@@ -150,6 +150,10 @@ const Auth = () => {
               By creating an account you agree to our{" "}
               <a href="/terms" className="text-primary hover:underline">
                 Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy-policy" className="text-primary hover:underline">
+                Privacy Policy
               </a>
               .
             </p>
