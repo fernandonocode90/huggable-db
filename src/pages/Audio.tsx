@@ -233,14 +233,9 @@ const Audio = () => {
             }
           });
           el.addEventListener("timeupdate", () => {
-            const pendingSeekTarget = pendingSeekTargetRef.current;
-            if (pendingSeekTarget != null) {
-              // Mobile browsers can emit a stale timeupdate from the old playhead
-              // right after a seek/restart. Ignore it until the decoder lands
-              // near the requested target.
-              if (Math.abs(el.currentTime - pendingSeekTarget) > 0.75) return;
-              pendingSeekTargetRef.current = null;
-            }
+            // Always reflect the real playhead — mobile browsers can otherwise
+            // appear "stuck" if we gate updates on a pending seek target.
+            pendingSeekTargetRef.current = null;
             setPosition(el.currentTime);
             // If timeupdate keeps firing while not paused, audio is actually
             // playing — force-clear any stuck buffering state (mobile browsers
