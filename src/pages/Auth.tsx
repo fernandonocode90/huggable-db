@@ -17,6 +17,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
 
   useEffect(() => {
     if (!loading && user) navigate("/", { replace: true });
@@ -50,17 +51,26 @@ const Auth = () => {
   };
 
   const google = async () => {
+    setOauthBusy("google");
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/`,
     });
-    if (result.error) toast.error(result.error.message);
+    if (result.error) {
+      toast.error(result.error.message);
+      setOauthBusy(null);
+    }
+    // On success the browser navigates away — leave spinner on.
   };
 
   const apple = async () => {
+    setOauthBusy("apple");
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: `${window.location.origin}/`,
     });
-    if (result.error) toast.error(result.error.message);
+    if (result.error) {
+      toast.error(result.error.message);
+      setOauthBusy(null);
+    }
   };
 
   return (
@@ -104,20 +114,27 @@ const Auth = () => {
             </div>
           </div>
 
-          <Button type="button" variant="outline" onClick={google} className="w-full">
-            Continue with Google
+          <Button type="button" variant="outline" onClick={google} disabled={!!oauthBusy} className="w-full">
+            {oauthBusy === "google" ? "Connecting…" : "Continue with Google"}
           </Button>
 
           <Button
             type="button"
             variant="outline"
             onClick={apple}
+            disabled={!!oauthBusy}
             className="w-full bg-foreground text-background hover:bg-foreground/90 hover:text-background border-foreground"
           >
-            <svg viewBox="0 0 384 512" className="h-4 w-4" fill="currentColor" aria-hidden>
-              <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zM256.3 91.6c30.4-36.1 27.6-69 26.7-80.6-26.8 1.6-57.8 18.3-75.5 38.8-19.5 22-30.9 49.2-28.4 79.9 28.9 2.2 55.3-12.6 77.2-38.1z"/>
-            </svg>
-            Continue with Apple
+            {oauthBusy === "apple" ? (
+              "Connecting…"
+            ) : (
+              <>
+                <svg viewBox="0 0 384 512" className="h-4 w-4" fill="currentColor" aria-hidden>
+                  <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zM256.3 91.6c30.4-36.1 27.6-69 26.7-80.6-26.8 1.6-57.8 18.3-75.5 38.8-19.5 22-30.9 49.2-28.4 79.9 28.9 2.2 55.3-12.6 77.2-38.1z"/>
+                </svg>
+                Continue with Apple
+              </>
+            )}
           </Button>
 
           <button
