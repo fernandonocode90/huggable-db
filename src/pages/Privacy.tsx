@@ -35,6 +35,7 @@ const Privacy = () => {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [prePromptOpen, setPrePromptOpen] = useState(false);
 
   const { state: reminders, setTime: setReminderTime, save: saveReminders } = useReminders();
 
@@ -196,6 +197,17 @@ const Privacy = () => {
             checked={reminders.enabled}
             disabled={reminders.loading || reminders.saving}
             onCheckedChange={async (checked) => {
+              // Apple/Google best practice: explain *why* before triggering the
+              // native permission prompt. Only show the pre-prompt the first
+              // time the user enables reminders and permission isn't decided.
+              if (
+                checked &&
+                !reminders.isPreview &&
+                reminders.permission === "default"
+              ) {
+                setPrePromptOpen(true);
+                return;
+              }
               const res = await saveReminders({
                 enabled: checked,
                 time: reminders.time,
