@@ -38,26 +38,31 @@ const writeCache = (data: CachedProgress) => {
 
 export const useProgress = (): ProgressState => {
   const { user } = useAuth();
-  const cached = readCache();
-  const hasUsableCache = !!cached && (!user || cached.userId === user.id);
-  const [loading, setLoading] = useState(!hasUsableCache);
-  const [currentDay, setCurrentDay] = useState(hasUsableCache ? cached!.currentDay : 1);
-  const [streak, setStreak] = useState(hasUsableCache ? cached!.streak : 0);
-  const [completedCount, setCompletedCount] = useState(hasUsableCache ? cached!.completedCount : 0);
-  const [totalDays, setTotalDays] = useState(hasUsableCache ? cached!.totalDays : 365);
+  const userId = user?.id ?? null;
+
+  // Read cache only on initial mount to avoid recomputing on every render.
+  const [initial] = useState(() => {
+    const c = readCache();
+    return c && (!userId || c.userId === userId) ? c : null;
+  });
+  const [loading, setLoading] = useState(!initial);
+  const [currentDay, setCurrentDay] = useState(initial?.currentDay ?? 1);
+  const [streak, setStreak] = useState(initial?.streak ?? 0);
+  const [completedCount, setCompletedCount] = useState(initial?.completedCount ?? 0);
+  const [totalDays, setTotalDays] = useState(initial?.totalDays ?? 365);
 
   const refresh = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setLoading(false);
       return;
     }
     const [{ data: day }, { data: streakVal }, { count: completed }] = await Promise.all([
-      supabase.rpc("get_current_day", { _user_id: user.id }),
-      supabase.rpc("get_user_streak", { _user_id: user.id }),
+      supabase.rpc("get_current_day", { _user_id: userId }),
+      supabase.rpc("get_user_streak", { _user_id: userId }),
       supabase
         .from("audio_progress")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("completed", true),
     ]);
 
@@ -70,15 +75,17 @@ export const useProgress = (): ProgressState => {
     setCompletedCount(nextCompleted);
     setTotalDays(nextTotal);
     writeCache({
-      userId: user.id,
+      userId,
       currentDay: nextDay,
       streak: nextStreak,
       completedCount: nextCompleted,
       totalDays: nextTotal,
     });
     setLoading(false);
-  }, [user]);
+  }, [userId]);
 
+  // Depend on userId (stable string) instead of user object to avoid refetches
+  // every time onAuthStateChange emits a new User reference.
   useEffect(() => {
     refresh();
   }, [refresh]);
