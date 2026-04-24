@@ -249,7 +249,7 @@ const Index = () => {
 
       <section className="mt-6 animate-fade-up" style={{ animationDelay: "180ms" }}>
         <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Quick actions</p>
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
           {[
             {
               title: "Read",
@@ -290,7 +290,7 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="grid gap-2 md:grid-cols-2">
           {(progressLoading || contentLoading
             ? Array.from({ length: 4 }, (_, index) => ({ skeleton: true, key: index }))
             : weekPreview.map((item) => ({ ...item, skeleton: false })))
