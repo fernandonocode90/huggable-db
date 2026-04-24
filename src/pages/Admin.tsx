@@ -396,6 +396,59 @@ const Admin = () => {
         </p>
       </header>
 
+      <section className="glass-card mt-6 rounded-3xl p-5 animate-fade-up">
+        <div className="flex items-center gap-2 mb-3">
+          <Globe className="h-5 w-5 text-primary" />
+          <h2 className="font-display text-lg text-foreground">Bible library</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Import the full Bible into Supabase for instant offline-friendly reading. ~31k verses per translation.
+        </p>
+        <div className="space-y-2">
+          {[
+            { key: "kjv", label: "KJV — English", flag: "🇬🇧" },
+            { key: "acf", label: "Almeida — Português", flag: "🇧🇷" },
+            { key: "rvr1909", label: "RVR1909 — Español", flag: "🇪🇸" },
+          ].map((t) => {
+            const count = bibleStats[t.key] ?? 0;
+            const loaded = count > 30000;
+            const busyNow = importBusy === t.key;
+            return (
+              <div
+                key={t.key}
+                className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/30 p-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xl">{t.flag}</span>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">{t.label}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {count.toLocaleString()} verses {loaded && "✓"}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant={loaded ? "outline" : "default"}
+                  disabled={busyNow}
+                  onClick={() => importTranslation(t.key, loaded)}
+                >
+                  {busyNow ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : loaded ? (
+                    <>Reimport</>
+                  ) : (
+                    <>
+                      <Download className="h-3 w-3 mr-1" /> Import
+                    </>
+                  )}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <form onSubmit={submit} className="glass-card mt-6 rounded-3xl p-5 space-y-3 animate-fade-up">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg text-foreground">
