@@ -48,8 +48,10 @@ const Index = () => {
 
   const onboardingComplete = user ? isOnboardingComplete(user.id) : true;
 
+  const userId = user?.id ?? null;
+
   useEffect(() => {
-    if (!user || progressLoading || !onboardingComplete) return;
+    if (!userId || progressLoading || !onboardingComplete) return;
 
     let cancelled = false;
 
@@ -80,7 +82,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [user, progressLoading, onboardingComplete, currentDay, totalDays]);
+  }, [userId, progressLoading, onboardingComplete, currentDay, totalDays]);
 
   const greetingName = useMemo(() => {
     const raw = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "traveler";
