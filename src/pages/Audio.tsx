@@ -179,7 +179,7 @@ const Audio = () => {
 
             // Persist position every ~5s for resume next session.
             if (
-              user &&
+              userId &&
               data &&
               el.currentTime - lastSavedPosRef.current >= 5
             ) {
@@ -191,7 +191,7 @@ const Audio = () => {
                 .from("audio_progress")
                 .upsert(
                   {
-                    user_id: user.id,
+                    user_id: userId,
                     audio_id: data.id,
                     day_number: data.day_number ?? requestedDay,
                     progress_pct: livePct,
