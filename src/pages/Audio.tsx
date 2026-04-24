@@ -517,7 +517,9 @@ const Audio = () => {
     };
 
     el.preload = "auto";
+    // Apply current playback rate without listing it as a dep (avoids full reload on speed change)
     el.playbackRate = playbackRate;
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
 
     el.addEventListener("loadedmetadata", onLoadedMetadata);
     el.addEventListener("timeupdate", onTimeUpdate);
