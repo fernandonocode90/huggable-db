@@ -206,7 +206,7 @@ const Audio = () => {
             // mark complete at >=90%
             if (
               !completedRef.current &&
-              user &&
+              userId &&
               data &&
               el.duration > 0 &&
               el.currentTime / el.duration >= 0.9
