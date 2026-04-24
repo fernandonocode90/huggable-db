@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { NightBackground } from "@/components/swc/NightBackground";
-import crownImg from "@/assets/golden-crown.png";
+import crownImg from "@/assets/golden-crown.webp";
 
 const Welcome = () => {
   const navigate = useNavigate();
