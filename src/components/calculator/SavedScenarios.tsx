@@ -107,7 +107,13 @@ export const SavedScenarios = ({ current, formatCurrency, onLoad }: Props) => {
       toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
       return;
     }
-    setScenarios((s) => s.filter((x) => x.id !== id));
+    setScenarios((s) => {
+      const next = s.filter((x) => x.id !== id);
+      try {
+        if (user) sessionStorage.setItem(CACHE_KEY, JSON.stringify({ userId: user.id, data: next }));
+      } catch { /* ignore */ }
+      return next;
+    });
   };
 
   return (
