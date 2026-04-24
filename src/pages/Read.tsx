@@ -34,6 +34,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -948,6 +949,9 @@ const Read = () => {
             <SheetTitle className="text-left">
               Verse {activeVerse?.verse} — {bookDisplayName(book, translation)} {chapter}
             </SheetTitle>
+            <SheetDescription className="sr-only">
+              Actions for the selected verse: copy, share, highlight or add a note.
+            </SheetDescription>
           </SheetHeader>
           {activeVerse && (
             <>
@@ -1117,6 +1121,9 @@ const Read = () => {
         <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="text-left">Search</SheetTitle>
+            <SheetDescription className="sr-only">
+              Search any word or phrase in the Bible.
+            </SheetDescription>
           </SheetHeader>
           <Input
             autoFocus
@@ -1270,6 +1277,9 @@ const Read = () => {
         <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="text-left">My Library</SheetTitle>
+            <SheetDescription className="sr-only">
+              Your bookmarks, highlights and notes.
+            </SheetDescription>
           </SheetHeader>
           {(() => {
             const scoped =
