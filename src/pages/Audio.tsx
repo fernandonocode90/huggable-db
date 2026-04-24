@@ -695,6 +695,20 @@ const Audio = () => {
           </span>
         </div>
 
+        {/* Restart from beginning */}
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={restart}
+            disabled={!signedUrl}
+            className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+            aria-label="Restart audio from beginning"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Restart
+          </button>
+        </div>
+
         {/* Speed + Offline controls (#10, #13) */}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
