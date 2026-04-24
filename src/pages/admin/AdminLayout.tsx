@@ -11,6 +11,7 @@ import {
   ScrollText,
   ArrowLeft,
   Crown,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const NAV = [
   { to: "/admin/devotionals", label: "Devotionals", icon: BookOpen },
   { to: "/admin/bible", label: "Bible Content", icon: Library },
   { to: "/admin/reminders", label: "Reminders", icon: Bell },
+  { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
   { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
 ];
 
