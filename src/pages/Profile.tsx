@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Camera, Flame, LogOut, ShieldCheck, Shield, Loader2, Sun, Moon, History } from "lucide-react";
+import { ChevronRight, Camera, Flame, LogOut, ShieldCheck, Shield, Loader2, Sun, Moon, History, Mail, FileText } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
@@ -185,6 +185,17 @@ const Profile = () => {
           { icon: Flame, label: "Streak & Activity", note: "Track your practice", onClick: () => navigate("/profile/streak") },
           { icon: History, label: "Audio History", note: "Browse past audios by month", onClick: () => navigate("/audio/history") },
           { icon: ShieldCheck, label: "Privacy & Account", note: "Name, password, account", onClick: () => navigate("/profile/privacy") },
+          { icon: FileText, label: "Privacy Policy", note: "How we handle your data", onClick: () => navigate("/privacy-policy") },
+          { icon: FileText, label: "Terms of Service", note: "The rules of this sanctuary", onClick: () => navigate("/terms") },
+          {
+            icon: Mail,
+            label: "Contact Support",
+            note: "Questions, feedback or bug reports",
+            onClick: () => {
+              window.location.href =
+                "mailto:support@solomonwealthcode.com?subject=Solomon%20Wealth%20Code%20Support";
+            },
+          },
         ] as Array<{icon: typeof Shield; label: string; note: string; onClick?: () => void}>).map((item) => (
           <li key={item.label}>
             <button onClick={item.onClick} className="glass-card flex w-full items-center gap-4 rounded-2xl px-5 py-4 text-left transition-transform hover:scale-[1.02]">
