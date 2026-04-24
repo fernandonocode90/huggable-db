@@ -141,9 +141,22 @@ const Audio = () => {
             resumeAt = prog.last_position_seconds;
           }
         }
-        const { data: signed, error: signedErr } = await supabase.functions.invoke("r2-get-audio-url", {
-          body: { key: data.r2_key },
-        });
+        let signed: { url?: string } | null = null;
+        let signedErr: unknown = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const res = await supabase.functions.invoke("r2-get-audio-url", {
+            body: { key: data.r2_key },
+          });
+          if (cancelled) return;
+          if (!res.error && res.data?.url) {
+            signed = res.data as { url: string };
+            signedErr = null;
+            break;
+          }
+          signedErr = res.error;
+          // exponential backoff: 400ms, 800ms, 1600ms
+          await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
+        }
         if (cancelled) return;
         if (signedErr || !signed?.url) {
           toast({
@@ -273,15 +286,108 @@ const Audio = () => {
           el.addEventListener("stalled", () => setBuffering(true));
           el.addEventListener("canplay", () => setBuffering(false));
           el.addEventListener("playing", () => setBuffering(false));
+
+          // Retry logic: when network errors / stalls happen (mobile background,
+          // expired signed URL, flaky connection), try cached blob first, then
+          // fetch a fresh signed URL with exponential backoff.
+          let retryAttempts = 0;
+          const MAX_RETRIES = 3;
+          let retryTimer: ReturnType<typeof setTimeout> | null = null;
+          let stalledTimer: ReturnType<typeof setTimeout> | null = null;
+
+          const attemptRecovery = async (reason: string) => {
+            if (cancelled) return;
+            if (retryAttempts >= MAX_RETRIES) {
+              setBuffering(false);
+              setPlaying(false);
+              toast({
+                title: "Playback error",
+                description: "We couldn't play this audio. Check your connection and try again.",
+                variant: "destructive",
+              });
+              return;
+            }
+            retryAttempts += 1;
+            const wasPlaying = !el.paused;
+            const resumePos = el.currentTime || 0;
+            console.warn(`[audio] recovery attempt ${retryAttempts} (${reason})`);
+
+            // 1) Try cached blob if not already on it
+            try {
+              if (!blobUrlRef.current) {
+                const cachedUrl = await getCachedAudioUrl(url);
+                if (cachedUrl && !cancelled) {
+                  blobUrlRef.current = cachedUrl;
+                  el.src = cachedUrl;
+                  el.load();
+                  if (resumePos > 0) {
+                    el.addEventListener(
+                      "loadedmetadata",
+                      () => { try { el.currentTime = resumePos; } catch { /* noop */ } },
+                      { once: true },
+                    );
+                  }
+                  if (wasPlaying) await el.play().catch(() => { /* noop */ });
+                  return;
+                }
+              }
+            } catch { /* noop */ }
+
+            // 2) Refresh signed URL with backoff
+            const backoff = 500 * Math.pow(2, retryAttempts - 1);
+            retryTimer = setTimeout(async () => {
+              if (cancelled || !data) return;
+              try {
+                const { data: fresh, error: freshErr } = await supabase.functions.invoke(
+                  "r2-get-audio-url",
+                  { body: { key: data.r2_key } },
+                );
+                if (cancelled) return;
+                if (freshErr || !fresh?.url) {
+                  void attemptRecovery("refresh-failed");
+                  return;
+                }
+                setSignedUrl(fresh.url as string);
+                el.src = fresh.url as string;
+                el.load();
+                if (resumePos > 0) {
+                  el.addEventListener(
+                    "loadedmetadata",
+                    () => { try { el.currentTime = resumePos; } catch { /* noop */ } },
+                    { once: true },
+                  );
+                }
+                if (wasPlaying) await el.play().catch(() => { /* noop */ });
+              } catch {
+                void attemptRecovery("network");
+              }
+            }, backoff);
+          };
+
+          // Reset retry counter on successful playback
+          el.addEventListener("playing", () => { retryAttempts = 0; });
+
           el.addEventListener("error", () => {
-            setBuffering(false);
-            setPlaying(false);
-            toast({
-              title: "Playback error",
-              description: "We couldn't play this audio. Please retry.",
-              variant: "destructive",
-            });
+            void attemptRecovery("error-event");
           });
+
+          // If stalled for >8s, attempt recovery (browsers don't always fire `error`).
+          el.addEventListener("stalled", () => {
+            if (stalledTimer) clearTimeout(stalledTimer);
+            stalledTimer = setTimeout(() => {
+              if (!el.paused && el.readyState < 3) void attemptRecovery("stalled-timeout");
+            }, 8000);
+          });
+          el.addEventListener("playing", () => {
+            if (stalledTimer) { clearTimeout(stalledTimer); stalledTimer = null; }
+          });
+
+          // Cleanup on unmount: clear pending timers
+          (el as HTMLAudioElement & { __swcCleanup?: () => void }).__swcCleanup = () => {
+            if (retryTimer) clearTimeout(retryTimer);
+            if (stalledTimer) clearTimeout(stalledTimer);
+          };
+
           audioRef.current = el;
 
           // Media Session API (lockscreen / hardware controls) — #12
@@ -342,6 +448,8 @@ const Audio = () => {
           )
           .then(() => {});
       }
+      const cleanup = (audioRef.current as (HTMLAudioElement & { __swcCleanup?: () => void }) | null)?.__swcCleanup;
+      if (cleanup) cleanup();
       audioRef.current?.pause();
       audioRef.current = null;
       if (blobUrlRef.current) {
@@ -359,6 +467,22 @@ const Audio = () => {
       }
     };
   }, [requestedDay, userId]);
+
+  // When the tab/app becomes visible again (mobile background, screen lock),
+  // the underlying media stream may be dropped. Nudge the player so our
+  // recovery flow kicks in if it got stuck.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      const el = audioRef.current;
+      if (!el) return;
+      if (!el.paused && el.readyState < 3) {
+        try { el.load(); el.play().catch(() => { /* noop */ }); } catch { /* noop */ }
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
 
   const toggle = () => {
     const el = audioRef.current;
