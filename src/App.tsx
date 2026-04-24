@@ -12,6 +12,10 @@ import Read from "./pages/Read.tsx";
 import Tools from "./pages/Tools.tsx";
 import Calculator from "./pages/Calculator.tsx";
 import Mortgage from "./pages/Mortgage.tsx";
+import Budget from "./pages/Budget.tsx";
+import EmergencyFund from "./pages/EmergencyFund.tsx";
+import NetWorth from "./pages/NetWorth.tsx";
+import RuleOf72 from "./pages/RuleOf72.tsx";
 import Profile from "./pages/Profile.tsx";
 import Streak from "./pages/Streak.tsx";
 import Privacy from "./pages/Privacy.tsx";
@@ -43,6 +47,10 @@ const App = () => (
               <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
               <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
               <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
+              <Route path="/tools/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
+              <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
+              <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
+              <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
               <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
