@@ -1,44 +1,9 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import Welcome from "./pages/Welcome.tsx";
-import Audio from "./pages/Audio.tsx";
-import AudioHistory from "./pages/AudioHistory.tsx";
-import Read from "./pages/Read.tsx";
-import Tools from "./pages/Tools.tsx";
-import Calculator from "./pages/Calculator.tsx";
-import Mortgage from "./pages/Mortgage.tsx";
-import Budget from "./pages/Budget.tsx";
-import EmergencyFund from "./pages/EmergencyFund.tsx";
-import NetWorth from "./pages/NetWorth.tsx";
-import RuleOf72 from "./pages/RuleOf72.tsx";
-import Profile from "./pages/Profile.tsx";
-import Streak from "./pages/Streak.tsx";
-import Privacy from "./pages/Privacy.tsx";
-import Terms from "./pages/Terms.tsx";
-import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
-import Auth from "./pages/Auth.tsx";
-import Admin from "./pages/Admin.tsx";
-import AdminLayout from "./pages/admin/AdminLayout.tsx";
-import AdminOverview from "./pages/admin/Overview.tsx";
-import AdminUsers from "./pages/admin/Users.tsx";
-import AdminAudios from "./pages/admin/Audios.tsx";
-import AdminDevotionals from "./pages/admin/Devotionals.tsx";
-import AdminBibleContent from "./pages/admin/BibleContent.tsx";
-
-import AdminReminders from "./pages/admin/Reminders.tsx";
-import AdminAuditLog from "./pages/admin/AuditLog.tsx";
-import AdminSettings from "./pages/admin/Settings.tsx";
-import AdminUserDetail from "./pages/admin/UserDetail.tsx";
-import AdminEngagement from "./pages/admin/Engagement.tsx";
-import AdminHealth from "./pages/admin/Health.tsx";
-import AdminClientErrors from "./pages/admin/ClientErrors.tsx";
-import AdminModeration from "./pages/admin/Moderation.tsx";
-import Onboarding from "./pages/Onboarding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -47,7 +12,62 @@ import { AppSettingsProvider } from "./hooks/useAppSettings";
 import { MaintenanceGate } from "./components/MaintenanceGate";
 import { GlobalBanner } from "./components/GlobalBanner";
 
-const queryClient = new QueryClient();
+// Eager: small + on critical path
+import Index from "./pages/Index.tsx";
+import Auth from "./pages/Auth.tsx";
+import NotFound from "./pages/NotFound.tsx";
+
+// Lazy: heavy pages and rarely-visited screens
+const Welcome = lazy(() => import("./pages/Welcome.tsx"));
+const Audio = lazy(() => import("./pages/Audio.tsx"));
+const AudioHistory = lazy(() => import("./pages/AudioHistory.tsx"));
+const Read = lazy(() => import("./pages/Read.tsx"));
+const Tools = lazy(() => import("./pages/Tools.tsx"));
+const Calculator = lazy(() => import("./pages/Calculator.tsx"));
+const Mortgage = lazy(() => import("./pages/Mortgage.tsx"));
+const Budget = lazy(() => import("./pages/Budget.tsx"));
+const EmergencyFund = lazy(() => import("./pages/EmergencyFund.tsx"));
+const NetWorth = lazy(() => import("./pages/NetWorth.tsx"));
+const RuleOf72 = lazy(() => import("./pages/RuleOf72.tsx"));
+const Profile = lazy(() => import("./pages/Profile.tsx"));
+const Streak = lazy(() => import("./pages/Streak.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Terms = lazy(() => import("./pages/Terms.tsx"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
+const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
+
+// Admin: lazy as a single area — nunca carrega para usuários comuns
+const Admin = lazy(() => import("./pages/Admin.tsx"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.tsx"));
+const AdminOverview = lazy(() => import("./pages/admin/Overview.tsx"));
+const AdminUsers = lazy(() => import("./pages/admin/Users.tsx"));
+const AdminAudios = lazy(() => import("./pages/admin/Audios.tsx"));
+const AdminDevotionals = lazy(() => import("./pages/admin/Devotionals.tsx"));
+const AdminBibleContent = lazy(() => import("./pages/admin/BibleContent.tsx"));
+const AdminReminders = lazy(() => import("./pages/admin/Reminders.tsx"));
+const AdminAuditLog = lazy(() => import("./pages/admin/AuditLog.tsx"));
+const AdminSettings = lazy(() => import("./pages/admin/Settings.tsx"));
+const AdminUserDetail = lazy(() => import("./pages/admin/UserDetail.tsx"));
+const AdminEngagement = lazy(() => import("./pages/admin/Engagement.tsx"));
+const AdminHealth = lazy(() => import("./pages/admin/Health.tsx"));
+const AdminClientErrors = lazy(() => import("./pages/admin/ClientErrors.tsx"));
+const AdminModeration = lazy(() => import("./pages/admin/Moderation.tsx"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+const RouteFallback = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -61,44 +81,46 @@ const App = () => (
             <AppSettingsProvider>
               <GlobalBanner />
               <MaintenanceGate>
-                <Routes>
-                  <Route path="/welcome" element={<Welcome />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
-                  <Route path="/audio/history" element={<ProtectedRoute><AudioHistory /></ProtectedRoute>} />
-                  <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
-                  <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
-                  <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
-                  <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
-                  <Route path="/tools/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
-                  <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
-                  <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
-                  <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                  <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
-                  <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
-                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                    <Route index element={<Admin />} />
-                    <Route path="overview" element={<AdminOverview />} />
-                    <Route path="users" element={<AdminUsers />} />
-                    <Route path="users/:userId" element={<AdminUserDetail />} />
-                    <Route path="audios" element={<AdminAudios />} />
-                    <Route path="devotionals" element={<AdminDevotionals />} />
-                    <Route path="bible" element={<AdminBibleContent />} />
-                    <Route path="reminders" element={<AdminReminders />} />
-                    <Route path="engagement" element={<AdminEngagement />} />
-                    <Route path="settings" element={<AdminSettings />} />
-                    <Route path="health" element={<AdminHealth />} />
-                    <Route path="errors" element={<AdminClientErrors />} />
-                    <Route path="moderation" element={<AdminModeration />} />
-                    <Route path="audit" element={<AdminAuditLog />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    <Route path="/welcome" element={<Welcome />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                    <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
+                    <Route path="/audio/history" element={<ProtectedRoute><AudioHistory /></ProtectedRoute>} />
+                    <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
+                    <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
+                    <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
+                    <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
+                    <Route path="/tools/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
+                    <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
+                    <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
+                    <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
+                    <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                      <Route index element={<Admin />} />
+                      <Route path="overview" element={<AdminOverview />} />
+                      <Route path="users" element={<AdminUsers />} />
+                      <Route path="users/:userId" element={<AdminUserDetail />} />
+                      <Route path="audios" element={<AdminAudios />} />
+                      <Route path="devotionals" element={<AdminDevotionals />} />
+                      <Route path="bible" element={<AdminBibleContent />} />
+                      <Route path="reminders" element={<AdminReminders />} />
+                      <Route path="engagement" element={<AdminEngagement />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                      <Route path="health" element={<AdminHealth />} />
+                      <Route path="errors" element={<AdminClientErrors />} />
+                      <Route path="moderation" element={<AdminModeration />} />
+                      <Route path="audit" element={<AdminAuditLog />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </MaintenanceGate>
             </AppSettingsProvider>
           </AuthProvider>
