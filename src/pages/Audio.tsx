@@ -66,6 +66,7 @@ const Audio = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedPosRef = useRef(0);
   const blobUrlRef = useRef<string | null>(null);
+  const currentAudioRef = useRef<DailyAudio | null>(null);
 
   const requestedDay = Number(searchParams.get("day")) || currentDay;
 
