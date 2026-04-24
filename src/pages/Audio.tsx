@@ -532,6 +532,17 @@ const Audio = () => {
     if (!audioRef.current) return;
     audioRef.current.currentTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + delta));
   };
+  const restart = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    try {
+      el.currentTime = 0;
+      setPosition(0);
+      lastSavedPosRef.current = 0;
+      const p = el.play();
+      if (p && typeof p.catch === "function") p.catch(() => { /* noop */ });
+    } catch { /* noop */ }
+  };
 
   const progress = duration ? (position / duration) * 100 : 0;
   const remaining = Math.max(0, duration - position);
