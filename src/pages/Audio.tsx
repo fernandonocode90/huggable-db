@@ -561,11 +561,25 @@ const Audio = () => {
     const el = audioRef.current;
     if (!el) return;
     try {
+      // On mobile, setting currentTime while the element is playing is often
+      // ignored (especially on detached <audio> + blob/streamed sources).
+      // Pause first so the decoder accepts the seek, then leave it paused —
+      // the user must tap Play to start over.
+      el.pause();
       el.currentTime = 0;
       setPosition(0);
+      setPlaying(false);
       lastSavedPosRef.current = 0;
-      const p = el.play();
-      if (p && typeof p.catch === "function") p.catch(() => { /* noop */ });
+      // Safety: some browsers don't fire `seeked` immediately on detached
+      // elements. Re-assert currentTime on the next tick.
+      setTimeout(() => {
+        try {
+          if (audioRef.current && audioRef.current.currentTime > 0.5) {
+            audioRef.current.currentTime = 0;
+            setPosition(0);
+          }
+        } catch { /* noop */ }
+      }, 50);
     } catch { /* noop */ }
   };
 
