@@ -1,5 +1,5 @@
-import nightImg from "@/assets/night-mountains.jpg";
-import dayImg from "@/assets/day-mountains.jpg";
+import nightImg from "@/assets/night-mountains.webp";
+import dayImg from "@/assets/day-mountains.webp";
 import { StarField } from "./StarField";
 import { useTheme } from "@/hooks/useTheme";
 
