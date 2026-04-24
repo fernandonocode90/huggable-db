@@ -53,16 +53,25 @@ const Streak = () => {
     Array<{ day_number: number; title: string | null; completed_at: string }>
   >([]);
 
-  // Load profile + progress
+  // Load profile + progress (one combined query for audio_progress instead of two)
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("best_streak, reminder_enabled, reminder_time, start_date")
-        .eq("id", user.id)
-        .maybeSingle();
+      const [profileRes, detailedRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("best_streak, reminder_enabled, reminder_time, start_date")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("audio_progress")
+          .select(
+            "day_number, progress_pct, completed, completed_at, last_position_seconds, daily_audios(title, duration_seconds)",
+          )
+          .eq("user_id", user.id),
+      ]);
 
+      const profile = profileRes.data;
       if (profile) {
         setBestStreak(profile.best_streak ?? 0);
         setReminderEnabled(!!profile.reminder_enabled);
@@ -72,13 +81,10 @@ const Streak = () => {
           setStartDate(new Date(`${profile.start_date}T00:00:00`));
       }
 
-      const { data: rows } = await supabase
-        .from("audio_progress")
-        .select("day_number, progress_pct, completed")
-        .eq("user_id", user.id);
+      const detailed = detailedRes.data ?? [];
 
       const map: Record<number, { pct: number; completed: boolean }> = {};
-      (rows ?? []).forEach((r) => {
+      detailed.forEach((r) => {
         map[r.day_number] = {
           pct: Number(r.progress_pct ?? 0),
           completed: !!r.completed,
@@ -86,29 +92,19 @@ const Streak = () => {
       });
       setProgressMap(map);
 
-      // Listening stats: pull the full progress + audio durations and titles
-      // so we can show total minutes listened and a recent-history list.
-      const { data: detailed } = await supabase
-        .from("audio_progress")
-        .select(
-          "day_number, progress_pct, completed, completed_at, last_position_seconds, daily_audios(title, duration_seconds)",
-        )
-        .eq("user_id", user.id);
-
       let seconds = 0;
       const completedRows: Array<{
         day_number: number;
         title: string | null;
         completed_at: string;
       }> = [];
-      (detailed ?? []).forEach((r) => {
+      detailed.forEach((r) => {
         const audio = (r as unknown as {
           daily_audios: { title: string | null; duration_seconds: number | null } | null;
         }).daily_audios;
         const dur = audio?.duration_seconds ?? 0;
         const pct = Number(r.progress_pct ?? 0);
         const live = Number(r.last_position_seconds ?? 0);
-        // Prefer last_position when smaller than full duration, else use pct of duration.
         const listened = dur > 0
           ? Math.min(dur, Math.max(live, Math.round((pct / 100) * dur)))
           : live;

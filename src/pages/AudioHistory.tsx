@@ -78,6 +78,7 @@ const AudioHistory = () => {
   }, [monthOffset, startDate]);
 
   // Fetch audios + progress for the visible month range only.
+  // Cache results per (user, month) in sessionStorage so revisits are instant.
   useEffect(() => {
     if (!user || !startDate) return;
     if (monthInfo.toDay < 1) {
@@ -86,29 +87,45 @@ const AudioHistory = () => {
       setLoading(false);
       return;
     }
+    const cacheKey = `swc:audioHistory:${user.id}:${monthInfo.fromDay}-${monthInfo.toDay}`;
+    try {
+      const raw = sessionStorage.getItem(cacheKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { audios: AudioRow[]; progress: Record<number, ProgressRow> };
+        setAudios(parsed.audios);
+        setProgress(parsed.progress);
+        setLoading(false);
+        return;
+      }
+    } catch { /* ignore */ }
     setLoading(true);
     (async () => {
-      const { data: aData } = await supabase
-        .from("daily_audios")
-        .select("id, day_number, title, subtitle")
-        .gte("day_number", monthInfo.fromDay)
-        .lte("day_number", monthInfo.toDay)
-        .order("day_number", { ascending: true });
+      const [aRes, pRes] = await Promise.all([
+        supabase
+          .from("daily_audios")
+          .select("id, day_number, title, subtitle")
+          .gte("day_number", monthInfo.fromDay)
+          .lte("day_number", monthInfo.toDay)
+          .order("day_number", { ascending: true }),
+        supabase
+          .from("audio_progress")
+          .select("day_number, completed, progress_pct")
+          .eq("user_id", user.id)
+          .gte("day_number", monthInfo.fromDay)
+          .lte("day_number", monthInfo.toDay),
+      ]);
 
-      const { data: pData } = await supabase
-        .from("audio_progress")
-        .select("day_number, completed, progress_pct")
-        .eq("user_id", user.id)
-        .gte("day_number", monthInfo.fromDay)
-        .lte("day_number", monthInfo.toDay);
-
-      setAudios((aData ?? []) as AudioRow[]);
+      const audiosList = (aRes.data ?? []) as AudioRow[];
       const map: Record<number, ProgressRow> = {};
-      (pData ?? []).forEach((p) => {
+      (pRes.data ?? []).forEach((p) => {
         map[p.day_number] = p as ProgressRow;
       });
+      setAudios(audiosList);
       setProgress(map);
       setLoading(false);
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify({ audios: audiosList, progress: map }));
+      } catch { /* ignore */ }
     })();
   }, [user, startDate, monthInfo.fromDay, monthInfo.toDay]);
 
