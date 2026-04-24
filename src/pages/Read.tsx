@@ -353,7 +353,7 @@ const Read = () => {
       .then(({ data }) => {
         if (data) {
           const resumeData = {
-            translation: data.translation as Translation,
+            translation: "kjv" as Translation,
             book_key: data.book_key,
             chapter: data.chapter,
             verse: (data as { verse?: number }).verse ?? 1,
@@ -364,7 +364,6 @@ const Read = () => {
           // navigation, so it won't re-trigger a save.
           if (!userNavigatedRef.current) {
             if (BOOKS.some((b) => b.key === resumeData.book_key)) {
-              setTranslation(resumeData.translation);
               setBookKey(resumeData.book_key);
               setChapter(resumeData.chapter);
               if (resumeData.verse > 1) setPendingVerse(resumeData.verse);
@@ -385,9 +384,8 @@ const Read = () => {
     if (!qBook && !qChapter && !qVerse && !qTranslation) return;
     // A deep link IS an intentional navigation — allow it to be persisted.
     userNavigatedRef.current = true;
-    if (qTranslation && TRANSLATIONS.some((t) => t.value === qTranslation)) {
-      setTranslation(qTranslation);
-    }
+    // Translation locked to kjv for now; ignore qTranslation
+    void qTranslation;
     if (qBook && BOOKS.some((b) => b.key === qBook)) {
       setBookKey(qBook);
     }
@@ -762,62 +760,7 @@ const Read = () => {
         </div>
       </header>
 
-      {resumeOption &&
-        (resumeOption.book_key !== bookKey ||
-          resumeOption.chapter !== chapter ||
-          resumeOption.translation !== translation ||
-          (resumeOption.verse ?? 1) > 1) && (() => {
-          const resumeBook = BOOKS.find((b) => b.key === resumeOption.book_key);
-          const resumeName = resumeBook
-            ? bookDisplayName(resumeBook, resumeOption.translation)
-            : resumeOption.book_key;
-          return (
-            <button
-              onClick={() => {
-                userNavigatedRef.current = true;
-                setTranslation(resumeOption.translation);
-                setBookKey(resumeOption.book_key);
-                setChapter(resumeOption.chapter);
-                setPendingVerse(resumeOption.verse ?? 1);
-              }}
-              className="glass-card mt-4 flex w-full items-center gap-3 rounded-2xl p-3 text-left animate-fade-up hover:bg-accent/40 transition-colors"
-            >
-              <History className="h-4 w-4 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Continue reading
-                </p>
-                <p className="text-sm text-foreground truncate">
-                  {resumeName} {resumeOption.chapter}
-                  {(resumeOption.verse ?? 1) > 1 ? `:${resumeOption.verse}` : ""}
-                </p>
-              </div>
-            </button>
-          );
-        })()}
-
       <div className="mt-5 flex gap-2 animate-fade-up">
-        <Select
-          value={translation}
-          onValueChange={(v) => {
-            userNavigatedRef.current = true;
-            setTranslation(v as Translation);
-          }}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TRANSLATIONS.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="mt-2 flex gap-2 animate-fade-up">
         <Select
           value={bookKey}
           onValueChange={(v) => {
