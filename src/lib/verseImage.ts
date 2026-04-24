@@ -1,8 +1,11 @@
 /**
  * Generate a polished shareable PNG of a Bible verse.
  *
- * 1080x1350 — Instagram portrait. Sanctuary palette (deep navy + warm gold).
- * Tuned for legibility on small screens and social feeds.
+ * 1080x1350 — Instagram portrait. Two themes:
+ *   - "night": deep navy gradient + warm gold (sanctuary at night)
+ *   - "day":   soft cream/parchment + ink + muted gold (sanctuary at dawn)
+ *
+ * Both palettes are tuned for legibility on small screens and social feeds.
  */
 
 const W = 1080;
@@ -10,6 +13,64 @@ const H = 1350;
 
 const TOP_SAFE_Y = 260;
 const BOTTOM_SAFE_Y = 1060;
+
+export type VerseImageTheme = "night" | "day";
+
+interface Palette {
+  bgTop: string;
+  bgMid: string;
+  bgBottom: string;
+  glow: string; // rgba
+  glowFade: string; // rgba(...,0)
+  rule: string; // rgba
+  ruleSoft: string;
+  header: string;
+  verse: string;
+  verseShadow: string; // rgba
+  refTop: string; // gold gradient top
+  refBottom: string; // gold gradient bottom
+  translation: string;
+  footer: string;
+}
+
+const PALETTES: Record<VerseImageTheme, Palette> = {
+  night: {
+    bgTop: "#0b1329",
+    bgMid: "#142042",
+    bgBottom: "#1a2a55",
+    glow: "rgba(232, 184, 96, 0.20)",
+    glowFade: "rgba(232, 184, 96, 0)",
+    rule: "rgba(232, 184, 96, 0.70)",
+    ruleSoft: "rgba(232, 184, 96, 0.55)",
+    header: "rgba(244, 215, 122, 0.95)",
+    verse: "#f6ead0",
+    verseShadow: "rgba(0, 0, 0, 0.35)",
+    refTop: "#f7dc8a",
+    refBottom: "#caa04a",
+    translation: "rgba(245, 232, 200, 0.78)",
+    footer: "rgba(245, 232, 200, 0.72)",
+  },
+  day: {
+    // Warm parchment with a subtle vertical wash
+    bgTop: "#fbf3e2",
+    bgMid: "#f6ead0",
+    bgBottom: "#efdfba",
+    glow: "rgba(196, 138, 50, 0.14)",
+    glowFade: "rgba(196, 138, 50, 0)",
+    rule: "rgba(154, 110, 38, 0.70)",
+    ruleSoft: "rgba(154, 110, 38, 0.55)",
+    // Header: deep amber for tracked caps — readable on cream
+    header: "rgba(124, 86, 22, 0.95)",
+    // Verse: rich ink, not pure black, for warmth
+    verse: "#1f1a14",
+    verseShadow: "rgba(255, 240, 210, 0.55)", // soft light glow behind glyphs
+    // Reference: deep amber → bronze gradient
+    refTop: "#a87421",
+    refBottom: "#6b4612",
+    translation: "rgba(80, 56, 22, 0.78)",
+    footer: "rgba(80, 56, 22, 0.72)",
+  },
+};
 
 /** Word-wrap to a max pixel width using the current ctx font. */
 const wrap = (
@@ -63,26 +124,31 @@ export interface VerseImageOptions {
   reference: string;
   text: string;
   translation?: string;
+  /** Defaults to "night" to match historical behavior. */
+  theme?: VerseImageTheme;
 }
 
 export const generateVerseImage = async (
   opts: VerseImageOptions,
 ): Promise<Blob> => {
+  const theme: VerseImageTheme = opts.theme ?? "night";
+  const p = PALETTES[theme];
+
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not supported");
 
-  // Background — deep night gradient
+  // Background — vertical gradient
   const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#0b1329");
-  bg.addColorStop(0.55, "#142042");
-  bg.addColorStop(1, "#1a2a55");
+  bg.addColorStop(0, p.bgTop);
+  bg.addColorStop(0.55, p.bgMid);
+  bg.addColorStop(1, p.bgBottom);
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Soft warm radial glow centered on the verse
+  // Soft radial glow centered slightly above middle
   const glow = ctx.createRadialGradient(
     W / 2,
     H / 2 - 40,
@@ -91,20 +157,20 @@ export const generateVerseImage = async (
     H / 2 - 40,
     W * 0.7,
   );
-  glow.addColorStop(0, "rgba(232, 184, 96, 0.20)");
-  glow.addColorStop(1, "rgba(232, 184, 96, 0)");
+  glow.addColorStop(0, p.glow);
+  glow.addColorStop(1, p.glowFade);
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Top header — gold rule + tracked app label
+  // Header — tracked app label + rule
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
 
-  ctx.fillStyle = "rgba(244, 215, 122, 0.95)";
+  ctx.fillStyle = p.header;
   ctx.font = "700 20px 'Inter', system-ui, sans-serif";
   drawTrackedText(ctx, "SOLOMON WEALTH CODE", W / 2, 165, 6);
 
-  ctx.strokeStyle = "rgba(232, 184, 96, 0.7)";
+  ctx.strokeStyle = p.rule;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(W / 2 - 40, 195);
@@ -130,19 +196,16 @@ export const generateVerseImage = async (
     blockHeight = lines.length * lineHeight;
   }
 
-  // Center the verse + ref block together within the safe region
   const totalContentHeight = blockHeight + REF_BLOCK_HEIGHT;
-  const safeTop = TOP_SAFE_Y;
-  const safeBottom = BOTTOM_SAFE_Y;
-  const safeMid = (safeTop + safeBottom) / 2;
+  const safeMid = (TOP_SAFE_Y + BOTTOM_SAFE_Y) / 2;
   const blockTop = safeMid - totalContentHeight / 2;
   const startY = blockTop + lineHeight * 0.82;
 
-  // Subtle text shadow for legibility on the gradient
-  ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetY = 2;
-  ctx.fillStyle = "#f6ead0";
+  // Subtle shadow for legibility — dark on night, soft light on day
+  ctx.shadowColor = p.verseShadow;
+  ctx.shadowBlur = theme === "night" ? 12 : 6;
+  ctx.shadowOffsetY = theme === "night" ? 2 : 0;
+  ctx.fillStyle = p.verse;
   for (let i = 0; i < lines.length; i++) {
     ctx.fillText(lines[i], W / 2, startY + i * lineHeight);
   }
@@ -155,33 +218,27 @@ export const generateVerseImage = async (
   const refY = verseEnd + 78;
 
   ctx.font = "700 38px 'Playfair Display', Georgia, serif";
-  const goldGrad = ctx.createLinearGradient(0, refY - 32, 0, refY + 8);
-  goldGrad.addColorStop(0, "#f7dc8a");
-  goldGrad.addColorStop(1, "#caa04a");
-  ctx.fillStyle = goldGrad;
+  const refGrad = ctx.createLinearGradient(0, refY - 32, 0, refY + 8);
+  refGrad.addColorStop(0, p.refTop);
+  refGrad.addColorStop(1, p.refBottom);
+  ctx.fillStyle = refGrad;
   ctx.fillText(opts.reference, W / 2, refY);
 
   if (opts.translation) {
-    ctx.fillStyle = "rgba(245, 232, 200, 0.78)";
+    ctx.fillStyle = p.translation;
     ctx.font = "600 16px 'Inter', system-ui, sans-serif";
-    drawTrackedText(
-      ctx,
-      opts.translation.toUpperCase(),
-      W / 2,
-      refY + 36,
-      4,
-    );
+    drawTrackedText(ctx, opts.translation.toUpperCase(), W / 2, refY + 36, 4);
   }
 
-  // Footer — rule + URL
-  ctx.strokeStyle = "rgba(232, 184, 96, 0.55)";
+  // Footer rule + URL
+  ctx.strokeStyle = p.ruleSoft;
   ctx.lineWidth = 1.25;
   ctx.beginPath();
   ctx.moveTo(W / 2 - 36, H - 130);
   ctx.lineTo(W / 2 + 36, H - 130);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(245, 232, 200, 0.72)";
+  ctx.fillStyle = p.footer;
   ctx.font = "600 19px 'Inter', system-ui, sans-serif";
   drawTrackedText(ctx, "solomonwealthcode.app", W / 2, H - 92, 1.5);
 
