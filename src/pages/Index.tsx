@@ -32,6 +32,26 @@ type WeekPreviewItem = {
   subtitle: string;
 };
 
+const HOME_CACHE_KEY = "swc:home";
+
+type HomeCache = {
+  userId: string;
+  day: number;
+  devotional: Devotional | null;
+  weekPreview: WeekPreviewItem[];
+};
+
+const readHomeCache = (userId: string | null, day: number): HomeCache | null => {
+  if (!userId) return null;
+  try {
+    const raw = sessionStorage.getItem(HOME_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as HomeCache;
+    if (parsed.userId !== userId || parsed.day !== day) return null;
+    return parsed;
+  } catch { return null; }
+};
+
 const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -42,13 +62,13 @@ const Index = () => {
     completedCount,
     totalDays,
   } = useProgress();
-  const [contentLoading, setContentLoading] = useState(true);
-  const [devotional, setDevotional] = useState<Devotional | null>(null);
-  const [weekPreview, setWeekPreview] = useState<WeekPreviewItem[]>([]);
+  const userId = user?.id ?? null;
+  const [cached] = useState(() => readHomeCache(userId, currentDay));
+  const [contentLoading, setContentLoading] = useState(!cached);
+  const [devotional, setDevotional] = useState<Devotional | null>(cached?.devotional ?? null);
+  const [weekPreview, setWeekPreview] = useState<WeekPreviewItem[]>(cached?.weekPreview ?? []);
 
   const onboardingComplete = user ? isOnboardingComplete(user.id) : true;
-
-  const userId = user?.id ?? null;
 
   useEffect(() => {
     if (!userId || progressLoading || !onboardingComplete) return;
@@ -56,8 +76,6 @@ const Index = () => {
     let cancelled = false;
 
     (async () => {
-      setContentLoading(true);
-
       const [devotionalResult, previewResult] = await Promise.all([
         supabase
           .from("daily_devotionals")
@@ -74,9 +92,17 @@ const Index = () => {
 
       if (cancelled) return;
 
-      setDevotional((devotionalResult.data as Devotional | null) ?? null);
-      setWeekPreview((previewResult.data as WeekPreviewItem[] | null) ?? []);
+      const dev = (devotionalResult.data as Devotional | null) ?? null;
+      const preview = (previewResult.data as WeekPreviewItem[] | null) ?? [];
+      setDevotional(dev);
+      setWeekPreview(preview);
       setContentLoading(false);
+      try {
+        sessionStorage.setItem(
+          HOME_CACHE_KEY,
+          JSON.stringify({ userId, day: currentDay, devotional: dev, weekPreview: preview } satisfies HomeCache),
+        );
+      } catch { /* ignore */ }
     })();
 
     return () => {
