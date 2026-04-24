@@ -317,7 +317,7 @@ const Audio = () => {
         }
       }
     };
-  }, [requestedDay, user]);
+  }, [requestedDay, userId]);
 
   const toggle = () => {
     if (!audioRef.current) return;
