@@ -109,7 +109,7 @@ const Admin = () => {
       );
 
       const missing = counts
-        .filter(({ count }) => count < 30000)
+        .filter(({ count }) => count < 23000)
         .map(({ translation }) => translation);
 
       for (const translation of missing) {
