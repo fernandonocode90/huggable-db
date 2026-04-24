@@ -32,11 +32,16 @@ import AdminBibleContent from "./pages/admin/BibleContent.tsx";
 
 import AdminReminders from "./pages/admin/Reminders.tsx";
 import AdminAuditLog from "./pages/admin/AuditLog.tsx";
+import AdminSettings from "./pages/admin/Settings.tsx";
+import AdminUserDetail from "./pages/admin/UserDetail.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { OnlineStatusWatcher } from "./hooks/useOnlineStatus";
+import { AppSettingsProvider } from "./hooks/useAppSettings";
+import { MaintenanceGate } from "./components/MaintenanceGate";
+import { GlobalBanner } from "./components/GlobalBanner";
 
 const queryClient = new QueryClient();
 
@@ -49,39 +54,45 @@ const App = () => (
         <OnlineStatusWatcher />
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
-              <Route path="/welcome" element={<Welcome />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
-              <Route path="/audio/history" element={<ProtectedRoute><AudioHistory /></ProtectedRoute>} />
-              <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
-              <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
-              <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
-              <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
-              <Route path="/tools/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
-              <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
-              <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
-              <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
-              <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                <Route index element={<Admin />} />
-                <Route path="overview" element={<AdminOverview />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="audios" element={<AdminAudios />} />
-                <Route path="devotionals" element={<AdminDevotionals />} />
-                <Route path="bible" element={<AdminBibleContent />} />
-                
-                <Route path="reminders" element={<AdminReminders />} />
-                <Route path="audit" element={<AdminAuditLog />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AppSettingsProvider>
+              <GlobalBanner />
+              <MaintenanceGate>
+                <Routes>
+                  <Route path="/welcome" element={<Welcome />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
+                  <Route path="/audio/history" element={<ProtectedRoute><AudioHistory /></ProtectedRoute>} />
+                  <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
+                  <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
+                  <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
+                  <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
+                  <Route path="/tools/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
+                  <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
+                  <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
+                  <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
+                  <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                    <Route index element={<Admin />} />
+                    <Route path="overview" element={<AdminOverview />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="users/:userId" element={<AdminUserDetail />} />
+                    <Route path="audios" element={<AdminAudios />} />
+                    <Route path="devotionals" element={<AdminDevotionals />} />
+                    <Route path="bible" element={<AdminBibleContent />} />
+                    <Route path="reminders" element={<AdminReminders />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="audit" element={<AdminAuditLog />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MaintenanceGate>
+            </AppSettingsProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
