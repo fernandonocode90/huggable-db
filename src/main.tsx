@@ -3,6 +3,9 @@ import App from "./App.tsx";
 import "./index.css";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 
+const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+const isRecoveryLink = hashParams.get("type") === "recovery" && !!hashParams.get("access_token");
+
 const pendingSpaRedirect = sessionStorage.getItem("spa-redirect");
 
 if (pendingSpaRedirect) {
@@ -21,6 +24,8 @@ if (pendingSpaRedirect) {
   } catch {
     // Ignore malformed redirect payloads.
   }
+} else if (isRecoveryLink && window.location.pathname === "/") {
+  window.history.replaceState({}, "", `/reset-password${window.location.hash}`);
 }
 
 createRoot(document.getElementById("root")!).render(
