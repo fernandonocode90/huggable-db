@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 type DayCell = {
   date: Date;
   dayNumber: number;
-  status: "none" | "partial" | "done";
+  status: "none" | "partial" | "done" | "before";
   pct: number;
 };
 
@@ -147,6 +147,7 @@ const Streak = () => {
       const date = new Date(today);
       date.setDate(today.getDate() - offset);
       let dayNumber = 0;
+      let beforeStart = false;
       if (startDate) {
         // Compare by calendar date (year/month/day) to avoid timezone drift.
         const start = new Date(
@@ -159,15 +160,18 @@ const Streak = () => {
           (cell.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
         dayNumber = diffDays + 1;
+        beforeStart = cell.getTime() < start.getTime();
       }
       const entry = progressMap[dayNumber];
       const pct = entry?.pct ?? 0;
       const completed = entry?.completed ?? false;
-      const status: DayCell["status"] = completed
-        ? "done"
-        : pct > 0
-          ? "partial"
-          : "none";
+      const status: DayCell["status"] = beforeStart
+        ? "before"
+        : completed
+          ? "done"
+          : pct > 0
+            ? "partial"
+            : "none";
       return { date, dayNumber, status, pct };
     };
 
@@ -255,8 +259,44 @@ const Streak = () => {
   const statusColor = (s: DayCell["status"]) => {
     if (s === "done") return "bg-primary";
     if (s === "partial") return "bg-primary/40";
+    if (s === "before") return "bg-muted/10";
     return "bg-muted/30";
   };
+
+  // Gradient heatmap: 5 levels based on pct (0/25/50/75/100).
+  const heatmapColor = (c: DayCell) => {
+    if (c.status === "before") return "bg-muted/10 ring-1 ring-inset ring-muted/20";
+    if (c.status === "done" || c.pct >= 90) return "bg-primary";
+    if (c.pct >= 65) return "bg-primary/75";
+    if (c.pct >= 35) return "bg-primary/55";
+    if (c.pct > 0) return "bg-primary/30";
+    return "bg-muted/30";
+  };
+
+  const heatmapTooltip = (c: DayCell) => {
+    if (c.status === "before") return `${dayKey(c.date)} — before you started`;
+    if (c.status === "done") return `${dayKey(c.date)} — completed`;
+    if (c.status === "partial") return `${dayKey(c.date)} — ${Math.round(c.pct)}%`;
+    return `${dayKey(c.date)} — no activity`;
+  };
+
+  // Month labels for the heatmap (1 label per month change, aligned to columns of 7).
+  const monthLabels = useMemo(() => {
+    const labels: Array<{ col: number; label: string }> = [];
+    let lastMonth = -1;
+    heatmap.forEach((c, idx) => {
+      const col = Math.floor(idx / 7);
+      const m = c.date.getMonth();
+      if (m !== lastMonth) {
+        labels.push({
+          col,
+          label: c.date.toLocaleDateString("en-US", { month: "short" }),
+        });
+        lastMonth = m;
+      }
+    });
+    return labels;
+  }, [heatmap]);
 
   return (
     <AppShell>
@@ -333,23 +373,42 @@ const Streak = () => {
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-lg text-foreground">Last 90 days</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Each square is a day. Brighter means more progress.
+          Each square is one day. Brighter means more progress.
         </p>
-        <div className="mt-4 grid grid-flow-col grid-rows-7 gap-1">
+
+        {/* Month labels */}
+        <div
+          className="mt-4 grid gap-1 text-[10px] text-muted-foreground"
+          style={{ gridTemplateColumns: `repeat(${Math.ceil(heatmap.length / 7)}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: Math.ceil(heatmap.length / 7) }).map((_, col) => {
+            const label = monthLabels.find((m) => m.col === col)?.label ?? "";
+            return (
+              <span key={col} className="truncate text-center">
+                {label}
+              </span>
+            );
+          })}
+        </div>
+
+        <div className="mt-1 grid grid-flow-col grid-rows-7 gap-1">
           {heatmap.map((c, i) => (
             <div
               key={i}
-              title={`${dayKey(c.date)} — ${c.status === "done" ? "completed" : c.status === "partial" ? `${Math.round(c.pct)}%` : "no activity"}`}
-              className={`aspect-square w-full rounded-sm ${statusColor(c.status)}`}
+              title={heatmapTooltip(c)}
+              className={cn("aspect-square w-full !rounded-[2px]", heatmapColor(c))}
             />
           ))}
         </div>
-        <div className="mt-4 flex items-center justify-end gap-2 text-[10px] text-muted-foreground">
-          <span>Less</span>
-          <span className="h-3 w-3 rounded-sm bg-muted/30" />
-          <span className="h-3 w-3 rounded-sm bg-primary/40" />
-          <span className="h-3 w-3 rounded-sm bg-primary" />
-          <span>More</span>
+
+        <div className="mt-4 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
+          <span className="mr-1">Less</span>
+          <span className="h-3 w-3 !rounded-[2px] bg-muted/30" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary/30" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary/55" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary/75" />
+          <span className="h-3 w-3 !rounded-[2px] bg-primary" />
+          <span className="ml-1">More</span>
         </div>
       </section>
 
