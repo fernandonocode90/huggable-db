@@ -411,13 +411,16 @@ const Read = () => {
     // causing a visible flash of the wrong content.
     if (!historyLoaded) return;
     setLoading(true);
+    if (pendingVerse == null) {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
     (async () => {
       const vs = await fetchChapterVerses(translation, bookKey, chapter);
       setVerses(vs);
       setReference(`${bookDisplayName(book, translation)} ${chapter}`);
       setLoading(false);
       if (pendingVerse == null) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: "auto" });
       }
       // Prefetch next chapter (or first chapter of next book) silently.
       setTimeout(() => {
