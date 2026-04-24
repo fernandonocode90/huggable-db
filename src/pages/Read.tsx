@@ -762,62 +762,7 @@ const Read = () => {
         </div>
       </header>
 
-      {resumeOption &&
-        (resumeOption.book_key !== bookKey ||
-          resumeOption.chapter !== chapter ||
-          resumeOption.translation !== translation ||
-          (resumeOption.verse ?? 1) > 1) && (() => {
-          const resumeBook = BOOKS.find((b) => b.key === resumeOption.book_key);
-          const resumeName = resumeBook
-            ? bookDisplayName(resumeBook, resumeOption.translation)
-            : resumeOption.book_key;
-          return (
-            <button
-              onClick={() => {
-                userNavigatedRef.current = true;
-                setTranslation(resumeOption.translation);
-                setBookKey(resumeOption.book_key);
-                setChapter(resumeOption.chapter);
-                setPendingVerse(resumeOption.verse ?? 1);
-              }}
-              className="glass-card mt-4 flex w-full items-center gap-3 rounded-2xl p-3 text-left animate-fade-up hover:bg-accent/40 transition-colors"
-            >
-              <History className="h-4 w-4 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Continue reading
-                </p>
-                <p className="text-sm text-foreground truncate">
-                  {resumeName} {resumeOption.chapter}
-                  {(resumeOption.verse ?? 1) > 1 ? `:${resumeOption.verse}` : ""}
-                </p>
-              </div>
-            </button>
-          );
-        })()}
-
       <div className="mt-5 flex gap-2 animate-fade-up">
-        <Select
-          value={translation}
-          onValueChange={(v) => {
-            userNavigatedRef.current = true;
-            setTranslation(v as Translation);
-          }}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TRANSLATIONS.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="mt-2 flex gap-2 animate-fade-up">
         <Select
           value={bookKey}
           onValueChange={(v) => {
