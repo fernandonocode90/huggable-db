@@ -10,7 +10,10 @@ const items = [
 
 export const BottomNav = () => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="mx-auto max-w-md">
         <div className="glass-card mx-3 mb-3 rounded-3xl px-2 py-3">
           <ul className="flex items-center justify-around">

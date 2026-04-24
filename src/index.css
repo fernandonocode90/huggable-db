@@ -139,9 +139,46 @@
     @apply border-border;
   }
 
+  /* Native-app feel: prevent text selection on UI chrome,
+     remove tap highlight, and disable iOS callout. */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation; /* removes 300ms click delay */
+  }
+
+  html, body {
+    /* Lock the elastic overscroll on mobile so the starfield stays fixed */
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    /* Respect iPhone notch / home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Disable text selection on interactive UI; allow it inside readable content */
+  button, a, [role="button"], nav, header, .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Re-enable selection where reading matters */
+  article, p, h1, h2, h3, h4, h5, h6, blockquote, .selectable, input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Active press feedback — soft, like a physical button */
+  button:active, a:active, [role="button"]:active {
+    transform: scale(0.97);
+    transition: transform 80ms ease-out;
   }
 
   h1, h2, h3, .font-display {
@@ -175,4 +212,10 @@
   .bg-night {
     background: var(--gradient-night);
   }
+
+  /* Safe-area helpers for use inside layouts */
+  .pt-safe-top { padding-top: env(safe-area-inset-top); }
+  .pb-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .mt-safe-top { margin-top: env(safe-area-inset-top); }
+  .mb-safe-bottom { margin-bottom: env(safe-area-inset-bottom); }
 }
