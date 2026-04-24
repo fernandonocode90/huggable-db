@@ -259,6 +259,39 @@ export type Database = {
         }
         Relationships: []
       }
+      client_errors: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          id: string
+          message: string
+          route: string | null
+          stack: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          route?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          route?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       daily_audios: {
         Row: {
           created_at: string
@@ -530,6 +563,10 @@ export type Database = {
         Args: { _reason: string; _user_id: string }
         Returns: undefined
       }
+      admin_clear_bookmark_note: {
+        Args: { _bookmark_id: string }
+        Returns: undefined
+      }
       admin_delete_user_note: { Args: { _note_id: string }; Returns: undefined }
       admin_get_audio_metrics: {
         Args: never
@@ -561,6 +598,7 @@ export type Database = {
           title: string
         }[]
       }
+      admin_get_health: { Args: never; Returns: Json }
       admin_get_overview_stats: { Args: never; Returns: Json }
       admin_get_reminder_stats: { Args: never; Returns: Json }
       admin_get_signups_by_day: {
@@ -582,8 +620,62 @@ export type Database = {
         Args: { _new_best_streak: number; _user_id: string }
         Returns: undefined
       }
+      admin_list_bookmark_notes: {
+        Args: { _limit?: number; _offset?: number; _search?: string }
+        Returns: {
+          book_name: string
+          chapter: number
+          created_at: string
+          display_name: string
+          id: string
+          note: string
+          total_count: number
+          translation: string
+          user_email: string
+          user_id: string
+          verse: number
+          verse_text: string
+        }[]
+      }
+      admin_list_client_errors: {
+        Args: { _limit?: number; _offset?: number }
+        Returns: {
+          app_version: string
+          created_at: string
+          id: string
+          message: string
+          route: string
+          stack: string
+          total_count: number
+          user_agent: string
+          user_email: string
+          user_id: string
+        }[]
+      }
       admin_list_users: {
         Args: { _limit?: number; _offset?: number; _search?: string }
+        Returns: {
+          best_streak: number
+          created_at: string
+          current_day: number
+          current_streak: number
+          display_name: string
+          email: string
+          id: string
+          is_admin: boolean
+          last_sign_in_at: string
+          total_completions: number
+          total_count: number
+        }[]
+      }
+      admin_list_users_segmented: {
+        Args: {
+          _limit?: number
+          _offset?: number
+          _search?: string
+          _segment?: string
+          _stuck_day?: number
+        }
         Returns: {
           best_streak: number
           created_at: string
