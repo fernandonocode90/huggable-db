@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Crown,
   Settings as SettingsIcon,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const NAV = [
   { to: "/admin/audios", label: "Audios", icon: Headphones },
   { to: "/admin/devotionals", label: "Devotionals", icon: BookOpen },
   { to: "/admin/bible", label: "Bible Content", icon: Library },
+  { to: "/admin/engagement", label: "Engagement", icon: Megaphone },
   { to: "/admin/reminders", label: "Reminders", icon: Bell },
   { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
   { to: "/admin/audit", label: "Audit Log", icon: ScrollText },
