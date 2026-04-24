@@ -148,8 +148,17 @@ const Streak = () => {
       date.setDate(today.getDate() - offset);
       let dayNumber = 0;
       if (startDate) {
-        const diffMs = date.getTime() - startDate.getTime();
-        dayNumber = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+        // Compare by calendar date (year/month/day) to avoid timezone drift.
+        const start = new Date(
+          startDate.getFullYear(),
+          startDate.getMonth(),
+          startDate.getDate(),
+        );
+        const cell = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diffDays = Math.round(
+          (cell.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        dayNumber = diffDays + 1;
       }
       const entry = progressMap[dayNumber];
       const pct = entry?.pct ?? 0;
