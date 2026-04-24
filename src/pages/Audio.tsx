@@ -69,7 +69,7 @@ const Audio = () => {
 
   const requestedDay = Number(searchParams.get("day")) || currentDay;
 
-  const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 1.75, 2];
+  const SPEED_OPTIONS = [1, 1.25, 1.5, 1.75];
 
   // Restore preferred speed
   useEffect(() => {
@@ -488,10 +488,10 @@ const Audio = () => {
         </div>
 
         {/* Speed + Offline controls (#10, #13) */}
-        <div className="mt-5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Gauge className="h-4 w-4 text-muted-foreground" strokeWidth={1.6} />
-            <div className="flex gap-1">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <Gauge className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.6} />
+            <div className="flex flex-wrap gap-1">
               {SPEED_OPTIONS.map((rate) => (
                 <button
                   key={rate}
