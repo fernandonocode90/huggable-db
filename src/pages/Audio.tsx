@@ -101,6 +101,7 @@ const Audio = () => {
       setCached(false);
       setDownloading(false);
       setDownloadPct(0);
+      setBuffering(false);
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
