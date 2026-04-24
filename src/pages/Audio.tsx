@@ -62,6 +62,7 @@ const Audio = () => {
   const [cached, setCached] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadPct, setDownloadPct] = useState(0);
+  const [buffering, setBuffering] = useState(false);
   const completedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedPosRef = useRef(0);
