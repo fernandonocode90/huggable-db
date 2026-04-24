@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 type DayCell = {
   date: Date;
   dayNumber: number;
-  status: "none" | "partial" | "done" | "before";
+  status: "none" | "partial" | "done";
   pct: number;
 };
 
@@ -138,8 +138,8 @@ const Streak = () => {
     }
   }, [streak, bestStreak, user]);
 
-  // Build last 14 days bars + last 90 days heatmap
-  const { bars, heatmap } = useMemo(() => {
+  // Build last 14 days bars
+  const bars = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -147,7 +147,6 @@ const Streak = () => {
       const date = new Date(today);
       date.setDate(today.getDate() - offset);
       let dayNumber = 0;
-      let beforeStart = false;
       if (startDate) {
         // Compare by calendar date (year/month/day) to avoid timezone drift.
         const start = new Date(
@@ -160,28 +159,21 @@ const Streak = () => {
           (cell.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
         dayNumber = diffDays + 1;
-        beforeStart = cell.getTime() < start.getTime();
       }
       const entry = progressMap[dayNumber];
       const pct = entry?.pct ?? 0;
       const completed = entry?.completed ?? false;
-      const status: DayCell["status"] = beforeStart
-        ? "before"
-        : completed
-          ? "done"
-          : pct > 0
-            ? "partial"
-            : "none";
+      const status: DayCell["status"] = completed
+        ? "done"
+        : pct > 0
+          ? "partial"
+          : "none";
       return { date, dayNumber, status, pct };
     };
 
-    const bars: DayCell[] = [];
-    for (let i = 13; i >= 0; i--) bars.push(buildCell(i));
-
-    const heatmap: DayCell[] = [];
-    for (let i = 89; i >= 0; i--) heatmap.push(buildCell(i));
-
-    return { bars, heatmap };
+    const result: DayCell[] = [];
+    for (let i = 13; i >= 0; i--) result.push(buildCell(i));
+    return result;
   }, [progressMap, startDate]);
 
   const saveReminder = async () => {
@@ -259,44 +251,8 @@ const Streak = () => {
   const statusColor = (s: DayCell["status"]) => {
     if (s === "done") return "bg-primary";
     if (s === "partial") return "bg-primary/40";
-    if (s === "before") return "bg-muted/10";
     return "bg-muted/30";
   };
-
-  // Gradient heatmap: 5 levels based on pct (0/25/50/75/100).
-  const heatmapColor = (c: DayCell) => {
-    if (c.status === "before") return "bg-muted/10 ring-1 ring-inset ring-muted/20";
-    if (c.status === "done" || c.pct >= 90) return "bg-primary";
-    if (c.pct >= 65) return "bg-primary/75";
-    if (c.pct >= 35) return "bg-primary/55";
-    if (c.pct > 0) return "bg-primary/30";
-    return "bg-muted/30";
-  };
-
-  const heatmapTooltip = (c: DayCell) => {
-    if (c.status === "before") return `${dayKey(c.date)} — before you started`;
-    if (c.status === "done") return `${dayKey(c.date)} — completed`;
-    if (c.status === "partial") return `${dayKey(c.date)} — ${Math.round(c.pct)}%`;
-    return `${dayKey(c.date)} — no activity`;
-  };
-
-  // Month labels for the heatmap (1 label per month change, aligned to columns of 7).
-  const monthLabels = useMemo(() => {
-    const labels: Array<{ col: number; label: string }> = [];
-    let lastMonth = -1;
-    heatmap.forEach((c, idx) => {
-      const col = Math.floor(idx / 7);
-      const m = c.date.getMonth();
-      if (m !== lastMonth) {
-        labels.push({
-          col,
-          label: c.date.toLocaleDateString("en-US", { month: "short" }),
-        });
-        lastMonth = m;
-      }
-    });
-    return labels;
-  }, [heatmap]);
 
   return (
     <AppShell>
@@ -369,63 +325,6 @@ const Streak = () => {
         </div>
       </section>
 
-      {/* Heatmap */}
-      <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <h2 className="font-display text-lg text-foreground">Last 90 days</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Each square is one day. Brighter means more progress.
-        </p>
-
-        {(() => {
-          const cols = Math.ceil(heatmap.length / 7);
-          const cellPx = 16; // fixed size so squares are always big enough on real phones
-          const gridWidth = cols * (cellPx + 4); // cell + gap
-          return (
-            <div className="-mx-2 mt-4 overflow-x-auto px-2 pb-1">
-              <div style={{ width: gridWidth }}>
-                {/* Month labels */}
-                <div
-                  className="grid gap-1 text-[10px] text-muted-foreground"
-                  style={{ gridTemplateColumns: `repeat(${cols}, ${cellPx}px)` }}
-                >
-                  {Array.from({ length: cols }).map((_, col) => {
-                    const label = monthLabels.find((m) => m.col === col)?.label ?? "";
-                    return (
-                      <span key={col} className="truncate text-center">
-                        {label}
-                      </span>
-                    );
-                  })}
-                </div>
-
-                <div
-                  className="mt-1 grid grid-flow-col grid-rows-7 gap-1"
-                  style={{ gridAutoColumns: `${cellPx}px` }}
-                >
-                  {heatmap.map((c, i) => (
-                    <div
-                      key={i}
-                      title={heatmapTooltip(c)}
-                      style={{ width: cellPx, height: cellPx }}
-                      className={cn("!rounded-[2px]", heatmapColor(c))}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        <div className="mt-4 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
-          <span className="mr-1">Less</span>
-          <span className="h-3 w-3 !rounded-[2px] bg-muted/30" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary/30" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary/55" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary/75" />
-          <span className="h-3 w-3 !rounded-[2px] bg-primary" />
-          <span className="ml-1">More</span>
-        </div>
-      </section>
 
       {/* Lifetime stats */}
       <section className="mt-6 grid animate-fade-up grid-cols-2 gap-3">
