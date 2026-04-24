@@ -46,6 +46,7 @@ interface DailyAudio {
 
 const Audio = () => {
   const { user, isAdmin } = useAuth();
+  const userId = user?.id ?? null;
   const { currentDay, refresh: refreshProgress } = useProgress();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
