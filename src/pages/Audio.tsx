@@ -9,6 +9,7 @@ import {
   Loader2,
   Pause,
   Play,
+  RefreshCw,
   RotateCcw,
   RotateCw,
   Trash2,
@@ -68,6 +69,22 @@ const Audio = () => {
   const lastSavedPosRef = useRef(0);
   const blobUrlRef = useRef<string | null>(null);
   const currentAudioRef = useRef<DailyAudio | null>(null);
+  const bufferingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showBufferingDebounced = () => {
+    if (bufferingTimerRef.current) return;
+    bufferingTimerRef.current = setTimeout(() => {
+      setBuffering(true);
+      bufferingTimerRef.current = null;
+    }, 450);
+  };
+  const clearBuffering = () => {
+    if (bufferingTimerRef.current) {
+      clearTimeout(bufferingTimerRef.current);
+      bufferingTimerRef.current = null;
+    }
+    setBuffering(false);
+  };
 
   const requestedDay = Number(searchParams.get("day")) || currentDay;
 
@@ -282,10 +299,11 @@ const Audio = () => {
             setPlaying(false);
             if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
           });
-          el.addEventListener("waiting", () => setBuffering(true));
-          el.addEventListener("stalled", () => setBuffering(true));
-          el.addEventListener("canplay", () => setBuffering(false));
-          el.addEventListener("playing", () => setBuffering(false));
+          el.addEventListener("waiting", () => showBufferingDebounced());
+          el.addEventListener("stalled", () => showBufferingDebounced());
+          el.addEventListener("canplay", () => clearBuffering());
+          el.addEventListener("playing", () => clearBuffering());
+          el.addEventListener("seeked", () => clearBuffering());
 
           // Retry logic: when network errors / stalls happen (mobile background,
           // expired signed URL, flaky connection), try cached blob first, then
@@ -452,6 +470,10 @@ const Audio = () => {
       if (cleanup) cleanup();
       audioRef.current?.pause();
       audioRef.current = null;
+      if (bufferingTimerRef.current) {
+        clearTimeout(bufferingTimerRef.current);
+        bufferingTimerRef.current = null;
+      }
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
@@ -513,6 +535,17 @@ const Audio = () => {
   const seek = (delta: number) => {
     if (!audioRef.current) return;
     audioRef.current.currentTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + delta));
+  };
+  const restart = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    try {
+      el.currentTime = 0;
+      setPosition(0);
+      lastSavedPosRef.current = 0;
+      const p = el.play();
+      if (p && typeof p.catch === "function") p.catch(() => { /* noop */ });
+    } catch { /* noop */ }
   };
 
   const progress = duration ? (position / duration) * 100 : 0;
@@ -664,6 +697,20 @@ const Audio = () => {
           <span className="font-mono text-xs text-foreground/85">
             -{formatTime(remaining)}
           </span>
+        </div>
+
+        {/* Restart from beginning */}
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={restart}
+            disabled={!signedUrl}
+            className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+            aria-label="Restart audio from beginning"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Restart
+          </button>
         </div>
 
         {/* Speed + Offline controls (#10, #13) */}
