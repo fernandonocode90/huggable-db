@@ -35,6 +35,7 @@ const Privacy = () => {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [prePromptOpen, setPrePromptOpen] = useState(false);
 
   const { state: reminders, setTime: setReminderTime, save: saveReminders } = useReminders();
 
@@ -196,6 +197,17 @@ const Privacy = () => {
             checked={reminders.enabled}
             disabled={reminders.loading || reminders.saving}
             onCheckedChange={async (checked) => {
+              // Apple/Google best practice: explain *why* before triggering the
+              // native permission prompt. Only show the pre-prompt the first
+              // time the user enables reminders and permission isn't decided.
+              if (
+                checked &&
+                !reminders.isPreview &&
+                reminders.permission === "default"
+              ) {
+                setPrePromptOpen(true);
+                return;
+              }
               const res = await saveReminders({
                 enabled: checked,
                 time: reminders.time,
@@ -265,6 +277,61 @@ const Privacy = () => {
           </p>
         )}
       </section>
+
+      {/* Pre-prompt: explain *before* the native permission dialog */}
+      <Dialog open={prePromptOpen} onOpenChange={setPrePromptOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BellRing className="h-5 w-5 text-primary" />
+              Stay on your daily journey
+            </DialogTitle>
+            <DialogDescription className="space-y-2 pt-2">
+              <span className="block">
+                Solomon Wealth Code can send you a single, gentle reminder
+                each day at the time you choose — so you never miss your
+                teaching, scripture and prayer.
+              </span>
+              <span className="block">
+                We never send marketing, ads or anything else. You can turn
+                this off here at any time.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setPrePromptOpen(false)}
+              disabled={reminders.saving}
+            >
+              Not now
+            </Button>
+            <Button
+              onClick={async () => {
+                setPrePromptOpen(false);
+                const res = await saveReminders({
+                  enabled: true,
+                  time: reminders.time,
+                });
+                if (res.ok) {
+                  toast({
+                    title: "Reminders on",
+                    description: `We'll nudge you around ${reminders.time}.`,
+                  });
+                } else {
+                  toast({
+                    title: "Reminder note",
+                    description: res.error,
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Password */}
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
