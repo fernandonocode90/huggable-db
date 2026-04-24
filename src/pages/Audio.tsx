@@ -455,6 +455,22 @@ const Audio = () => {
     };
   }, [requestedDay, userId]);
 
+  // When the tab/app becomes visible again (mobile background, screen lock),
+  // the underlying media stream may be dropped. Nudge the player so our
+  // recovery flow kicks in if it got stuck.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      const el = audioRef.current;
+      if (!el) return;
+      if (!el.paused && el.readyState < 3) {
+        try { el.load(); el.play().catch(() => { /* noop */ }); } catch { /* noop */ }
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
   const toggle = () => {
     const el = audioRef.current;
     if (!el) return;
