@@ -200,6 +200,159 @@ const Devotionals = () => {
     }
   };
 
+  const handleBulkFile = async (file: File) => {
+    try {
+      const text = await file.text();
+      setBulkText(text);
+    } catch {
+      toast.error("Could not read file");
+    }
+  };
+
+  const runBulkImport = async () => {
+    if (!user) return toast.error("Not authenticated");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(bulkText);
+    } catch {
+      return toast.error("Invalid JSON");
+    }
+    if (!Array.isArray(parsed)) {
+      return toast.error("JSON must be an array of devotionals");
+    }
+    type Item = {
+      day_number: number;
+      book_key: string;
+      chapter: number;
+      verse_start: number;
+      verse_end?: number | null;
+      verse_text?: string | null;
+      reflection_text?: string | null;
+      translation?: string | null;
+    };
+    // Validate all rows up front so partial imports don't happen.
+    const items: Item[] = [];
+    const errors: string[] = [];
+    parsed.forEach((raw, i) => {
+      const r = raw as Record<string, unknown>;
+      const dn = Number(r.day_number);
+      if (!Number.isInteger(dn) || dn < 1 || dn > 365) {
+        errors.push(`#${i + 1}: invalid day_number`);
+        return;
+      }
+      const bookKey = String(r.book_key ?? "");
+      const book = BIBLE_BOOK_BY_KEY[bookKey];
+      if (!book) {
+        errors.push(`Day ${dn}: unknown book_key "${bookKey}"`);
+        return;
+      }
+      const ch = Number(r.chapter);
+      if (!Number.isInteger(ch) || ch < 1 || ch > book.chapters) {
+        errors.push(`Day ${dn}: chapter out of range (1–${book.chapters})`);
+        return;
+      }
+      const vs = Number(r.verse_start);
+      if (!Number.isInteger(vs) || vs < 1) {
+        errors.push(`Day ${dn}: invalid verse_start`);
+        return;
+      }
+      const ve = r.verse_end != null && r.verse_end !== "" ? Number(r.verse_end) : null;
+      if (ve !== null && (!Number.isInteger(ve) || ve < vs)) {
+        errors.push(`Day ${dn}: verse_end must be ≥ verse_start`);
+        return;
+      }
+      items.push({
+        day_number: dn,
+        book_key: book.key,
+        chapter: ch,
+        verse_start: vs,
+        verse_end: ve,
+        verse_text: r.verse_text ? String(r.verse_text) : null,
+        reflection_text: r.reflection_text ? String(r.reflection_text) : null,
+        translation: r.translation ? String(r.translation) : "kjv",
+      });
+    });
+    if (errors.length) {
+      toast.error(`${errors.length} invalid row(s)`, {
+        description: errors.slice(0, 5).join("\n") + (errors.length > 5 ? "\n…" : ""),
+      });
+      return;
+    }
+    if (!items.length) return toast.error("No valid rows to import");
+    setBulkBusy(true);
+    setBulkProgress({ done: 0, total: items.length });
+    let ok = 0;
+    let failed = 0;
+    try {
+      // Auto-fill missing verse_text from KJV (in batches to avoid hammering).
+      const needFetch = items.filter((it) => !it.verse_text);
+      for (let i = 0; i < needFetch.length; i++) {
+        const it = needFetch[i];
+        const book = BIBLE_BOOK_BY_KEY[it.book_key];
+        try {
+          const res = await fetchVerseRange({
+            bookKey: it.book_key,
+            bookName: book.name,
+            chapter: it.chapter,
+            verseStart: it.verse_start,
+            verseEnd: it.verse_end ?? undefined,
+          });
+          if (res) it.verse_text = res.text;
+        } catch {
+          /* leave blank — admin can fix later */
+        }
+      }
+      // Upsert in chunks of 50.
+      const chunkSize = 50;
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        const payload = chunk.map((it) => {
+          const book = BIBLE_BOOK_BY_KEY[it.book_key];
+          return {
+            day_number: it.day_number,
+            verse_reference: buildReference(book.name, it.chapter, it.verse_start, it.verse_end ?? undefined),
+            verse_text: it.verse_text ?? null,
+            reflection_text: it.reflection_text ?? null,
+            book_key: it.book_key,
+            chapter: it.chapter,
+            verse_start: it.verse_start,
+            verse_end: it.verse_end ?? null,
+            translation: it.translation ?? "kjv",
+            created_by: user.id,
+          };
+        });
+        const { error } = await supabase
+          .from("daily_devotionals")
+          .upsert(payload, { onConflict: "day_number" });
+        if (error) {
+          failed += chunk.length;
+        } else {
+          ok += chunk.length;
+        }
+        setBulkProgress({ done: i + chunk.length, total: items.length });
+      }
+      await supabase.rpc("log_admin_action", {
+        _action: "bulk_import_devotionals",
+        _entity_type: "devotional",
+        _entity_id: null,
+        _metadata: { imported: ok, failed, total: items.length },
+      });
+      if (failed === 0) {
+        toast.success(`Imported ${ok} devotional${ok === 1 ? "" : "s"}`);
+        setBulkText("");
+        setBulkOpen(false);
+      } else {
+        toast.warning(`Imported ${ok}/${items.length}. ${failed} failed.`);
+      }
+      refreshDevotionals();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bulk import failed");
+    } finally {
+      setBulkBusy(false);
+      setBulkProgress(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
