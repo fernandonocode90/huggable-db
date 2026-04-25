@@ -17,6 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
 import { isOnboardingComplete } from "@/lib/onboarding";
+import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
+import { useTheme } from "@/hooks/useTheme";
+import { useToast } from "@/hooks/use-toast";
 
 type Devotional = {
   verse_reference: string | null;
