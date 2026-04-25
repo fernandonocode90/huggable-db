@@ -184,6 +184,36 @@ const Profile = () => {
           ...(isAdmin ? [{ icon: Shield, label: "Admin Sanctuary", note: "Manage audios", onClick: () => navigate("/admin") }] : []),
           { icon: Flame, label: "Streak & Activity", note: "Track your practice", onClick: () => navigate("/profile/streak") },
           { icon: History, label: "Audio History", note: "Browse past audios by month", onClick: () => navigate("/audio/history") },
+          {
+            icon: Share2,
+            label: "Share the app",
+            note: "Invite a friend to this sanctuary",
+            onClick: async () => {
+              const shareUrl = "https://solomonwealthcode.com";
+              const shareText =
+                "I'm using Solomon Wealth Code for daily Bible meditation. Join me:";
+              try {
+                if (navigator.share) {
+                  await navigator.share({
+                    title: "Solomon Wealth Code",
+                    text: shareText,
+                    url: shareUrl,
+                  });
+                } else {
+                  await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+                  toast({ title: "Link copied", description: "Share it with a friend." });
+                }
+              } catch (err) {
+                if ((err as Error).name !== "AbortError") {
+                  toast({
+                    title: "Couldn't share",
+                    description: (err as Error).message,
+                    variant: "destructive",
+                  });
+                }
+              }
+            },
+          },
           { icon: ShieldCheck, label: "Privacy & Account", note: "Name, password, account", onClick: () => navigate("/profile/privacy") },
           { icon: FileText, label: "Privacy Policy", note: "How we handle your data", onClick: () => navigate("/privacy-policy") },
           { icon: FileText, label: "Terms of Service", note: "The rules of this sanctuary", onClick: () => navigate("/terms") },
