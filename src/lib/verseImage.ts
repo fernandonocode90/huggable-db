@@ -190,25 +190,37 @@ export const generateVerseImage = async (
     /* crown is decorative — fall back silently */
   }
 
-  // Header — elegant serif wordmark with a soft gold gradient that
-  // echoes the crown above. Mixed-case small caps feel for refinement.
+  // Header — refined wordmark in Cormorant Garamond. The high-contrast
+  // serif with delicate italic terminals reads like fine jewelry — a
+  // natural companion to the crown above. Pre-load the face so the first
+  // share doesn't fall back to a generic serif.
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
 
-  const headerY = 288;
-  ctx.font = "italic 600 30px 'Playfair Display', Georgia, serif";
-  const headerGrad = ctx.createLinearGradient(0, headerY - 26, 0, headerY + 4);
+  const headerFont =
+    "italic 600 46px 'Cormorant Garamond', 'Playfair Display', Georgia, serif";
+  try {
+    if ((document as Document & { fonts?: FontFaceSet }).fonts) {
+      await document.fonts.load(headerFont);
+    }
+  } catch {
+    /* fonts.load is best-effort */
+  }
+
+  const headerY = 296;
+  ctx.font = headerFont;
+  const headerGrad = ctx.createLinearGradient(0, headerY - 38, 0, headerY + 6);
   headerGrad.addColorStop(0, p.refTop);
   headerGrad.addColorStop(1, p.refBottom);
   ctx.fillStyle = headerGrad;
-  drawTrackedText(ctx, "Solomon Wealth Code", W / 2, headerY, 2);
+  drawTrackedText(ctx, "Solomon Wealth Code", W / 2, headerY, 1.5);
 
   // Thin rule beneath, slightly wider for breathing room
   ctx.strokeStyle = p.rule;
   ctx.lineWidth = 1.25;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 56, 312);
-  ctx.lineTo(W / 2 + 56, 312);
+  ctx.moveTo(W / 2 - 70, 322);
+  ctx.lineTo(W / 2 + 70, 322);
   ctx.stroke();
 
   // Verse text — auto-fit
