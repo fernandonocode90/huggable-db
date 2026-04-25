@@ -53,7 +53,17 @@ const isPreviewHost =
   window.location.hostname.includes("lovableproject.com") ||
   window.location.hostname.includes("lovable.app");
 
-if (isPreviewHost || isInIframe) {
+// Capacitor native: WebView runs on capacitor:// or https://localhost — never register the web SW.
+const isCapacitorNative = (() => {
+  const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+  try {
+    return !!w.Capacitor && (typeof w.Capacitor.isNativePlatform === "function" ? w.Capacitor.isNativePlatform() : true);
+  } catch {
+    return false;
+  }
+})();
+
+if (isPreviewHost || isInIframe || isCapacitorNative) {
   // Make sure no stale SW interferes with the preview
   navigator.serviceWorker?.getRegistrations().then((regs) => {
     regs.forEach((r) => r.unregister());
