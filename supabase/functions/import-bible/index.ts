@@ -229,11 +229,13 @@ async function fetchBsb(): Promise<VerseRow[]> {
     books?: Array<{
       id: string;
       chapters?: Array<{
-        number: number;
-        content?: Array<
-          | { type: "verse"; number: number; content?: Array<{ text?: string } | string> }
-          | { type: string }
-        >;
+        chapter?: {
+          number: number;
+          content?: Array<
+            | { type: "verse"; number: number; content?: Array<{ text?: string } | string> }
+            | { type: string }
+          >;
+        };
       }>;
     }>;
   };
@@ -243,7 +245,9 @@ async function fetchBsb(): Promise<VerseRow[]> {
     const bookKey = BSB_BOOK_ID_TO_KEY[book.id];
     if (!bookKey) continue;
     const bookOrder = BOOK_KEY_TO_ORDER[bookKey];
-    for (const chapter of book.chapters ?? []) {
+    for (const chapterWrap of book.chapters ?? []) {
+      const chapter = chapterWrap.chapter;
+      if (!chapter) continue;
       for (const item of chapter.content ?? []) {
         if (item.type !== "verse") continue;
         const v = item as { number: number; content?: Array<{ text?: string } | string> };
