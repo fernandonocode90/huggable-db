@@ -2,3 +2,6 @@ project_id = "daecduwilaeyarofouey"
 
 [functions.admin-broadcast-push]
 verify_jwt = false
+
+[functions.import-bible]
+verify_jwt = false
