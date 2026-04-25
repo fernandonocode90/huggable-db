@@ -315,9 +315,9 @@ Deno.serve(async (req) => {
     const translation = typeof body.translation === "string" ? body.translation : "";
     const force = Boolean(body.force);
 
-    if (!["kjv", "acf", "rvr1909"].includes(translation)) {
+    if (!["kjv", "acf", "rvr1909", "bsb"].includes(translation)) {
       return new Response(
-        JSON.stringify({ error: "translation must be one of: kjv, acf, rvr1909" }),
+        JSON.stringify({ error: "translation must be one of: kjv, acf, rvr1909, bsb" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
