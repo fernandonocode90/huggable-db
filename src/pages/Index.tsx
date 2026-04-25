@@ -6,6 +6,7 @@ import {
   Calculator,
   Flame,
   Headphones,
+  Share2,
   Sparkles,
 } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
