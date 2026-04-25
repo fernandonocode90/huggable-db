@@ -8,11 +8,27 @@
  * Both palettes are tuned for legibility on small screens and social feeds.
  */
 
+import crownUrl from "@/assets/golden-crown.webp";
+
 const W = 1080;
 const H = 1350;
 
-const TOP_SAFE_Y = 260;
+const TOP_SAFE_Y = 320;
 const BOTTOM_SAFE_Y = 1060;
+
+/** Cache the crown bitmap so repeated shares don't re-decode the asset. */
+let crownPromise: Promise<HTMLImageElement> | null = null;
+const loadCrown = (): Promise<HTMLImageElement> => {
+  if (crownPromise) return crownPromise;
+  crownPromise = new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Failed to load crown"));
+    img.src = crownUrl;
+  });
+  return crownPromise;
+};
 
 export type VerseImageTheme = "night" | "day";
 
