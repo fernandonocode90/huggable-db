@@ -119,6 +119,7 @@ export default {
         "glow-pulse": "glow-pulse 4s ease-in-out infinite",
         "float-slow": "float-slow 6s ease-in-out infinite",
         "fade-up": "fade-up 0.6s var(--transition-smooth) both",
+        "fade-in": "fade-in 0.35s ease-out both",
         "twinkle": "twinkle 3s ease-in-out infinite",
       },
     },
