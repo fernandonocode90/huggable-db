@@ -822,7 +822,7 @@ const Audio = () => {
 
       {audio && (
         <>
-          <section className="glass-card mt-8 rounded-3xl p-6 animate-fade-up" style={{ animationDelay: "80ms" }}>
+          <section className="glass-card mt-8 rounded-3xl p-6 animate-fade-in">
             <div className="text-center">
               <h2 className="font-display text-2xl text-foreground">{audio.title}</h2>
               {audio.subtitle && <p className="mt-1 text-sm text-muted-foreground">{audio.subtitle}</p>}
