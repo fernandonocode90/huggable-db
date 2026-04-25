@@ -204,7 +204,7 @@ const HIGHLIGHT_COLORS = [
 ];
 
 function bookDisplayName(book: Book, translation: Translation) {
-  if (translation === "kjv") return book.name;
+  if (translation === "bsb" || translation === "kjv") return book.name;
   if (translation === "rvr1909") return ES_NAMES[book.key] ?? book.name;
   return PT_NAMES[book.key] ?? book.name;
 }
@@ -215,7 +215,7 @@ const Read = () => {
   const { theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [translation, setTranslation] = useState<Translation>("kjv");
+  const [translation, setTranslation] = useState<Translation>("bsb");
   const [bookKey, setBookKey] = useState("proverbs");
   const [chapter, setChapter] = useState(3);
   const [verses, setVerses] = useState<Verse[]>([]);
