@@ -1,10 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
+import { isChunkLoadError } from "@/lib/chunkReload";
 
 /**
  * Reports a client-side error to the database for admin review.
  * Fails silently — never throws or blocks the UI.
+ *
+ * Stale-chunk errors (post-deploy noise) are intentionally skipped — they're
+ * recovered automatically via a page reload and don't represent real bugs.
  */
 export async function reportClientError(error: Error, route?: string) {
+  if (isChunkLoadError(error)) return;
   try {
     const { data: auth } = await supabase.auth.getUser();
     await supabase.from("client_errors").insert({

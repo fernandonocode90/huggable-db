@@ -2,6 +2,12 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
+import { installChunkErrorRecovery, clearChunkReloadGuard } from "./lib/chunkReload";
+
+// Auto-recover from stale module chunks after a deploy (one-shot reload).
+installChunkErrorRecovery();
+// Boot succeeded — allow future recovery if another stale chunk appears later.
+window.setTimeout(clearChunkReloadGuard, 5000);
 
 const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 const pathname = window.location.pathname.replace(/\.html$/, "");
