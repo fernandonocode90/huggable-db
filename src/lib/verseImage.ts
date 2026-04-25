@@ -178,28 +178,13 @@ export const generateVerseImage = async (
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Crown — sits above the header, transparent background lets the
-  // gradient/glow show through. Drawn first so the rule sits below it.
+  // Crown — sits above the header. Pure transparent background, no halo,
+  // so it blends seamlessly with the gradient.
   try {
     const crown = await loadCrown();
     const crownW = 150;
     const crownH = (crown.height / crown.width) * crownW;
     const crownY = 110;
-    // Soft glow halo behind the crown for depth on dark themes
-    if (theme === "night") {
-      const halo = ctx.createRadialGradient(
-        W / 2,
-        crownY + crownH / 2,
-        0,
-        W / 2,
-        crownY + crownH / 2,
-        crownW * 0.95,
-      );
-      halo.addColorStop(0, "rgba(247, 220, 138, 0.35)");
-      halo.addColorStop(1, "rgba(247, 220, 138, 0)");
-      ctx.fillStyle = halo;
-      ctx.fillRect(W / 2 - crownW, crownY - 20, crownW * 2, crownH + 40);
-    }
     ctx.drawImage(crown, W / 2 - crownW / 2, crownY, crownW, crownH);
   } catch {
     /* crown is decorative — fall back silently */
