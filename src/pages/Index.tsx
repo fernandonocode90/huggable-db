@@ -6,6 +6,7 @@ import {
   Calculator,
   Flame,
   Headphones,
+  Share2,
   Sparkles,
 } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
@@ -16,6 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
 import { isOnboardingComplete } from "@/lib/onboarding";
+import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
+import { useTheme } from "@/hooks/useTheme";
+import { useToast } from "@/hooks/use-toast";
 
 type Devotional = {
   verse_reference: string | null;
@@ -68,6 +72,9 @@ const Index = () => {
   const [contentLoading, setContentLoading] = useState(!cached);
   const [devotional, setDevotional] = useState<Devotional | null>(cached?.devotional ?? null);
   const [weekPreview, setWeekPreview] = useState<WeekPreviewItem[]>(cached?.weekPreview ?? []);
+  const [sharingDevotional, setSharingDevotional] = useState(false);
+  const { theme } = useTheme();
+  const { toast } = useToast();
 
   const onboardingComplete = user ? isOnboardingComplete(user.id) : true;
 
@@ -283,9 +290,53 @@ const Index = () => {
                   <span className="h-px w-12 bg-primary/30" />
                 </div>
 
-                <p className="text-[15px] leading-[1.75] text-foreground/85" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                <p
+                  className="text-[16px] leading-[1.85] text-foreground/85 first-letter:font-display first-letter:text-3xl first-letter:font-semibold first-letter:text-primary first-letter:mr-1 first-letter:float-left first-letter:leading-none first-letter:mt-1"
+                  style={{ fontFamily: "'Lora', Georgia, serif" }}
+                >
                   {reflectionExcerpt}
                 </p>
+
+                {devotional.verse_text && (
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      type="button"
+                      disabled={sharingDevotional}
+                      onClick={async () => {
+                        if (!devotional.verse_text) return;
+                        setSharingDevotional(true);
+                        try {
+                          const blob = await generateVerseImage({
+                            reference: devotional.verse_reference || `Day ${currentDay}`,
+                            text: devotional.verse_text,
+                            translation: (devotional.translation || "BSB").toUpperCase(),
+                            theme,
+                          });
+                          const filename = `devotional-day-${currentDay}.png`;
+                          const result = await shareOrDownloadVerse(blob, filename);
+                          toast({
+                            title:
+                              result === "shared"
+                                ? "Verse shared"
+                                : "Verse image downloaded",
+                          });
+                        } catch (err) {
+                          toast({
+                            title: "Couldn't create image",
+                            description: (err as Error).message,
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setSharingDevotional(false);
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-primary transition-all hover:bg-primary/20 hover:border-primary/60 disabled:opacity-60"
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                      {sharingDevotional ? "Creating image…" : "Share as image"}
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <p className="text-sm leading-relaxed text-muted-foreground">
