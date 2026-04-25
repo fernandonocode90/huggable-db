@@ -8,11 +8,27 @@
  * Both palettes are tuned for legibility on small screens and social feeds.
  */
 
+import crownUrl from "@/assets/golden-crown.webp";
+
 const W = 1080;
 const H = 1350;
 
-const TOP_SAFE_Y = 260;
+const TOP_SAFE_Y = 320;
 const BOTTOM_SAFE_Y = 1060;
+
+/** Cache the crown bitmap so repeated shares don't re-decode the asset. */
+let crownPromise: Promise<HTMLImageElement> | null = null;
+const loadCrown = (): Promise<HTMLImageElement> => {
+  if (crownPromise) return crownPromise;
+  crownPromise = new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Failed to load crown"));
+    img.src = crownUrl;
+  });
+  return crownPromise;
+};
 
 export type VerseImageTheme = "night" | "day";
 
@@ -162,19 +178,46 @@ export const generateVerseImage = async (
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
+  // Crown — sits above the header, transparent background lets the
+  // gradient/glow show through. Drawn first so the rule sits below it.
+  try {
+    const crown = await loadCrown();
+    const crownW = 150;
+    const crownH = (crown.height / crown.width) * crownW;
+    const crownY = 110;
+    // Soft glow halo behind the crown for depth on dark themes
+    if (theme === "night") {
+      const halo = ctx.createRadialGradient(
+        W / 2,
+        crownY + crownH / 2,
+        0,
+        W / 2,
+        crownY + crownH / 2,
+        crownW * 0.95,
+      );
+      halo.addColorStop(0, "rgba(247, 220, 138, 0.35)");
+      halo.addColorStop(1, "rgba(247, 220, 138, 0)");
+      ctx.fillStyle = halo;
+      ctx.fillRect(W / 2 - crownW, crownY - 20, crownW * 2, crownH + 40);
+    }
+    ctx.drawImage(crown, W / 2 - crownW / 2, crownY, crownW, crownH);
+  } catch {
+    /* crown is decorative — fall back silently */
+  }
+
   // Header — tracked app label + rule
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
 
   ctx.fillStyle = p.header;
   ctx.font = "700 20px 'Inter', system-ui, sans-serif";
-  drawTrackedText(ctx, "SOLOMON WEALTH CODE", W / 2, 165, 6);
+  drawTrackedText(ctx, "SOLOMON WEALTH CODE", W / 2, 282, 6);
 
   ctx.strokeStyle = p.rule;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 40, 195);
-  ctx.lineTo(W / 2 + 40, 195);
+  ctx.moveTo(W / 2 - 40, 305);
+  ctx.lineTo(W / 2 + 40, 305);
   ctx.stroke();
 
   // Verse text — auto-fit
