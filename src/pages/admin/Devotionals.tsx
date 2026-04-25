@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Save, X, Loader2, BookOpen } from "lucide-react";
+import { Trash2, Save, X, Loader2, BookOpen, Upload, FileJson } from "lucide-react";
 import { BIBLE_BOOKS, BIBLE_BOOK_BY_KEY, fetchVerseRange, buildReference } from "@/lib/bible-books";
 
 interface Devotional {
@@ -47,6 +47,10 @@ const Devotionals = () => {
     verse_text: "",
     reflection_text: "",
   });
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
 
   const filteredDevotionals = useMemo(() => {
     const q = devSearch.trim().toLowerCase();
@@ -196,6 +200,159 @@ const Devotionals = () => {
     }
   };
 
+  const handleBulkFile = async (file: File) => {
+    try {
+      const text = await file.text();
+      setBulkText(text);
+    } catch {
+      toast.error("Could not read file");
+    }
+  };
+
+  const runBulkImport = async () => {
+    if (!user) return toast.error("Not authenticated");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(bulkText);
+    } catch {
+      return toast.error("Invalid JSON");
+    }
+    if (!Array.isArray(parsed)) {
+      return toast.error("JSON must be an array of devotionals");
+    }
+    type Item = {
+      day_number: number;
+      book_key: string;
+      chapter: number;
+      verse_start: number;
+      verse_end?: number | null;
+      verse_text?: string | null;
+      reflection_text?: string | null;
+      translation?: string | null;
+    };
+    // Validate all rows up front so partial imports don't happen.
+    const items: Item[] = [];
+    const errors: string[] = [];
+    parsed.forEach((raw, i) => {
+      const r = raw as Record<string, unknown>;
+      const dn = Number(r.day_number);
+      if (!Number.isInteger(dn) || dn < 1 || dn > 365) {
+        errors.push(`#${i + 1}: invalid day_number`);
+        return;
+      }
+      const bookKey = String(r.book_key ?? "");
+      const book = BIBLE_BOOK_BY_KEY[bookKey];
+      if (!book) {
+        errors.push(`Day ${dn}: unknown book_key "${bookKey}"`);
+        return;
+      }
+      const ch = Number(r.chapter);
+      if (!Number.isInteger(ch) || ch < 1 || ch > book.chapters) {
+        errors.push(`Day ${dn}: chapter out of range (1–${book.chapters})`);
+        return;
+      }
+      const vs = Number(r.verse_start);
+      if (!Number.isInteger(vs) || vs < 1) {
+        errors.push(`Day ${dn}: invalid verse_start`);
+        return;
+      }
+      const ve = r.verse_end != null && r.verse_end !== "" ? Number(r.verse_end) : null;
+      if (ve !== null && (!Number.isInteger(ve) || ve < vs)) {
+        errors.push(`Day ${dn}: verse_end must be ≥ verse_start`);
+        return;
+      }
+      items.push({
+        day_number: dn,
+        book_key: book.key,
+        chapter: ch,
+        verse_start: vs,
+        verse_end: ve,
+        verse_text: r.verse_text ? String(r.verse_text) : null,
+        reflection_text: r.reflection_text ? String(r.reflection_text) : null,
+        translation: r.translation ? String(r.translation) : "kjv",
+      });
+    });
+    if (errors.length) {
+      toast.error(`${errors.length} invalid row(s)`, {
+        description: errors.slice(0, 5).join("\n") + (errors.length > 5 ? "\n…" : ""),
+      });
+      return;
+    }
+    if (!items.length) return toast.error("No valid rows to import");
+    setBulkBusy(true);
+    setBulkProgress({ done: 0, total: items.length });
+    let ok = 0;
+    let failed = 0;
+    try {
+      // Auto-fill missing verse_text from KJV (in batches to avoid hammering).
+      const needFetch = items.filter((it) => !it.verse_text);
+      for (let i = 0; i < needFetch.length; i++) {
+        const it = needFetch[i];
+        const book = BIBLE_BOOK_BY_KEY[it.book_key];
+        try {
+          const res = await fetchVerseRange({
+            bookKey: it.book_key,
+            bookName: book.name,
+            chapter: it.chapter,
+            verseStart: it.verse_start,
+            verseEnd: it.verse_end ?? undefined,
+          });
+          if (res) it.verse_text = res.text;
+        } catch {
+          /* leave blank — admin can fix later */
+        }
+      }
+      // Upsert in chunks of 50.
+      const chunkSize = 50;
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        const payload = chunk.map((it) => {
+          const book = BIBLE_BOOK_BY_KEY[it.book_key];
+          return {
+            day_number: it.day_number,
+            verse_reference: buildReference(book.name, it.chapter, it.verse_start, it.verse_end ?? undefined),
+            verse_text: it.verse_text ?? null,
+            reflection_text: it.reflection_text ?? null,
+            book_key: it.book_key,
+            chapter: it.chapter,
+            verse_start: it.verse_start,
+            verse_end: it.verse_end ?? null,
+            translation: it.translation ?? "kjv",
+            created_by: user.id,
+          };
+        });
+        const { error } = await supabase
+          .from("daily_devotionals")
+          .upsert(payload, { onConflict: "day_number" });
+        if (error) {
+          failed += chunk.length;
+        } else {
+          ok += chunk.length;
+        }
+        setBulkProgress({ done: i + chunk.length, total: items.length });
+      }
+      await supabase.rpc("log_admin_action", {
+        _action: "bulk_import_devotionals",
+        _entity_type: "devotional",
+        _entity_id: null,
+        _metadata: { imported: ok, failed, total: items.length },
+      });
+      if (failed === 0) {
+        toast.success(`Imported ${ok} devotional${ok === 1 ? "" : "s"}`);
+        setBulkText("");
+        setBulkOpen(false);
+      } else {
+        toast.warning(`Imported ${ok}/${items.length}. ${failed} failed.`);
+      }
+      refreshDevotionals();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bulk import failed");
+    } finally {
+      setBulkBusy(false);
+      setBulkProgress(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -330,6 +487,99 @@ const Devotionals = () => {
               {devBusy ? "Saving..." : editingDevotionalId ? "Save changes" : "Save devotional"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/40 bg-card/40 backdrop-blur">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="flex items-center gap-2 font-display text-base text-foreground">
+                <FileJson className="h-4 w-4 text-primary" />
+                Bulk import (JSON)
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Upload or paste a JSON array to create/overwrite many devotionals at once.
+                Existing days are replaced.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkOpen((v) => !v)}
+            >
+              {bulkOpen ? "Close" : "Open importer"}
+            </Button>
+          </div>
+
+          {bulkOpen && (
+            <div className="mt-4 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2 text-sm text-foreground hover:bg-background/60">
+                  <Upload className="h-4 w-4" />
+                  Choose .json file
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handleBulkFile(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <span className="text-xs text-muted-foreground">or paste JSON below</span>
+              </div>
+              <Textarea
+                rows={10}
+                placeholder={`[
+  {
+    "day_number": 1,
+    "book_key": "proverbs",
+    "chapter": 3,
+    "verse_start": 9,
+    "verse_end": 10,
+    "verse_text": "(optional — auto-fetched from KJV if blank)",
+    "reflection_text": "Your reflection text here…"
+  }
+]`}
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                className="font-mono text-xs"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[11px] text-muted-foreground">
+                  Required: <code>day_number</code>, <code>book_key</code>, <code>chapter</code>,{" "}
+                  <code>verse_start</code>. Optional: <code>verse_end</code>,{" "}
+                  <code>verse_text</code>, <code>reflection_text</code>.
+                </p>
+                <div className="flex items-center gap-3">
+                  {bulkProgress && (
+                    <span className="text-xs text-muted-foreground">
+                      {bulkProgress.done}/{bulkProgress.total}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={runBulkImport}
+                    disabled={bulkBusy || !bulkText.trim()}
+                  >
+                    {bulkBusy ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing…
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" /> Import
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
