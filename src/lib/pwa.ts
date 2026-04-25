@@ -16,6 +16,8 @@ export const isNativeCapacitor = (): boolean => {
 
 export const isPreviewOrIframe = (): boolean => {
   if (typeof window === "undefined") return true;
+  // In Capacitor (native iOS/Android), we use native push & no SW — treat like preview to skip web SW.
+  if (isNativeCapacitor()) return true;
   let inIframe = false;
   try {
     inIframe = window.self !== window.top;
