@@ -104,6 +104,10 @@ export default {
           from: { opacity: "0", transform: "translateY(12px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
         "twinkle": {
           "0%, 100%": { opacity: "0.3" },
           "50%": { opacity: "1" },
