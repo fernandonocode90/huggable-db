@@ -190,19 +190,25 @@ export const generateVerseImage = async (
     /* crown is decorative — fall back silently */
   }
 
-  // Header — tracked app label + rule
+  // Header — elegant serif wordmark with a soft gold gradient that
+  // echoes the crown above. Mixed-case small caps feel for refinement.
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
 
-  ctx.fillStyle = p.header;
-  ctx.font = "700 20px 'Inter', system-ui, sans-serif";
-  drawTrackedText(ctx, "SOLOMON WEALTH CODE", W / 2, 282, 6);
+  const headerY = 288;
+  ctx.font = "italic 600 30px 'Playfair Display', Georgia, serif";
+  const headerGrad = ctx.createLinearGradient(0, headerY - 26, 0, headerY + 4);
+  headerGrad.addColorStop(0, p.refTop);
+  headerGrad.addColorStop(1, p.refBottom);
+  ctx.fillStyle = headerGrad;
+  drawTrackedText(ctx, "Solomon Wealth Code", W / 2, headerY, 2);
 
+  // Thin rule beneath, slightly wider for breathing room
   ctx.strokeStyle = p.rule;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.25;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 40, 305);
-  ctx.lineTo(W / 2 + 40, 305);
+  ctx.moveTo(W / 2 - 56, 312);
+  ctx.lineTo(W / 2 + 56, 312);
   ctx.stroke();
 
   // Verse text — auto-fit
