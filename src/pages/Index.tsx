@@ -163,7 +163,7 @@ const Index = () => {
                 Today’s focus
               </p>
               <div className="mt-2 flex items-end gap-3">
-                <span className="font-display text-5xl leading-none gold-text">{currentDay}</span>
+                <span className="font-display text-5xl leading-none gold-text inline-block pl-1 pr-0.5 -ml-1">{currentDay}</span>
                 <span className="pb-1 text-sm text-muted-foreground">of {totalDays} days</span>
               </div>
             </div>
