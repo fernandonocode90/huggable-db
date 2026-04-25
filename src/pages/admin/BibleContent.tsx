@@ -10,7 +10,7 @@ interface Row {
   verse_count: number;
 }
 
-const TRANSLATIONS = ["kjv", "acf", "rvr1909"] as const;
+const TRANSLATIONS = ["bsb", "kjv", "acf", "rvr1909"] as const;
 const TARGET = 23000;
 
 const BibleContent = () => {

@@ -167,9 +167,10 @@ const ES_NAMES: Record<string, string> = {
 const OT_BOOKS = BOOKS.filter((b) => b.testament === "OT");
 const NT_BOOKS = BOOKS.filter((b) => b.testament === "NT");
 
-type Translation = "kjv" | "acf" | "rvr1909";
+type Translation = "bsb" | "kjv" | "acf" | "rvr1909";
 
 const TRANSLATIONS: { value: Translation; label: string; lang: string; ttsLang: string }[] = [
+  { value: "bsb", label: "BSB (English)", lang: "en", ttsLang: "en-US" },
   { value: "kjv", label: "KJV (English)", lang: "en", ttsLang: "en-US" },
   { value: "acf", label: "ACF (Português)", lang: "pt", ttsLang: "pt-BR" },
   { value: "rvr1909", label: "RVR1909 (Español)", lang: "es", ttsLang: "es-ES" },
@@ -203,7 +204,7 @@ const HIGHLIGHT_COLORS = [
 ];
 
 function bookDisplayName(book: Book, translation: Translation) {
-  if (translation === "kjv") return book.name;
+  if (translation === "bsb" || translation === "kjv") return book.name;
   if (translation === "rvr1909") return ES_NAMES[book.key] ?? book.name;
   return PT_NAMES[book.key] ?? book.name;
 }
@@ -214,7 +215,7 @@ const Read = () => {
   const { theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [translation, setTranslation] = useState<Translation>("kjv");
+  const [translation, setTranslation] = useState<Translation>("bsb");
   const [bookKey, setBookKey] = useState("proverbs");
   const [chapter, setChapter] = useState(3);
   const [verses, setVerses] = useState<Verse[]>([]);
