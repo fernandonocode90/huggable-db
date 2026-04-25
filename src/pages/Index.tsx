@@ -11,6 +11,7 @@ import {
 import { AppShell } from "@/components/swc/AppShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import scriptureBg from "@/assets/scripture-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
@@ -220,30 +221,78 @@ const Index = () => {
           </button>
         </div>
 
-        <div className="glass-card rounded-3xl p-5">
-          {progressLoading || contentLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-11/12" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/5" />
-            </div>
-          ) : devotional ? (
-            <>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-primary">
-                {devotional.verse_reference || `Day ${currentDay}`}
+        <div className="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-7">
+          {/* Subtle starfield/parchment background */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.22] mix-blend-screen"
+            style={{
+              backgroundImage: `url(${scriptureBg})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            aria-hidden
+          />
+          {/* Soft golden vignette */}
+          <div
+            className="pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full opacity-60 blur-3xl"
+            style={{ background: "hsl(var(--primary) / 0.35)" }}
+            aria-hidden
+          />
+
+          <div className="relative">
+            {progressLoading || contentLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-11/12" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+            ) : devotional ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/50 to-primary/50" />
+                  <p className="text-[11px] uppercase tracking-[0.32em] text-primary">
+                    {devotional.verse_reference || `Day ${currentDay}`}
+                  </p>
+                  <span className="h-px flex-1 bg-gradient-to-l from-transparent via-primary/50 to-primary/50" />
+                </div>
+
+                <blockquote className="relative mt-5 px-2 text-center">
+                  <span
+                    className="absolute -left-1 -top-3 font-display text-5xl leading-none text-primary/40"
+                    aria-hidden
+                  >
+                    “
+                  </span>
+                  <p className="font-display text-xl italic leading-relaxed text-foreground sm:text-2xl">
+                    {devotional.verse_text || "Your verse for today will appear here as soon as it is published."}
+                  </p>
+                  <span
+                    className="absolute -right-1 -bottom-6 font-display text-5xl leading-none text-primary/40"
+                    aria-hidden
+                  >
+                    ”
+                  </span>
+                </blockquote>
+
+                {/* Ornamental divider */}
+                <div className="my-5 flex items-center justify-center gap-3">
+                  <span className="h-px w-12 bg-primary/30" />
+                  <span className="text-primary/60">✦</span>
+                  <span className="h-px w-12 bg-primary/30" />
+                </div>
+
+                <p className="text-[15px] leading-[1.75] text-foreground/85" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                  {reflectionExcerpt}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Today’s devotional is not published yet, but you can continue from your last reading and keep the streak alive.
               </p>
-              <blockquote className="mt-3 text-base leading-relaxed text-foreground">
-                {devotional.verse_text || "Your verse for today will appear here as soon as it is published."}
-              </blockquote>
-              <p className="mt-4 text-sm leading-relaxed text-foreground/80">{reflectionExcerpt}</p>
-            </>
-          ) : (
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Today’s devotional is not published yet, but you can continue from your last reading and keep the streak alive.
-            </p>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
