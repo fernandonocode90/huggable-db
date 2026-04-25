@@ -822,7 +822,7 @@ const Audio = () => {
 
       {audio && (
         <>
-          <section className="glass-card mt-8 rounded-3xl p-6 animate-fade-up" style={{ animationDelay: "80ms" }}>
+          <section className="glass-card mt-8 rounded-3xl p-6 animate-fade-in">
             <div className="text-center">
               <h2 className="font-display text-2xl text-foreground">{audio.title}</h2>
               {audio.subtitle && <p className="mt-1 text-sm text-muted-foreground">{audio.subtitle}</p>}
@@ -966,7 +966,7 @@ const Audio = () => {
           </section>
 
           {audio.description && (
-            <section className="glass-card mt-5 rounded-3xl p-6 animate-fade-up" style={{ animationDelay: "160ms" }}>
+            <section className="glass-card mt-5 rounded-3xl p-6 animate-fade-in">
               <h3 className="font-display text-xl text-foreground">About</h3>
               <div className="mt-2 h-px w-12 bg-primary/70" />
               <p className="mt-4 text-[15px] leading-relaxed text-foreground/90">{audio.description}</p>
@@ -974,7 +974,7 @@ const Audio = () => {
           )}
 
           {audio.prayer_text && (
-            <section className="glass-card mt-5 rounded-3xl p-6 animate-fade-up" style={{ animationDelay: "240ms" }}>
+            <section className="glass-card mt-5 rounded-3xl p-6 animate-fade-in">
               <h3 className="font-display text-xl text-foreground">Prayer</h3>
               <div className="mt-2 h-px w-12 bg-primary/70" />
               <p className="mt-4 text-[15px] leading-relaxed text-foreground/90">{audio.prayer_text}</p>

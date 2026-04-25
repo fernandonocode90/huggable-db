@@ -104,6 +104,10 @@ export default {
           from: { opacity: "0", transform: "translateY(12px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
         "twinkle": {
           "0%, 100%": { opacity: "0.3" },
           "50%": { opacity: "1" },
@@ -115,6 +119,7 @@ export default {
         "glow-pulse": "glow-pulse 4s ease-in-out infinite",
         "float-slow": "float-slow 6s ease-in-out infinite",
         "fade-up": "fade-up 0.6s var(--transition-smooth) both",
+        "fade-in": "fade-in 0.35s ease-out both",
         "twinkle": "twinkle 3s ease-in-out infinite",
       },
     },
