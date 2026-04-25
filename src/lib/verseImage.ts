@@ -240,7 +240,7 @@ export const generateVerseImage = async (
 
   ctx.fillStyle = p.footer;
   ctx.font = "600 19px 'Inter', system-ui, sans-serif";
-  drawTrackedText(ctx, "solomonwealthcode.app", W / 2, H - 92, 1.5);
+  drawTrackedText(ctx, "solomonwealthcode.com", W / 2, H - 92, 1.5);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
