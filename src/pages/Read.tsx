@@ -946,6 +946,22 @@ const Read = () => {
         </div>
       )}
 
+      {/* Translation attribution */}
+      {!loading && verses.length > 0 && translation === "bsb" && (
+        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground/80">
+          Scripture quotations from the{" "}
+          <a
+            href="https://berean.bible"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            Berean Standard Bible
+          </a>
+          . Public Domain — free to use, copy and share.
+        </p>
+      )}
+
       {/* Verse action sheet */}
       <Sheet open={!!activeVerse} onOpenChange={(o) => !o && setActiveVerse(null)}>
         <SheetContent side="bottom" className="rounded-t-3xl">
