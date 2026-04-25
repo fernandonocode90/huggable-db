@@ -1,0 +1,1 @@
+UPDATE public.daily_devotionals SET translation = 'bsb' WHERE translation = 'kjv';
