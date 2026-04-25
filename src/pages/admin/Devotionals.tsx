@@ -492,6 +492,99 @@ const Devotionals = () => {
 
       <Card className="border-border/40 bg-card/40 backdrop-blur">
         <CardContent className="p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="flex items-center gap-2 font-display text-base text-foreground">
+                <FileJson className="h-4 w-4 text-primary" />
+                Bulk import (JSON)
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Upload or paste a JSON array to create/overwrite many devotionals at once.
+                Existing days are replaced.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkOpen((v) => !v)}
+            >
+              {bulkOpen ? "Close" : "Open importer"}
+            </Button>
+          </div>
+
+          {bulkOpen && (
+            <div className="mt-4 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2 text-sm text-foreground hover:bg-background/60">
+                  <Upload className="h-4 w-4" />
+                  Choose .json file
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handleBulkFile(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <span className="text-xs text-muted-foreground">or paste JSON below</span>
+              </div>
+              <Textarea
+                rows={10}
+                placeholder={`[
+  {
+    "day_number": 1,
+    "book_key": "proverbs",
+    "chapter": 3,
+    "verse_start": 9,
+    "verse_end": 10,
+    "verse_text": "(optional — auto-fetched from KJV if blank)",
+    "reflection_text": "Your reflection text here…"
+  }
+]`}
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                className="font-mono text-xs"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[11px] text-muted-foreground">
+                  Required: <code>day_number</code>, <code>book_key</code>, <code>chapter</code>,{" "}
+                  <code>verse_start</code>. Optional: <code>verse_end</code>,{" "}
+                  <code>verse_text</code>, <code>reflection_text</code>.
+                </p>
+                <div className="flex items-center gap-3">
+                  {bulkProgress && (
+                    <span className="text-xs text-muted-foreground">
+                      {bulkProgress.done}/{bulkProgress.total}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={runBulkImport}
+                    disabled={bulkBusy || !bulkText.trim()}
+                  >
+                    {bulkBusy ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing…
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" /> Import
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/40 bg-card/40 backdrop-blur">
+        <CardContent className="p-6">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h3 className="font-display text-base text-foreground">Saved devotionals</h3>
             <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
