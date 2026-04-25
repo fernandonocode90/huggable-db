@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Save, X, Loader2, BookOpen } from "lucide-react";
+import { Trash2, Save, X, Loader2, BookOpen, Upload, FileJson } from "lucide-react";
 import { BIBLE_BOOKS, BIBLE_BOOK_BY_KEY, fetchVerseRange, buildReference } from "@/lib/bible-books";
 
 interface Devotional {
@@ -47,6 +47,10 @@ const Devotionals = () => {
     verse_text: "",
     reflection_text: "",
   });
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
 
   const filteredDevotionals = useMemo(() => {
     const q = devSearch.trim().toLowerCase();
