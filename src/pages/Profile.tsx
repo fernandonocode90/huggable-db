@@ -264,10 +264,33 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* About the translation */}
+      <div className="glass-card mt-6 rounded-2xl p-5 animate-fade-up" style={{ animationDelay: "240ms" }}>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          Bible translation
+        </p>
+        <p className="text-sm font-medium text-foreground mb-1">
+          Berean Standard Bible (BSB)
+        </p>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          A modern, accurate English translation. Released into the{" "}
+          <span className="font-medium text-foreground/90">Public Domain</span> — free to read,
+          copy, share and use without restrictions.{" "}
+          <a
+            href="https://berean.bible"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            berean.bible
+          </a>
+        </p>
+      </div>
+
       <button
         onClick={async () => { await signOut(); navigate("/auth"); }}
         className="glass-card mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-medium text-foreground/80 transition-colors hover:text-destructive animate-fade-up"
-        style={{ animationDelay: "260ms" }}
+        style={{ animationDelay: "280ms" }}
       >
         <LogOut className="h-4 w-4" />
         Sign Out
