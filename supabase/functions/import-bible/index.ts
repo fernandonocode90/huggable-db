@@ -202,9 +202,76 @@ async function fetchSpanish(): Promise<VerseRow[]> {
   return rows;
 }
 
+// Maps Berean Bible API book IDs (USFM-style) to our internal book keys
+const BSB_BOOK_ID_TO_KEY: Record<string, string> = {
+  GEN: "genesis", EXO: "exodus", LEV: "leviticus", NUM: "numbers", DEU: "deuteronomy",
+  JOS: "joshua", JDG: "judges", RUT: "ruth", "1SA": "1samuel", "2SA": "2samuel",
+  "1KI": "1kings", "2KI": "2kings", "1CH": "1chronicles", "2CH": "2chronicles",
+  EZR: "ezra", NEH: "nehemiah", EST: "esther", JOB: "job", PSA: "psalms",
+  PRO: "proverbs", ECC: "ecclesiastes", SNG: "songofsolomon", ISA: "isaiah",
+  JER: "jeremiah", LAM: "lamentations", EZK: "ezekiel", DAN: "daniel",
+  HOS: "hosea", JOL: "joel", AMO: "amos", OBA: "obadiah", JON: "jonah",
+  MIC: "micah", NAM: "nahum", HAB: "habakkuk", ZEP: "zephaniah", HAG: "haggai",
+  ZEC: "zechariah", MAL: "malachi", MAT: "matthew", MRK: "mark", LUK: "luke",
+  JHN: "john", ACT: "acts", ROM: "romans", "1CO": "1corinthians", "2CO": "2corinthians",
+  GAL: "galatians", EPH: "ephesians", PHP: "philippians", COL: "colossians",
+  "1TH": "1thessalonians", "2TH": "2thessalonians", "1TI": "1timothy", "2TI": "2timothy",
+  TIT: "titus", PHM: "philemon", HEB: "hebrews", JAS: "james",
+  "1PE": "1peter", "2PE": "2peter", "1JN": "1john", "2JN": "2john", "3JN": "3john",
+  JUD: "jude", REV: "revelation",
+};
+
+const BOOK_KEY_TO_ORDER = Object.fromEntries(BOOKS.map((b) => [b.key, b.num]));
+
+async function fetchBsb(): Promise<VerseRow[]> {
+  const jsonText = await fetchText("https://bible.helloao.org/api/BSB/complete.json");
+  const json = JSON.parse(jsonText) as {
+    books?: Array<{
+      id: string;
+      chapters?: Array<{
+        number: number;
+        content?: Array<
+          | { type: "verse"; number: number; content?: Array<{ text?: string } | string> }
+          | { type: string }
+        >;
+      }>;
+    }>;
+  };
+
+  const rows: VerseRow[] = [];
+  for (const book of json.books ?? []) {
+    const bookKey = BSB_BOOK_ID_TO_KEY[book.id];
+    if (!bookKey) continue;
+    const bookOrder = BOOK_KEY_TO_ORDER[bookKey];
+    for (const chapter of book.chapters ?? []) {
+      for (const item of chapter.content ?? []) {
+        if (item.type !== "verse") continue;
+        const v = item as { number: number; content?: Array<{ text?: string } | string> };
+        const text = (v.content ?? [])
+          .map((c) => (typeof c === "string" ? c : c.text ?? ""))
+          .filter(Boolean)
+          .join(" ");
+        const cleaned = cleanText(text);
+        if (!cleaned) continue;
+        rows.push({
+          translation: "bsb",
+          book_key: bookKey,
+          book_order: bookOrder,
+          chapter: chapter.number,
+          verse: v.number,
+          text: cleaned,
+        });
+      }
+    }
+  }
+  rows.sort((a, b) => a.book_order - b.book_order || a.chapter - b.chapter || a.verse - b.verse);
+  return rows;
+}
+
 async function fetchTranslationRows(translation: string): Promise<VerseRow[]> {
   if (translation === "kjv") return fetchKjv();
   if (translation === "acf") return fetchAcf();
+  if (translation === "bsb") return fetchBsb();
   return fetchSpanish();
 }
 
