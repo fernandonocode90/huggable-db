@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Camera, Flame, LogOut, ShieldCheck, Shield, Loader2, Sun, Moon, History, Mail, FileText } from "lucide-react";
+import { ChevronRight, Camera, Flame, LogOut, ShieldCheck, Shield, Loader2, Sun, Moon, History, Mail, FileText, Share2 } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
