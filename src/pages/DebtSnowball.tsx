@@ -138,6 +138,20 @@ const DebtSnowball = () => {
     return arr;
   }, [debts, strategy]);
 
+  const chartData = useMemo(() => {
+    const maxLen = Math.max(snowball.series.length, avalanche.series.length);
+    const step = Math.max(1, Math.floor(maxLen / 80));
+    const data: { month: number; snowball: number | null; avalanche: number | null }[] = [];
+    for (let i = 0; i < maxLen; i += step) {
+      data.push({
+        month: i,
+        snowball: snowball.series[i]?.balance ?? (i >= snowball.series.length ? 0 : null),
+        avalanche: avalanche.series[i]?.balance ?? (i >= avalanche.series.length ? 0 : null),
+      });
+    }
+    return data;
+  }, [snowball, avalanche]);
+
   return (
     <AppShell>
       <header className="animate-fade-up flex items-center justify-between gap-3">
