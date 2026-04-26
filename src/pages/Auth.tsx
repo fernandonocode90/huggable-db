@@ -62,10 +62,8 @@ const Auth = () => {
           toast.success("Welcome!");
           // O onAuthStateChange + useEffect cuidam do redirect.
         } else {
-          // Confirmação de email ativa — volta pro login com aviso claro.
-          toast.success("Check your email to confirm your account, then sign in.");
-          setMode("signin");
-          setPassword("");
+          // Confirmação de email ativa — leva pra tela dedicada com aviso claro.
+          navigate("/check-email", { state: { email }, replace: true });
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
