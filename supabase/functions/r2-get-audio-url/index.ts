@@ -76,6 +76,17 @@ Deno.serve(async (req) => {
     const { data: audio } = await supabase.from("daily_audios").select("id").eq("r2_key", key).maybeSingle();
     if (!audio) return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+    // Premium gate: only premium subscribers (or admins) can stream the audio file.
+    const [{ data: premiumData }, { data: roleRow }] = await Promise.all([
+      supabase.rpc("is_premium", { _user_id: u.user.id }),
+      supabase.from("user_roles").select("role").eq("user_id", u.user.id).eq("role", "admin").maybeSingle(),
+    ]);
+    const isPremium = premiumData === true;
+    const isAdmin = !!roleRow;
+    if (!isPremium && !isAdmin) {
+      return new Response(JSON.stringify({ error: "premium_required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const url = await presignGet(key, 3600);
     return new Response(JSON.stringify({ url }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
