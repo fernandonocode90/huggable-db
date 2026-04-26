@@ -143,9 +143,12 @@ const simulate = (debts: Debt[], strategy: Strategy, baseExtra: number) => {
 const DebtSnowball = () => {
   const navigate = useNavigate();
   const [debts, setDebts] = useState<Debt[]>([
-    { ...newDebt("Credit card"), balance: "3500", rate: "22", minPayment: "100" },
-    { ...newDebt("Car loan"), balance: "12000", rate: "8", minPayment: "350" },
-    { ...newDebt("Student loan"), balance: "18000", rate: "5", minPayment: "200" },
+    // Default scenario chosen so that snowball ≠ avalanche — the smallest debt
+    // is NOT the highest-APR one, so each strategy reorders differently.
+    { ...newDebt("Store card"),  balance: "800",   rate: "26", minPayment: "30" },
+    { ...newDebt("Credit card"), balance: "5500",  rate: "22", minPayment: "120" },
+    { ...newDebt("Car loan"),    balance: "12000", rate: "8",  minPayment: "350" },
+    { ...newDebt("Student loan"),balance: "18000", rate: "5",  minPayment: "200" },
   ]);
   const [extra, setExtra] = useState("200");
   const [strategy, setStrategy] = useState<Strategy>("snowball");
