@@ -21,6 +21,11 @@ import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/use-toast";
 
+type TodayAudio = {
+  title: string | null;
+  duration_seconds: number | null;
+};
+
 type Devotional = {
   verse_reference: string | null;
   verse_text: string | null;
