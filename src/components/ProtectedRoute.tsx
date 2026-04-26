@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isOnboardingComplete } from "@/lib/onboarding";
 
 // Show the welcome paywall again every N days while user is still free.
-const PAYWALL_REPEAT_DAYS = 7;
+const PAYWALL_REPEAT_DAYS = 1;
 
 // Routes that should NEVER be intercepted by the paywall redirect.
 const PAYWALL_EXEMPT_ROUTES = new Set<string>([

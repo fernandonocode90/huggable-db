@@ -119,7 +119,9 @@ const Onboarding = () => {
       saveOnboardingProfile(user.id, profile);
       markOnboardingComplete(user.id);
     }
-    navigate("/");
+    // After onboarding, send the user to the welcome paywall.
+    // The paywall page itself decides whether to show or skip (premium / recently seen).
+    navigate("/welcome-paywall", { replace: true });
   };
 
   const goNext = () => (isLast ? finish() : setIndex((i) => i + 1));
