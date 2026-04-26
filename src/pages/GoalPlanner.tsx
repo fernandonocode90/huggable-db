@@ -150,6 +150,31 @@ const GoalPlanner = () => {
         </div>
       </section>
 
+      <ChartCard title="Path to your goal" subtitle="Projected balance year by year, with contributions and growth.">
+        <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <GoldGradients />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis
+            dataKey="year"
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => `${v}y`}
+          />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+            width={60}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number) => [fmt(v), "Balance"]}
+            labelFormatter={(l) => `Year ${l}`}
+          />
+          <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#grad-gold)" />
+        </AreaChart>
+      </ChartCard>
+
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">A vision needs a plan</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
