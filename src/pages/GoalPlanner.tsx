@@ -17,6 +17,10 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartCard, GoldGradients, tooltipStyle } from "@/components/charts/ChartTheme";
+import { SavedScenarios } from "@/components/SavedScenarios";
+
+interface GoalInputs { goal: string; years: string; principal: string; rate: string }
+interface GoalSnapshot { monthly: number; goal: number; years: number }
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
