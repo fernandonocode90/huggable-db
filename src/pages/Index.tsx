@@ -207,28 +207,36 @@ const Index = () => {
             <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Today’s reading</p>
             <h2 className="mt-1 font-display text-2xl text-foreground">Scripture & reflection</h2>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (devotional?.book_key && devotional.chapter) {
-                const params = new URLSearchParams({
-                  book: devotional.book_key,
-                  chapter: String(devotional.chapter),
-                });
-                if (devotional.verse_start) params.set("verse", String(devotional.verse_start));
-                if (devotional.translation) params.set("translation", devotional.translation);
-                navigate(`/read?${params.toString()}`);
-                return;
-              }
-              navigate("/read");
-            }}
-            className="text-xs uppercase tracking-[0.18em] text-primary transition-colors hover:text-foreground"
-          >
-            Open
-          </button>
+          <span className="text-xs uppercase tracking-[0.18em] text-primary/70">
+            Tap to read
+          </span>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-7">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            if (devotional?.book_key && devotional.chapter) {
+              const params = new URLSearchParams({
+                book: devotional.book_key,
+                chapter: String(devotional.chapter),
+              });
+              if (devotional.verse_start) params.set("verse", String(devotional.verse_start));
+              if (devotional.translation) params.set("translation", devotional.translation);
+              navigate(`/read?${params.toString()}`);
+              return;
+            }
+            navigate("/read");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              (e.currentTarget as HTMLDivElement).click();
+            }
+          }}
+          aria-label="Open today's scripture in the reader"
+          className="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-7 cursor-pointer transition-transform hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+        >
           {/* Subtle starfield/parchment background */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.22] mix-blend-screen"
