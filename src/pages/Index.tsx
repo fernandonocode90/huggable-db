@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
   Calculator,
+  Crown,
   Flame,
   Headphones,
   Share2,
@@ -16,6 +17,7 @@ import scriptureBg from "@/assets/scripture-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
+import { useSubscription } from "@/hooks/useSubscription";
 import { isOnboardingComplete } from "@/lib/onboarding";
 import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 import { useTheme } from "@/hooks/useTheme";
@@ -82,6 +84,26 @@ const Index = () => {
   const [sharingDevotional, setSharingDevotional] = useState(false);
   const { theme } = useTheme();
   const { toast } = useToast();
+  const subscription = useSubscription();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle return from Stripe Checkout
+  useEffect(() => {
+    const status = searchParams.get("subscription");
+    if (!status) return;
+    if (status === "success") {
+      toast({
+        title: "Welcome to Premium 🎉",
+        description: "Your 7-day free trial has started. Syncing your account…",
+      });
+      void subscription.syncFromStripe();
+    } else if (status === "canceled") {
+      toast({ title: "Checkout canceled", description: "No charge was made." });
+    }
+    searchParams.delete("subscription");
+    setSearchParams(searchParams, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onboardingComplete = user ? isOnboardingComplete(user.id) : true;
 
@@ -158,6 +180,22 @@ const Index = () => {
           Peace be with you, <span className="gold-text">{greetingName}</span>
         </h1>
       </header>
+
+      {/* Upgrade nudge — only when user is non-premium */}
+      {!subscription.loading && !subscription.premium && (
+        <button
+          type="button"
+          onClick={() => navigate("/upgrade")}
+          className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-left transition hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+        >
+          <Crown className="h-5 w-5 shrink-0 text-primary" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Unlock daily audios — 7 days free</p>
+            <p className="text-[11px] text-muted-foreground">From $4.99 / month · cancel anytime</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+      )}
 
       {/* HERO — Today's audio (dominant card) */}
       <section

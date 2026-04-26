@@ -42,6 +42,7 @@ const Terms = lazy(() => import("./pages/Terms.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
+const Upgrade = lazy(() => import("./pages/Upgrade.tsx"));
 
 // Admin: lazy as a single area — nunca carrega para usuários comuns
 const Admin = lazy(() => import("./pages/Admin.tsx"));
@@ -117,6 +118,7 @@ const App = () => (
                     <Route path="/tools/tithe" element={<ProtectedRoute><Generosity /></ProtectedRoute>} />
                     <Route path="/tools/loan-payoff" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
                     <Route path="/tools/sabbath" element={<ProtectedRoute><TrueCost /></ProtectedRoute>} />
+                    <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
                     <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
