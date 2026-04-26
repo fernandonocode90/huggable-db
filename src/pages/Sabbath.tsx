@@ -130,8 +130,7 @@ const Sabbath = () => {
           but the seventh day is a Sabbath to the Lord your God." — Exodus 20:8-10
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          You worked {h} hours this week. The world will tell you to do more. Wisdom tells you to stop —
-          to trust that your worth is not measured in output. Hidden context: ratio rest/work = {ratio}%.
+          You worked {h} hours this week and rested ~{weeklyRest} hours in sleep — a rest-to-work ratio of <strong className="text-foreground">{ratio}%</strong>. The world will tell you to do more. Wisdom tells you to stop — to trust that your worth is not measured in output.
         </p>
       </section>
 
