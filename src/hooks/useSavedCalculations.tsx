@@ -101,10 +101,14 @@ export function useSavedCalculations<TInputs, TSnapshot>(calculator: CalculatorK
   const update = useCallback(
     async (id: string, patch: Partial<Pick<SavedCalculation<TInputs, TSnapshot>, "name" | "inputs" | "snapshot">>) => {
       if (!user) return false;
-      const payload: Record<string, unknown> = {};
+      const payload: {
+        name?: string;
+        inputs?: never;
+        snapshot?: never;
+      } = {};
       if (patch.name !== undefined) payload.name = patch.name.trim().slice(0, 80);
-      if (patch.inputs !== undefined) payload.inputs = patch.inputs;
-      if (patch.snapshot !== undefined) payload.snapshot = patch.snapshot;
+      if (patch.inputs !== undefined) payload.inputs = patch.inputs as never;
+      if (patch.snapshot !== undefined) payload.snapshot = patch.snapshot as never;
       const { error } = await supabase
         .from("saved_calculations")
         .update(payload)
