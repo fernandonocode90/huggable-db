@@ -205,9 +205,9 @@ const Index = () => {
       >
         <button
           type="button"
-          onClick={() => navigate(!subscription.loading && !subscription.premium ? "/upgrade" : `/audio?day=${currentDay}`)}
+          onClick={() => navigate(`/audio?day=${currentDay}`)}
           className="glass-card relative w-full overflow-hidden rounded-[2rem] p-7 text-left transition-transform hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-          aria-label={!subscription.loading && !subscription.premium ? "Unlock daily audios" : `Play today's audio — Day ${currentDay}`}
+          aria-label={`Open today's audio — Day ${currentDay}`}
         >
           {/* Layered radial glow */}
           <div
