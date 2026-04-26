@@ -126,8 +126,32 @@ const Tithe = () => {
         <p className="mt-1 font-display text-3xl text-foreground">{fmt(remaining)}<span className="text-base text-muted-foreground"> remains</span></p>
       </section>
 
-      <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <h2 className="font-display text-base text-foreground">Honor the Lord with your wealth</h2>
+      <ChartCard title="How your income flows" subtitle="Tithe, offering, and what remains.">
+        <PieChart>
+          <Pie
+            data={[
+              { name: "Tithe", value: tithe },
+              { name: "Offering", value: offering },
+              { name: "Remaining", value: Math.max(0, remaining) },
+            ]}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={60}
+            outerRadius={95}
+            paddingAngle={2}
+            stroke="hsl(var(--background))"
+            strokeWidth={2}
+          >
+            <Cell fill="hsl(var(--primary))" />
+            <Cell fill="hsl(var(--primary) / 0.55)" />
+            <Cell fill="hsl(var(--muted-foreground) / 0.35)" />
+          </Pie>
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number, n) => [fmt(v), n]}
+          />
+        </PieChart>
+      </ChartCard>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
           "Honor the Lord with your wealth, with the firstfruits of all your crops; then your barns
           will be filled to overflowing." — Proverbs 3:9-10
