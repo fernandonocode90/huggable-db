@@ -140,10 +140,10 @@ const Index = () => {
           Daily sanctuary
         </p>
         <h1 className="mt-2 font-display text-4xl leading-tight text-foreground">
-          Welcome back, <span className="gold-text">{greetingName}</span>
+          Peace be with you, <span className="gold-text">{greetingName}</span>
         </h1>
         <p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground/80">
-          Keep today simple: listen, reflect, and move one more step in the journey.
+          One verse. One reflection. One step closer to wisdom — your day {currentDay} of {totalDays} awaits.
         </p>
       </header>
 
