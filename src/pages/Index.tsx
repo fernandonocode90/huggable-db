@@ -78,6 +78,7 @@ const Index = () => {
   const [contentLoading, setContentLoading] = useState(!cached);
   const [devotional, setDevotional] = useState<Devotional | null>(cached?.devotional ?? null);
   const [weekPreview, setWeekPreview] = useState<WeekPreviewItem[]>(cached?.weekPreview ?? []);
+  const [todayAudio, setTodayAudio] = useState<TodayAudio | null>(cached?.todayAudio ?? null);
   const [sharingDevotional, setSharingDevotional] = useState(false);
   const { theme } = useTheme();
   const { toast } = useToast();
