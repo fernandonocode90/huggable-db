@@ -187,6 +187,23 @@ const GoalPlanner = () => {
         </p>
       </section>
 
+      <SavedScenarios<GoalInputs, GoalSnapshot>
+        calculator="goal_planner"
+        currentInputs={{ goal, years, principal, rate }}
+        currentSnapshot={{ monthly: monthly === Infinity ? 0 : monthly, goal: g, years: y }}
+        formatSummary={(e) => {
+          const fv = e.snapshot?.goal ?? 0;
+          const m = e.snapshot?.monthly ?? 0;
+          return `${formatCurrency(fv, "USD")} in ${e.snapshot?.years ?? 0}y · ${formatCurrency(m, "USD")}/mo`;
+        }}
+        onLoad={(e) => {
+          setGoal(String(e.inputs.goal ?? "100000"));
+          setYears(String(e.inputs.years ?? "10"));
+          setPrincipal(String(e.inputs.principal ?? "0"));
+          setRate(String(e.inputs.rate ?? "8"));
+        }}
+      />
+
       <Disclaimer variant="financial" />
     </AppShell>
   );
