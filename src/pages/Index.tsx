@@ -212,9 +212,7 @@ const Index = () => {
                   {todayAudio?.title ?? "Tap to begin"}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  {todayAudio?.duration_seconds
-                    ? `${Math.max(1, Math.round(todayAudio.duration_seconds / 60))} min · keeps your streak alive`
-                    : "~5 min · keeps your streak alive"}
+                  Keeps your streak alive
                 </p>
               </div>
 
