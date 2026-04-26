@@ -3,8 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
-  Minus,
-  Plus,
   Search,
   Star,
   StickyNote,
@@ -831,26 +829,35 @@ const Read = () => {
 
       {historyLoaded && (
       <div className="mt-3 flex items-center justify-between gap-2 animate-fade-up">
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setFontIdx((i) => Math.max(0, i - 1))}
-            aria-label="Decrease font"
-          >
-            <Minus className="h-4 w-4" />
-          </Button>
-          <span className="text-xs text-muted-foreground w-10 text-center">
-            {FONT_SIZES[fontIdx]}px
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setFontIdx((i) => Math.min(FONT_SIZES.length - 1, i + 1))}
-            aria-label="Increase font"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+        <div
+          role="radiogroup"
+          aria-label="Reading text size"
+          className="inline-flex items-center gap-1 rounded-full bg-background/40 p-1 ring-1 ring-border/60"
+        >
+          {[
+            { label: "S", idx: 0 },
+            { label: "M", idx: 2 },
+            { label: "L", idx: 3 },
+            { label: "XL", idx: 5 },
+          ].map(({ label, idx }) => {
+            const active = fontIdx === idx;
+            return (
+              <button
+                key={label}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setFontIdx(idx)}
+                className={`min-w-[36px] rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.4)]"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
         <div className="flex gap-1">
           <Button variant="outline" size="icon" onClick={prevChapter} disabled={chapter === 1}>

@@ -25,6 +25,8 @@ const Welcome = () => {
               alt="Ornate golden royal crown of Solomon"
               width={1024}
               height={1024}
+              loading="eager"
+              fetchPriority="high"
               className="relative h-[78%] w-[78%] object-contain drop-shadow-[0_10px_40px_hsl(var(--primary)/0.55)]"
             />
           </div>
@@ -35,17 +37,27 @@ const Welcome = () => {
               <br />
               <span className="text-foreground">Wealth Code</span>
             </h1>
-            <p className="mt-5 text-sm uppercase tracking-[0.28em] text-primary/90">
-              Biblical Wisdom · Lasting Wealth
+            <p className="mt-5 px-2 text-base leading-relaxed text-foreground/85">
+              365 days. Ancient wisdom.
+              <br />
+              Your modern wealth.
             </p>
           </div>
 
-          <button
-            onClick={() => navigate("/")}
-            className="mt-10 mb-10 rounded-full bg-primary px-12 py-3.5 text-sm font-semibold tracking-[0.22em] text-primary-foreground shadow-[0_0_30px_hsl(var(--primary)/0.5)] transition-transform hover:scale-105 active:scale-95"
-          >
-            BEGIN
-          </button>
+          <div className="mt-8 mb-10 flex w-full flex-col items-center gap-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <button
+              onClick={() => navigate("/auth")}
+              className="rounded-full bg-primary px-12 py-3.5 text-sm font-semibold tracking-[0.22em] text-primary-foreground shadow-[0_0_30px_hsl(var(--primary)/0.5)] transition-transform hover:scale-105 active:scale-95"
+            >
+              BEGIN
+            </button>
+            <button
+              onClick={() => navigate("/auth")}
+              className="text-xs text-muted-foreground transition-colors hover:text-primary"
+            >
+              I already have an account →
+            </button>
+          </div>
         </div>
       </div>
     </NightBackground>
