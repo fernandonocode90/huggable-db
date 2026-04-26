@@ -108,14 +108,15 @@ const App = () => (
                     <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
                     <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
                     <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
-                    <Route path="/tools/tithe" element={<ProtectedRoute><Tithe /></ProtectedRoute>} />
                     <Route path="/tools/goal-planner" element={<ProtectedRoute><GoalPlanner /></ProtectedRoute>} />
                     <Route path="/tools/retirement" element={<ProtectedRoute><Retirement /></ProtectedRoute>} />
                     <Route path="/tools/debt-snowball" element={<ProtectedRoute><DebtSnowball /></ProtectedRoute>} />
-                    <Route path="/tools/loan-payoff" element={<ProtectedRoute><LoanPayoff /></ProtectedRoute>} />
                     <Route path="/tools/true-cost" element={<ProtectedRoute><TrueCost /></ProtectedRoute>} />
                     <Route path="/tools/generosity" element={<ProtectedRoute><Generosity /></ProtectedRoute>} />
-                    <Route path="/tools/sabbath" element={<ProtectedRoute><Sabbath /></ProtectedRoute>} />
+                    {/* Legacy redirects: tithe/loan-payoff/sabbath consolidated */}
+                    <Route path="/tools/tithe" element={<ProtectedRoute><Generosity /></ProtectedRoute>} />
+                    <Route path="/tools/loan-payoff" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
+                    <Route path="/tools/sabbath" element={<ProtectedRoute><TrueCost /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
                     <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
