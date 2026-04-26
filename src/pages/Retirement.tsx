@@ -138,6 +138,27 @@ const Retirement = () => {
         </div>
       </section>
 
+      <ChartCard title="Wealth accumulation" subtitle="Total balance vs. what you actually contributed.">
+        <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <GoldGradients />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis dataKey="age" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}`} />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+            width={60}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number, n) => [fmt(v), n === "balance" ? "Nest egg" : "Contributed"]}
+            labelFormatter={(l) => `Age ${l}`}
+          />
+          <Area type="monotone" dataKey="contributed" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} fill="url(#grad-muted)" />
+          <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#grad-gold)" />
+        </AreaChart>
+      </ChartCard>
+
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">A wise person leaves an inheritance</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
