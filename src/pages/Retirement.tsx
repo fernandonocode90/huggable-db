@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartCard, GoldGradients, tooltipStyle } from "@/components/charts/ChartTheme";
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
@@ -51,6 +53,23 @@ const Retirement = () => {
     const monthlyWithdraw = annualWithdraw / 12;
     return { future, annualWithdraw, monthlyWithdraw };
   }, [cur, mo, r, years, wr]);
+
+  const chartData = useMemo(() => {
+    const monthlyRate = r / 100 / 12;
+    const data: { age: number; balance: number; contributed: number }[] = [];
+    let totalContrib = cur;
+    for (let yr = 0; yr <= years; yr++) {
+      const months = yr * 12;
+      const grown = cur * Math.pow(1 + monthlyRate, months);
+      const contribFV =
+        monthlyRate === 0
+          ? mo * months
+          : mo * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+      totalContrib = cur + mo * months;
+      data.push({ age: a + yr, balance: grown + contribFV, contributed: totalContrib });
+    }
+    return data;
+  }, [cur, mo, r, years, a]);
 
   const fmt = (n: number) => formatCurrency(n, "USD");
 
@@ -118,6 +137,27 @@ const Retirement = () => {
           <p className="mt-1 font-display text-2xl text-foreground">{fmt(result.monthlyWithdraw)}</p>
         </div>
       </section>
+
+      <ChartCard title="Wealth accumulation" subtitle="Total balance vs. what you actually contributed.">
+        <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <GoldGradients />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis dataKey="age" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}`} />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+            width={60}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number, n) => [fmt(v), n === "balance" ? "Nest egg" : "Contributed"]}
+            labelFormatter={(l) => `Age ${l}`}
+          />
+          <Area type="monotone" dataKey="contributed" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} fill="url(#grad-muted)" />
+          <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#grad-gold)" />
+        </AreaChart>
+      </ChartCard>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">A wise person leaves an inheritance</h2>

@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartCard, GoldGradients, tooltipStyle } from "@/components/charts/ChartTheme";
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
@@ -52,6 +54,24 @@ const GoalPlanner = () => {
   const monthly = useMemo(() => requiredMonthly(g, p, r, y), [g, p, r, y]);
   const totalContrib = monthly * y * 12;
   const interestEarned = g - p - totalContrib;
+
+  const chartData = useMemo(() => {
+    const months = Math.max(1, Math.round(y * 12));
+    const monthlyRate = r / 100 / 12;
+    const points = Math.min(60, months);
+    const step = months / points;
+    const data: { year: number; balance: number }[] = [];
+    for (let i = 0; i <= points; i++) {
+      const m = Math.round(i * step);
+      const grown = p * Math.pow(1 + monthlyRate, m);
+      const contribFV =
+        monthlyRate === 0
+          ? monthly * m
+          : monthly * ((Math.pow(1 + monthlyRate, m) - 1) / monthlyRate);
+      data.push({ year: +(m / 12).toFixed(2), balance: grown + contribFV });
+    }
+    return data;
+  }, [g, p, r, y, monthly]);
 
   const fmt = (n: number) => formatCurrency(n, "USD");
 
@@ -129,6 +149,31 @@ const GoalPlanner = () => {
           <p className="mt-1 font-display text-2xl text-foreground">{fmt(Math.max(0, interestEarned))}</p>
         </div>
       </section>
+
+      <ChartCard title="Path to your goal" subtitle="Projected balance year by year, with contributions and growth.">
+        <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <GoldGradients />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis
+            dataKey="year"
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => `${v}y`}
+          />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+            width={60}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number) => [fmt(v), "Balance"]}
+            labelFormatter={(l) => `Year ${l}`}
+          />
+          <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#grad-gold)" />
+        </AreaChart>
+      </ChartCard>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">A vision needs a plan</h2>

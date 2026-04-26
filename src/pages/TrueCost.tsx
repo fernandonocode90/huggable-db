@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartCard, tooltipStyle } from "@/components/charts/ChartTheme";
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
@@ -96,6 +98,30 @@ const TrueCost = () => {
           <p className="mt-0.5 text-xs text-muted-foreground">at {num(rate)}%/yr compounded</p>
         </div>
       </section>
+
+      <ChartCard title="Price tag vs. opportunity cost" subtitle="What it costs today vs. what it could become.">
+        <BarChart
+          data={[
+            { name: "Price today", value: p },
+            { name: `In ${y} years`, value: futureValue },
+          ]}
+          margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+            width={60}
+          />
+          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmt(v), "Value"]} />
+          <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+            <Cell fill="hsl(var(--muted-foreground) / 0.5)" />
+            <Cell fill="hsl(var(--primary))" />
+          </Bar>
+        </BarChart>
+      </ChartCard>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">A pause before the purchase</h2>

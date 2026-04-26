@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartCard, GoldGradients, tooltipStyle } from "@/components/charts/ChartTheme";
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
@@ -35,15 +37,17 @@ const simulate = (principal: number, annualRate: number, monthlyPayment: number)
   let months = 0;
   let interestPaid = 0;
   const MAX = 12 * 60;
-  if (monthlyPayment <= principal * r) return { months: Infinity, interest: Infinity };
+  const series: { month: number; balance: number }[] = [{ month: 0, balance: principal }];
+  if (monthlyPayment <= principal * r) return { months: Infinity, interest: Infinity, series };
   while (bal > 0 && months < MAX) {
     months++;
     const interest = bal * r;
     interestPaid += interest;
     bal = bal + interest - monthlyPayment;
     if (bal < 0) bal = 0;
+    series.push({ month: months, balance: bal });
   }
-  return { months, interest: interestPaid };
+  return { months, interest: interestPaid, series };
 };
 
 const LoanPayoff = () => {
@@ -72,6 +76,20 @@ const LoanPayoff = () => {
 
   const monthsSaved = base.months === Infinity || accelerated.months === Infinity ? 0 : base.months - accelerated.months;
   const interestSaved = base.interest === Infinity || accelerated.interest === Infinity ? 0 : base.interest - accelerated.interest;
+
+  const chartData = useMemo(() => {
+    const maxLen = Math.max(base.series.length, accelerated.series.length);
+    const step = Math.max(1, Math.floor(maxLen / 80));
+    const data: { month: number; base: number | null; accelerated: number | null }[] = [];
+    for (let i = 0; i < maxLen; i += step) {
+      data.push({
+        month: i,
+        base: base.series[i]?.balance ?? (i >= base.series.length ? 0 : null),
+        accelerated: accelerated.series[i]?.balance ?? (i >= accelerated.series.length ? 0 : null),
+      });
+    }
+    return data;
+  }, [base, accelerated]);
 
   const fmt = (n: number) => formatCurrency(n, "USD");
 
@@ -136,6 +154,35 @@ const LoanPayoff = () => {
         <p className="mt-2 font-display text-4xl gold-text">{fmt(interestSaved)}</p>
         <p className="mt-1 text-xs text-muted-foreground">in interest · finish {monthsSaved} months early</p>
       </section>
+
+      {base.months !== Infinity && (
+        <ChartCard title="Outstanding balance" subtitle="How much faster the extra payment kills the debt.">
+          <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+            <GoldGradients />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+            <XAxis
+              dataKey="month"
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => `${Math.round((v as number) / 12)}y`}
+            />
+            <YAxis
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+              width={60}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(v: number, n) => [fmt(v), n === "base" ? "Standard" : "With extra"]}
+              labelFormatter={(l) => `Month ${l}`}
+            />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Area type="monotone" dataKey="base" name="Standard" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} fill="url(#grad-muted)" />
+            <Area type="monotone" dataKey="accelerated" name="With extra" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#grad-gold)" />
+          </AreaChart>
+        </ChartCard>
+      )}
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">Owe no one anything</h2>

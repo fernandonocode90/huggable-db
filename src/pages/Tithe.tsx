@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { Cell, Pie, PieChart, Tooltip } from "recharts";
+import { ChartCard, tooltipStyle } from "@/components/charts/ChartTheme";
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
@@ -123,6 +125,33 @@ const Tithe = () => {
         <p className="text-[11px] uppercase tracking-[0.18em] text-primary">After giving</p>
         <p className="mt-1 font-display text-3xl text-foreground">{fmt(remaining)}<span className="text-base text-muted-foreground"> remains</span></p>
       </section>
+
+      <ChartCard title="How your income flows" subtitle="Tithe, offering, and what remains.">
+        <PieChart>
+          <Pie
+            data={[
+              { name: "Tithe", value: tithe },
+              { name: "Offering", value: offering },
+              { name: "Remaining", value: Math.max(0, remaining) },
+            ]}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={60}
+            outerRadius={95}
+            paddingAngle={2}
+            stroke="hsl(var(--background))"
+            strokeWidth={2}
+          >
+            <Cell fill="hsl(var(--primary))" />
+            <Cell fill="hsl(var(--primary) / 0.55)" />
+            <Cell fill="hsl(var(--muted-foreground) / 0.35)" />
+          </Pie>
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number, n) => [fmt(v), n]}
+          />
+        </PieChart>
+      </ChartCard>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">Honor the Lord with your wealth</h2>

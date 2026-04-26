@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartCard, tooltipStyle } from "@/components/charts/ChartTheme";
 
 interface Debt {
   id: string;
@@ -50,7 +52,7 @@ const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
     }))
     .filter((d) => d.balance > 0);
 
-  if (!list.length) return { months: 0, totalInterest: 0, valid: false };
+  if (!list.length) return { months: 0, totalInterest: 0, valid: false, series: [] as { month: number; balance: number }[] };
 
   // Sort by strategy
   list.sort((a, b) =>
@@ -60,6 +62,9 @@ const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
   let months = 0;
   let totalInterest = 0;
   const MAX_MONTHS = 12 * 60; // 60-year safety cap
+  const series: { month: number; balance: number }[] = [
+    { month: 0, balance: list.reduce((s, d) => s + d.balance, 0) },
+  ];
 
   while (list.some((d) => d.balance > 0) && months < MAX_MONTHS) {
     months++;
@@ -92,9 +97,11 @@ const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
     // Spill freed minimums of paid-off debts into pool for next month
     const freed = list.filter((d) => d.balance <= 0).reduce((s, d) => s + d.min, 0);
     extra = num(String(extra)) > 0 || freed > 0 ? (extra ? extra : 0) + freed : extra;
+
+    series.push({ month: months, balance: list.reduce((s, d) => s + Math.max(0, d.balance), 0) });
   }
 
-  return { months, totalInterest, valid: true };
+  return { months, totalInterest, valid: true, series };
 };
 
 const DebtSnowball = () => {
@@ -130,6 +137,20 @@ const DebtSnowball = () => {
     );
     return arr;
   }, [debts, strategy]);
+
+  const chartData = useMemo(() => {
+    const maxLen = Math.max(snowball.series.length, avalanche.series.length);
+    const step = Math.max(1, Math.floor(maxLen / 80));
+    const data: { month: number; snowball: number | null; avalanche: number | null }[] = [];
+    for (let i = 0; i < maxLen; i += step) {
+      data.push({
+        month: i,
+        snowball: snowball.series[i]?.balance ?? (i >= snowball.series.length ? 0 : null),
+        avalanche: avalanche.series[i]?.balance ?? (i >= avalanche.series.length ? 0 : null),
+      });
+    }
+    return data;
+  }, [snowball, avalanche]);
 
   return (
     <AppShell>
@@ -235,6 +256,34 @@ const DebtSnowball = () => {
             </p>
           </div>
         </section>
+      )}
+
+      {snowball.valid && avalanche.valid && (
+        <ChartCard title="Total balance over time" subtitle="Compare how fast each strategy crushes the total debt.">
+          <LineChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+            <XAxis
+              dataKey="month"
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => `${Math.round((v as number) / 12)}y`}
+            />
+            <YAxis
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+              width={60}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(v: number, n) => [fmt(v), n]}
+              labelFormatter={(l) => `Month ${l}`}
+            />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="snowball" name="Snowball" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="avalanche" name="Avalanche" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="4 4" dot={false} />
+          </LineChart>
+        </ChartCard>
       )}
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
