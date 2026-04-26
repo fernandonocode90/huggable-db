@@ -247,8 +247,7 @@ const Audio = () => {
         }
       }
 
-      // Non-premium users see the page (title, description, prayer) but cannot stream.
-      // Skip signed URL request entirely — the play button shows a lock and routes to /upgrade.
+      // Non-premium users: show metadata only, never fetch the signed URL or download
       if (isLocked) {
         setLoading(false);
         return;
