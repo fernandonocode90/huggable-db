@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye } from "lucide-react";
+import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -78,6 +78,29 @@ const Users = () => {
   const [segment, setSegment] = useState<Segment>("all");
   const [stuckDay, setStuckDay] = useState<string>("3");
   const [exporting, setExporting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const deleteUser = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data: res, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: deleteTarget.id },
+      });
+      if (error) throw error;
+      if ((res as { error?: string })?.error) throw new Error((res as { error: string }).error);
+      toast.success("Usuário deletado");
+      setDeleteTarget(null);
+      setDeleteConfirm("");
+      void load(search, page, segment, stuckDay);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao deletar");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const callList = (q: string, p: number, seg: Segment, sd: string, limit = PAGE) =>
     supabase.rpc("admin_list_users_segmented", {
@@ -410,6 +433,21 @@ const Users = () => {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+
+                      {u.id !== me?.id && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Deletar usuário"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            setDeleteTarget(u);
+                            setDeleteConfirm("");
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -440,6 +478,48 @@ const Users = () => {
           Next
         </Button>
       </div>
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteConfirm("");
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar {deleteTarget?.email} para sempre?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove a conta do Supabase Auth + todos os dados. O email fica livre para se cadastrar
+              novamente. Para confirmar, digite o email abaixo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            placeholder={deleteTarget?.email ?? ""}
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            autoComplete="off"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={
+                deleting ||
+                deleteConfirm.trim().toLowerCase() !== (deleteTarget?.email ?? "").toLowerCase()
+              }
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void deleteUser();
+              }}
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Deletar para sempre"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
