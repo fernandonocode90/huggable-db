@@ -1,10 +1,17 @@
 import {
+  Banknote,
   Calculator as CalculatorIcon,
+  Coins,
+  Crown,
+  HandHeart,
   Home,
   Hourglass,
+  Moon,
   PieChart,
   Scale,
   Shield,
+  Target,
+  TrendingDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
@@ -30,43 +37,22 @@ const CATEGORIES: Category[] = [
     title: "Wealth Building",
     blurb: "Plant seeds today. Watch them multiply.",
     tools: [
-      {
-        icon: CalculatorIcon,
-        title: "Compound Interest",
-        desc: "Plan investments with inflation in mind.",
-        to: "/tools/calculator",
-      },
-      {
-        icon: Hourglass,
-        title: "Rule of 72",
-        desc: "How fast your money doubles.",
-        to: "/tools/rule-of-72",
-      },
-      {
-        icon: Scale,
-        title: "Net Worth",
-        desc: "The cold mirror of true wealth.",
-        to: "/tools/net-worth",
-      },
+      { icon: CalculatorIcon, title: "Compound Interest", desc: "Plan investments with inflation in mind.", to: "/tools/calculator" },
+      { icon: Target, title: "Goal Planner", desc: "How much per month to hit your target.", to: "/tools/goal-planner" },
+      { icon: Crown, title: "Retirement", desc: "Project your nest egg and freedom.", to: "/tools/retirement" },
+      { icon: Hourglass, title: "Rule of 72", desc: "How fast your money doubles.", to: "/tools/rule-of-72" },
+      { icon: Scale, title: "Net Worth", desc: "The cold mirror of true wealth.", to: "/tools/net-worth" },
     ],
   },
   {
     eyebrow: "Pillar II",
     title: "Protection & Stewardship",
-    blurb: "Build the fortress before the storm comes.",
+    blurb: "Build the fortress. Break the yoke.",
     tools: [
-      {
-        icon: Shield,
-        title: "Emergency Fund",
-        desc: "Build the fortress before the storm.",
-        to: "/tools/emergency-fund",
-      },
-      {
-        icon: Home,
-        title: "Mortgage + Extra",
-        desc: "Simulate financing with extra amortization.",
-        to: "/tools/mortgage",
-      },
+      { icon: Shield, title: "Emergency Fund", desc: "Build the fortress before the storm.", to: "/tools/emergency-fund" },
+      { icon: TrendingDown, title: "Debt Payoff", desc: "Snowball vs avalanche, simulated.", to: "/tools/debt-snowball" },
+      { icon: Banknote, title: "Loan Payoff", desc: "Save years and interest with extra.", to: "/tools/loan-payoff" },
+      { icon: Home, title: "Mortgage + Extra", desc: "Simulate financing with extra amortization.", to: "/tools/mortgage" },
     ],
   },
   {
@@ -74,12 +60,11 @@ const CATEGORIES: Category[] = [
     title: "Daily Wisdom",
     blurb: "Order your house before you order your wealth.",
     tools: [
-      {
-        icon: PieChart,
-        title: "Budget 50/30/20",
-        desc: "Split your income with steward's wisdom.",
-        to: "/tools/budget",
-      },
+      { icon: PieChart, title: "Budget 50/30/20", desc: "Split your income with steward's wisdom.", to: "/tools/budget" },
+      { icon: Coins, title: "Tithe & Offering", desc: "Honor the firstfruits with clarity.", to: "/tools/tithe" },
+      { icon: HandHeart, title: "Generosity", desc: "Plan a lifetime of open hands.", to: "/tools/generosity" },
+      { icon: Hourglass, title: "True Cost", desc: "Hours of life vs. opportunity cost.", to: "/tools/true-cost" },
+      { icon: Moon, title: "Sabbath Rest", desc: "The price — and gift — of stopping.", to: "/tools/sabbath" },
     ],
   },
 ];
@@ -98,7 +83,7 @@ const Tools = () => {
           <span className="text-foreground">& Practice</span>
         </h1>
         <p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground/75">
-          Six instruments, three pillars. Each one turns biblical wisdom into a practical step.
+          Fourteen instruments, three pillars. Each one turns biblical wisdom into a practical step.
         </p>
       </header>
 
@@ -121,7 +106,7 @@ const Tools = () => {
               </p>
             </div>
             <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {cat.tools.length} tool{cat.tools.length > 1 ? "s" : ""}
+              {cat.tools.length} tools
             </span>
           </div>
 
@@ -130,7 +115,7 @@ const Tools = () => {
               <li
                 key={t.title}
                 className="animate-fade-up"
-                style={{ animationDelay: `${120 + ci * 70 + i * 50}ms` }}
+                style={{ animationDelay: `${120 + ci * 70 + i * 40}ms` }}
               >
                 <button
                   onClick={() => navigate(t.to)}
