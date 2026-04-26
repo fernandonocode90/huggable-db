@@ -77,6 +77,20 @@ const LoanPayoff = () => {
   const monthsSaved = base.months === Infinity || accelerated.months === Infinity ? 0 : base.months - accelerated.months;
   const interestSaved = base.interest === Infinity || accelerated.interest === Infinity ? 0 : base.interest - accelerated.interest;
 
+  const chartData = useMemo(() => {
+    const maxLen = Math.max(base.series.length, accelerated.series.length);
+    const step = Math.max(1, Math.floor(maxLen / 80));
+    const data: { month: number; base: number | null; accelerated: number | null }[] = [];
+    for (let i = 0; i < maxLen; i += step) {
+      data.push({
+        month: i,
+        base: base.series[i]?.balance ?? (i >= base.series.length ? 0 : null),
+        accelerated: accelerated.series[i]?.balance ?? (i >= accelerated.series.length ? 0 : null),
+      });
+    }
+    return data;
+  }, [base, accelerated]);
+
   const fmt = (n: number) => formatCurrency(n, "USD");
 
   const reset = () => { setPrincipal("15000"); setRate("9"); setYears("5"); setExtra("100"); };
