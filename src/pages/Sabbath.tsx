@@ -34,7 +34,10 @@ const Sabbath = () => {
   const hourlyValue = useMemo(() => a / (h * 52), [a, h]);
   const dailyEarning = hourlyValue * 8;
   const restValue = hourlyValue * rest;
-  const ratio = ((rest / (h * 7 / 7)) * 100).toFixed(0);
+  // Weekly rest as % of weekly work (sleep is 7 nights/week)
+  const weeklyRest = rest * 7;
+  const weeklyWork = h;
+  const ratio = weeklyWork > 0 ? ((weeklyRest / weeklyWork) * 100).toFixed(0) : "0";
 
   const fmt = (n: number) => formatCurrency(n, "USD");
 
@@ -127,8 +130,7 @@ const Sabbath = () => {
           but the seventh day is a Sabbath to the Lord your God." — Exodus 20:8-10
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          You worked {h} hours this week. The world will tell you to do more. Wisdom tells you to stop —
-          to trust that your worth is not measured in output. Hidden context: ratio rest/work = {ratio}%.
+          You worked {h} hours this week and rested ~{weeklyRest} hours in sleep — a rest-to-work ratio of <strong className="text-foreground">{ratio}%</strong>. The world will tell you to do more. Wisdom tells you to stop — to trust that your worth is not measured in output.
         </p>
       </section>
 
