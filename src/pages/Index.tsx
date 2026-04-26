@@ -208,11 +208,13 @@ const Index = () => {
                   </span>
                   <span className="text-sm text-muted-foreground">/ {totalDays}</span>
                 </div>
-                <p className="mt-3 text-sm leading-snug text-foreground/85">
-                  Tap to begin
+                <p className="mt-3 text-sm leading-snug text-foreground/85 line-clamp-2">
+                  {todayAudio?.title ?? "Tap to begin"}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  ~5 min · keeps your streak alive
+                  {todayAudio?.duration_seconds
+                    ? `${Math.max(1, Math.round(todayAudio.duration_seconds / 60))} min · keeps your streak alive`
+                    : "~5 min · keeps your streak alive"}
                 </p>
               </div>
 
