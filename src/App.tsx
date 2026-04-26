@@ -12,6 +12,7 @@ import { AppSettingsProvider } from "./hooks/useAppSettings";
 import { MaintenanceGate } from "./components/MaintenanceGate";
 import { GlobalBanner } from "./components/GlobalBanner";
 import { PageTransition } from "./components/PageTransition";
+import { PremiumGate } from "./components/PremiumGate";
 
 // Eager: small + on critical path
 import Index from "./pages/Index.tsx";
@@ -99,19 +100,19 @@ const App = () => (
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                    <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
-                    <Route path="/audio/history" element={<ProtectedRoute><AudioHistory /></ProtectedRoute>} />
+                    <Route path="/audio" element={<ProtectedRoute><PremiumGate title="Daily audios are premium" description="Unlock 365 days of guided audio teachings with a 7-day free trial."><Audio /></PremiumGate></ProtectedRoute>} />
+                    <Route path="/audio/history" element={<ProtectedRoute><PremiumGate title="Audio library is premium" description="Subscribe to access every past audio teaching."><AudioHistory /></PremiumGate></ProtectedRoute>} />
                     <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
                     <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
-                    <Route path="/tools/calculator" element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
+                    <Route path="/tools/calculator" element={<ProtectedRoute><PremiumGate title="Compound Interest is premium" description="Unlock the full calculator and save your scenarios."><Calculator /></PremiumGate></ProtectedRoute>} />
                     <Route path="/tools/mortgage" element={<ProtectedRoute><Mortgage /></ProtectedRoute>} />
-                    <Route path="/tools/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
+                    <Route path="/tools/budget" element={<ProtectedRoute><PremiumGate title="Budget 50/30/20 is premium" description="Unlock the full budget planner and save your scenarios."><Budget /></PremiumGate></ProtectedRoute>} />
                     <Route path="/tools/emergency-fund" element={<ProtectedRoute><EmergencyFund /></ProtectedRoute>} />
                     <Route path="/tools/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
                     <Route path="/tools/rule-of-72" element={<ProtectedRoute><RuleOf72 /></ProtectedRoute>} />
-                    <Route path="/tools/goal-planner" element={<ProtectedRoute><GoalPlanner /></ProtectedRoute>} />
+                    <Route path="/tools/goal-planner" element={<ProtectedRoute><PremiumGate title="Goal Planner is premium" description="Unlock the full planner and save your scenarios."><GoalPlanner /></PremiumGate></ProtectedRoute>} />
                     <Route path="/tools/retirement" element={<ProtectedRoute><Retirement /></ProtectedRoute>} />
-                    <Route path="/tools/debt-snowball" element={<ProtectedRoute><DebtSnowball /></ProtectedRoute>} />
+                    <Route path="/tools/debt-snowball" element={<ProtectedRoute><PremiumGate title="Debt Payoff is premium" description="Unlock the full debt simulator and save your scenarios."><DebtSnowball /></PremiumGate></ProtectedRoute>} />
                     <Route path="/tools/true-cost" element={<ProtectedRoute><TrueCost /></ProtectedRoute>} />
                     <Route path="/tools/generosity" element={<ProtectedRoute><Generosity /></ProtectedRoute>} />
                     {/* Legacy redirects: tithe/loan-payoff/sabbath consolidated */}

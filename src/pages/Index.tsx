@@ -7,6 +7,7 @@ import {
   Crown,
   Flame,
   Headphones,
+  Lock,
   Share2,
   Sparkles,
 } from "lucide-react";
@@ -204,9 +205,9 @@ const Index = () => {
       >
         <button
           type="button"
-          onClick={() => navigate(`/audio?day=${currentDay}`)}
+          onClick={() => navigate(!subscription.loading && !subscription.premium ? "/upgrade" : `/audio?day=${currentDay}`)}
           className="glass-card relative w-full overflow-hidden rounded-[2rem] p-7 text-left transition-transform hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-          aria-label={`Play today's audio — Day ${currentDay}`}
+          aria-label={!subscription.loading && !subscription.premium ? "Unlock daily audios" : `Play today's audio — Day ${currentDay}`}
         >
           {/* Layered radial glow */}
           <div
@@ -256,14 +257,18 @@ const Index = () => {
 
               {/* Premium play button */}
               <div
-                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 style={{
                   boxShadow:
                     "0 0 35px hsl(var(--primary) / 0.55), inset 0 -6px 14px hsl(var(--primary-deep) / 0.4)",
                 }}
                 aria-hidden
               >
-                <Headphones className="h-8 w-8" strokeWidth={1.8} />
+                {!subscription.loading && !subscription.premium ? (
+                  <Lock className="h-8 w-8" strokeWidth={1.8} />
+                ) : (
+                  <Headphones className="h-8 w-8" strokeWidth={1.8} />
+                )}
               </div>
             </div>
 
