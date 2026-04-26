@@ -49,6 +49,7 @@ type HomeCache = {
   day: number;
   devotional: Devotional | null;
   weekPreview: WeekPreviewItem[];
+  todayAudio: TodayAudio | null;
 };
 
 const readHomeCache = (userId: string | null, day: number): HomeCache | null => {
