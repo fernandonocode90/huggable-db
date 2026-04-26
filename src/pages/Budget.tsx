@@ -27,6 +27,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { SavedScenarios } from "@/components/SavedScenarios";
+
+interface BudgetInputs { income: string }
+interface BudgetSnapshot { income: number; needs: number; wants: number; savings: number }
 
 const DEFAULT_INCOME = 5000;
 
