@@ -378,6 +378,26 @@ const DebtSnowball = () => {
         </p>
       </section>
 
+      <SavedScenarios<DebtInputs, DebtSnapshot>
+        calculator="debt_snowball"
+        currentInputs={{ debts, extra, strategy }}
+        currentSnapshot={{ months: active.months, totalInterest: active.totalInterest, strategy }}
+        formatSummary={(e) => {
+          const m = e.snapshot?.months ?? 0;
+          const interest = e.snapshot?.totalInterest ?? 0;
+          const strat = e.snapshot?.strategy ?? "snowball";
+          if (!m) return `${strat} · not yet computed`;
+          return `${strat} · ${Math.floor(m / 12)}y ${m % 12}m · ${fmt(interest)} interest`;
+        }}
+        onLoad={(e) => {
+          if (Array.isArray(e.inputs.debts)) setDebts(e.inputs.debts);
+          if (typeof e.inputs.extra === "string") setExtra(e.inputs.extra);
+          if (e.inputs.strategy === "snowball" || e.inputs.strategy === "avalanche") {
+            setStrategy(e.inputs.strategy);
+          }
+        }}
+      />
+
       <Disclaimer variant="financial" />
     </AppShell>
   );
