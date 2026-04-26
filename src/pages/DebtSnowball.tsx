@@ -143,9 +143,13 @@ const simulate = (debts: Debt[], strategy: Strategy, baseExtra: number) => {
 const DebtSnowball = () => {
   const navigate = useNavigate();
   const [debts, setDebts] = useState<Debt[]>([
-    { ...newDebt("Credit card"), balance: "3500", rate: "22", minPayment: "100" },
-    { ...newDebt("Car loan"), balance: "12000", rate: "8", minPayment: "350" },
-    { ...newDebt("Student loan"), balance: "18000", rate: "5", minPayment: "200" },
+    // Default scenario chosen so that snowball ≠ avalanche.
+    // The medium balance is a low-rate auto loan, and a higher-rate credit card
+    // sits on top of it — so the two strategies pick a different #2 debt.
+    { ...newDebt("Store card"),  balance: "800",   rate: "26", minPayment: "30" },
+    { ...newDebt("Auto loan"),   balance: "2500",  rate: "7",  minPayment: "80" },
+    { ...newDebt("Credit card"), balance: "5500",  rate: "22", minPayment: "120" },
+    { ...newDebt("Student loan"),balance: "18000", rate: "5",  minPayment: "200" },
   ]);
   const [extra, setExtra] = useState("200");
   const [strategy, setStrategy] = useState<Strategy>("snowball");
@@ -323,15 +327,44 @@ const DebtSnowball = () => {
       )}
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-primary">Payoff order ({strategy})</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary">
+            Payoff order ({strategy})
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Extra goes to #1
+          </p>
+        </div>
         <ol className="mt-3 space-y-1.5 text-sm text-foreground">
           {ordered.map((d, i) => (
-            <li key={d.id} className="flex items-center justify-between gap-3">
-              <span><strong className="text-primary">{i + 1}.</strong> {d.name}</span>
-              <span className="text-xs text-muted-foreground">{fmt(num(d.balance))} · {num(d.rate)}%</span>
+            <li
+              key={d.id}
+              className={`flex items-center justify-between gap-3 rounded-xl px-2 py-1.5 ${
+                i === 0 ? "bg-primary/10 ring-1 ring-primary/30" : ""
+              }`}
+            >
+              <span>
+                <strong className={i === 0 ? "gold-text" : "text-primary"}>{i + 1}.</strong>{" "}
+                {d.name}
+                {i === 0 && (
+                  <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-primary">
+                    ← extra here
+                  </span>
+                )}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {fmt(num(d.balance))} · {num(d.rate)}%
+              </span>
             </li>
           ))}
         </ol>
+        {snowball.valid && avalanche.valid && snowball.months === avalanche.months && Math.abs(snowball.totalInterest - avalanche.totalInterest) < 1 && (
+          <p className="mt-4 rounded-2xl border border-border/40 bg-muted/10 p-3 text-xs leading-relaxed text-muted-foreground">
+            <strong className="text-foreground">Heads up —</strong> with these debts, snowball and
+            avalanche pick the <em>same</em> order, so the time and interest are identical. They
+            only diverge when your smallest balance is <em>not</em> your highest-APR debt.
+          </p>
+        )}
       </section>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
@@ -353,18 +386,83 @@ const HelpDialog = () => (
         <HelpCircle className="h-5 w-5" strokeWidth={1.5} />
       </button>
     </DialogTrigger>
-    <DialogContent className="max-w-md">
+    <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
       <DialogHeader>
-        <DialogTitle className="font-display text-xl">Snowball vs Avalanche</DialogTitle>
-        <DialogDescription className="text-sm leading-relaxed">
-          <strong>Snowball:</strong> pay smallest balance first. Quick wins build momentum.
-          Most people stick with it longer — proven by Northwestern + HBS research.
-          <br /><br />
-          <strong>Avalanche:</strong> pay highest interest rate first. Mathematically saves the
-          most money. Better for the disciplined.
-          <br /><br />
-          Add every debt with its balance, APR, and minimum payment. Add an extra payment you can
-          commit each month. We simulate both side-by-side.
+        <DialogTitle className="font-display text-xl">How this calculator works</DialogTitle>
+        <DialogDescription asChild>
+          <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
+            <section>
+              <p className="font-display text-foreground">1. The two strategies</p>
+              <p className="mt-1">
+                <strong className="text-foreground">Snowball</strong> — pay the
+                <em> smallest balance </em> first. The early "win" of erasing a debt builds
+                momentum. Northwestern + HBS research shows most people stick with this method
+                longer because of the psychological boost.
+              </p>
+              <p className="mt-2">
+                <strong className="text-foreground">Avalanche</strong> — pay the
+                <em> highest interest rate (APR) </em> first. Mathematically the cheapest path:
+                you stop paying the most expensive interest as fast as possible. Best when you
+                trust yourself to stay disciplined without quick wins.
+              </p>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">2. How payments are applied each month</p>
+              <ol className="mt-1 list-decimal space-y-1 pl-5">
+                <li>Interest accrues on every debt's current balance.</li>
+                <li>Every debt receives its <strong>minimum payment</strong>.</li>
+                <li>The full <strong>extra payment</strong> is thrown at the #1 debt for the
+                  current strategy (the one marked "← extra here").</li>
+                <li>When a debt hits zero, its minimum permanently <strong>rolls over</strong> and
+                  joins the extra pool — that's the real "snowball effect".</li>
+              </ol>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">3. Why snowball and avalanche sometimes look identical</p>
+              <p className="mt-1">
+                If your <em>smallest</em> balance also happens to be your <em>highest</em> APR
+                (very common with credit cards), both strategies pick the same order — so you'll
+                see the same time and interest. They only diverge when a small low-rate debt
+                competes with a big high-rate debt.
+              </p>
+              <p className="mt-2">
+                Try the default scenario: the $800 store card (26%) is smallest <em>and</em>
+                highest APR — both strategies start there. But after that, snowball jumps to the
+                $5,500 card while avalanche keeps attacking by rate. The order in the
+                "Payoff order" card updates live when you switch.
+              </p>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">4. What each result means</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li><strong>Debt-free in</strong> — months until <em>every</em> debt is at zero
+                  using the currently selected strategy.</li>
+                <li><strong>Total interest</strong> — every dollar you'll pay above the original
+                  balances, summed across all months and all debts.</li>
+                <li><strong>Snowball vs Avalanche cards</strong> — both run side by side so you
+                  can see the trade-off without switching tabs.</li>
+                <li><strong>Chart</strong> — total outstanding balance over time. The faster a
+                  curve hits zero, the faster that strategy wins.</li>
+              </ul>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">5. Inputs</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li><strong>Balance</strong> — what you currently owe on each debt.</li>
+                <li><strong>APR %</strong> — annual interest rate from the lender. We compound
+                  monthly (APR ÷ 12).</li>
+                <li><strong>Min/mo</strong> — the contractual minimum your lender requires. If the
+                  total minimums don't even cover the monthly interest, no payoff is possible —
+                  the calculator will flag that.</li>
+                <li><strong>Extra/mo</strong> — anything above the minimums. This is the lever
+                  that decides how fast you escape.</li>
+              </ul>
+            </section>
+          </div>
         </DialogDescription>
       </DialogHeader>
     </DialogContent>
