@@ -247,6 +247,12 @@ const Audio = () => {
         }
       }
 
+      // Non-premium users: show metadata only, never fetch the signed URL or download
+      if (isLocked) {
+        setLoading(false);
+        return;
+      }
+
       const { signed, signedErr } = await getSignedUrlWithRetry(data.r2_key);
       if (cancelled) return;
 
