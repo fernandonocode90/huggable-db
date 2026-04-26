@@ -182,36 +182,37 @@ const Index = () => {
               </span>
             </div>
 
-            {/* Big circular artwork */}
-            <div className="mx-auto mt-6 flex h-44 w-44 items-center justify-center">
-              <div
-                className="relative flex h-full w-full items-center justify-center rounded-full ring-1 ring-primary/40"
-                style={{
-                  background:
-                    "radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.55), hsl(var(--primary) / 0.15) 60%, transparent 75%), conic-gradient(from 0deg, hsl(var(--primary) / 0.3), hsl(var(--primary-glow) / 0.5), hsl(var(--primary) / 0.3))",
-                  boxShadow:
-                    "0 0 60px hsl(var(--primary) / 0.45), inset 0 0 30px hsl(var(--primary) / 0.25)",
-                }}
-              >
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-background/40 ring-1 ring-primary/30 backdrop-blur-sm">
-                  <span className="font-display text-5xl gold-text">{currentDay}</span>
+            {/* Editorial composition: oversized day number + play CTA */}
+            <div className="mt-7 flex items-center gap-5">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                  Day
+                </p>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="font-display text-7xl leading-none gold-text">
+                    {currentDay}
+                  </span>
+                  <span className="text-sm text-muted-foreground">/ {totalDays}</span>
                 </div>
-                <div
-                  className="absolute -bottom-1 -right-1 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_0_25px_hsl(var(--primary)/0.7)]"
-                  aria-hidden
-                >
-                  <Headphones className="h-6 w-6" strokeWidth={2} />
-                </div>
+                <p className="mt-3 text-sm leading-snug text-foreground/85">
+                  Tap to begin
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  ~5 min · keeps your streak alive
+                </p>
               </div>
-            </div>
 
-            <div className="mt-6 text-center">
-              <h2 className="font-display text-2xl text-foreground">
-                Tap to begin
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                One audio · ~5 minutes · keeps your streak alive
-              </p>
+              {/* Premium play button */}
+              <div
+                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                style={{
+                  boxShadow:
+                    "0 0 35px hsl(var(--primary) / 0.55), inset 0 -6px 14px hsl(var(--primary-deep) / 0.4)",
+                }}
+                aria-hidden
+              >
+                <Headphones className="h-8 w-8" strokeWidth={1.8} />
+              </div>
             </div>
 
             {/* Stats strip */}
