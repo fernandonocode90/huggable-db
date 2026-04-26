@@ -34,7 +34,10 @@ const Sabbath = () => {
   const hourlyValue = useMemo(() => a / (h * 52), [a, h]);
   const dailyEarning = hourlyValue * 8;
   const restValue = hourlyValue * rest;
-  const ratio = ((rest / (h * 7 / 7)) * 100).toFixed(0);
+  // Weekly rest as % of weekly work (sleep is 7 nights/week)
+  const weeklyRest = rest * 7;
+  const weeklyWork = h;
+  const ratio = weeklyWork > 0 ? ((weeklyRest / weeklyWork) * 100).toFixed(0) : "0";
 
   const fmt = (n: number) => formatCurrency(n, "USD");
 
