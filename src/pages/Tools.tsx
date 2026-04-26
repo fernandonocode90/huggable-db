@@ -78,7 +78,7 @@ const Tools = () => {
           <span className="text-foreground">& Practice</span>
         </h1>
         <p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground/75">
-          Fourteen instruments, three pillars. Each one turns biblical wisdom into a practical step.
+          Ten instruments, three pillars. Each one turns biblical wisdom into a practical step.
         </p>
       </header>
 
