@@ -247,6 +247,13 @@ const Audio = () => {
         }
       }
 
+      // Non-premium users see the page (title, description, prayer) but cannot stream.
+      // Skip signed URL request entirely — the play button shows a lock and routes to /upgrade.
+      if (isLocked) {
+        setLoading(false);
+        return;
+      }
+
       const { signed, signedErr } = await getSignedUrlWithRetry(data.r2_key);
       if (cancelled) return;
 
