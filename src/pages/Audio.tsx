@@ -823,7 +823,30 @@ const Audio = () => {
       {audio && (
         <>
           <section className="glass-card mt-8 rounded-3xl p-6 animate-fade-in">
-            <div className="text-center">
+            {/* Circular artwork — spins while playing */}
+            <div className="mx-auto mt-2 flex h-44 w-44 items-center justify-center">
+              <div
+                className={`relative flex h-full w-full items-center justify-center rounded-full ring-1 ring-primary/40 transition-transform ${
+                  playing ? "animate-spin-slow" : ""
+                }`}
+                style={{
+                  background:
+                    "radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.55), hsl(var(--primary) / 0.15) 60%, transparent 75%), conic-gradient(from 0deg, hsl(var(--primary) / 0.3), hsl(var(--primary-glow) / 0.5), hsl(var(--primary) / 0.3))",
+                  boxShadow:
+                    "0 0 50px hsl(var(--primary) / 0.4), inset 0 0 25px hsl(var(--primary) / 0.25)",
+                }}
+                aria-hidden
+              >
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-background/45 ring-1 ring-primary/30 backdrop-blur-sm">
+                  <span className="font-display text-4xl gold-text">
+                    {audio.day_number ?? requestedDay}
+                  </span>
+                </div>
+                <div className="absolute h-3 w-3 rounded-full bg-background ring-2 ring-primary/60" />
+              </div>
+            </div>
+
+            <div className="mt-5 text-center">
               <h2 className="font-display text-2xl text-foreground">{audio.title}</h2>
               {audio.subtitle && <p className="mt-1 text-sm text-muted-foreground">{audio.subtitle}</p>}
             </div>

@@ -11,6 +11,7 @@ import { OnlineStatusWatcher } from "./hooks/useOnlineStatus";
 import { AppSettingsProvider } from "./hooks/useAppSettings";
 import { MaintenanceGate } from "./components/MaintenanceGate";
 import { GlobalBanner } from "./components/GlobalBanner";
+import { PageTransition } from "./components/PageTransition";
 
 // Eager: small + on critical path
 import Index from "./pages/Index.tsx";
@@ -83,6 +84,7 @@ const App = () => (
               <GlobalBanner />
               <MaintenanceGate>
                 <Suspense fallback={<RouteFallback />}>
+                  <PageTransition>
                   <Routes>
                     <Route path="/welcome" element={<Welcome />} />
                     <Route path="/auth" element={<Auth />} />
@@ -122,6 +124,7 @@ const App = () => (
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </PageTransition>
                 </Suspense>
               </MaintenanceGate>
             </AppSettingsProvider>
