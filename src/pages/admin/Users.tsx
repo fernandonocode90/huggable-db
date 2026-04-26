@@ -433,6 +433,21 @@ const Users = () => {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+
+                      {u.id !== me?.id && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Deletar usuário"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            setDeleteTarget(u);
+                            setDeleteConfirm("");
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
