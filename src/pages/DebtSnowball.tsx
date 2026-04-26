@@ -41,67 +41,103 @@ const newDebt = (name = "Debt"): Debt => ({
   minPayment: "50",
 });
 
-/** Simulate payoff with the given strategy. Returns months + total interest. */
-const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
+/**
+ * Simulate debt payoff with the chosen strategy.
+ *
+ * Snowball  → pay minimums on all, throw extra at the SMALLEST balance first.
+ * Avalanche → pay minimums on all, throw extra at the HIGHEST APR first.
+ *
+ * When a debt hits zero, its minimum payment "rolls over" and is added to the
+ * extra pool from the next month forward — this is the actual snowball effect.
+ *
+ * Monthly order of operations (industry-standard):
+ *   1. Accrue interest on each debt's outstanding balance
+ *   2. Pay each debt's minimum (capped at balance)
+ *   3. Apply the available extra pool to the top-priority debt
+ *   4. Add any newly-freed minimums to the extra pool for next month
+ */
+const simulate = (debts: Debt[], strategy: Strategy, baseExtra: number) => {
   const list = debts
     .map((d) => ({
       name: d.name,
       balance: num(d.balance),
       rate: num(d.rate) / 100 / 12,
       min: num(d.minPayment),
+      paidOff: false,
     }))
     .filter((d) => d.balance > 0);
 
-  if (!list.length) return { months: 0, totalInterest: 0, valid: false, series: [] as { month: number; balance: number }[] };
+  const empty = { months: 0, totalInterest: 0, valid: false, series: [] as { month: number; balance: number }[] };
+  if (!list.length) return empty;
 
-  // Sort by strategy
+  // Priority order, fixed for the whole simulation.
   list.sort((a, b) =>
     strategy === "snowball" ? a.balance - b.balance : b.rate - a.rate,
   );
 
+  // Validate: minimums must at least cover monthly interest, otherwise
+  // the debt grows forever (negative amortization).
+  const totalMinInterest = list.reduce((s, d) => s + d.balance * d.rate, 0);
+  const totalMin = list.reduce((s, d) => s + d.min, 0);
+  if (totalMin + baseExtra <= totalMinInterest) {
+    return { ...empty, valid: false };
+  }
+
   let months = 0;
   let totalInterest = 0;
-  const MAX_MONTHS = 12 * 60; // 60-year safety cap
+  let rolloverPool = baseExtra; // grows as debts are paid off
+  const MAX_MONTHS = 12 * 80;
   const series: { month: number; balance: number }[] = [
     { month: 0, balance: list.reduce((s, d) => s + d.balance, 0) },
   ];
 
-  while (list.some((d) => d.balance > 0) && months < MAX_MONTHS) {
+  while (list.some((d) => !d.paidOff) && months < MAX_MONTHS) {
     months++;
-    let pool = extra;
 
-    // Accrue interest first
+    // 1) Accrue interest
     for (const d of list) {
-      if (d.balance <= 0) continue;
+      if (d.paidOff) continue;
       const interest = d.balance * d.rate;
       d.balance += interest;
       totalInterest += interest;
     }
 
-    // Pay minimums
+    // 2) Pay minimums
     for (const d of list) {
-      if (d.balance <= 0) continue;
+      if (d.paidOff) continue;
       const pay = Math.min(d.min, d.balance);
       d.balance -= pay;
     }
 
-    // Apply extra to top debt
+    // 3) Apply extra pool to the highest-priority debt that still has balance
+    let pool = rolloverPool;
     for (const d of list) {
-      if (d.balance > 0 && pool > 0) {
-        const pay = Math.min(pool, d.balance);
-        d.balance -= pay;
-        pool -= pay;
+      if (pool <= 0) break;
+      if (d.paidOff || d.balance <= 0) continue;
+      const pay = Math.min(pool, d.balance);
+      d.balance -= pay;
+      pool -= pay;
+    }
+
+    // 4) Mark newly paid-off debts and roll their minimums into the pool
+    for (const d of list) {
+      if (!d.paidOff && d.balance <= 0.005) {
+        d.balance = 0;
+        d.paidOff = true;
+        rolloverPool += d.min; // permanent boost from next month onward
       }
     }
 
-    // Spill freed minimums of paid-off debts into pool for next month
-    const freed = list.filter((d) => d.balance <= 0).reduce((s, d) => s + d.min, 0);
-    extra = num(String(extra)) > 0 || freed > 0 ? (extra ? extra : 0) + freed : extra;
+    // Any leftover pool (we overpaid the target) also rolls forward
+    if (pool > 0) {
+      // pool was unused only if all debts are gone — no need to roll
+    }
 
-    series.push({ month: months, balance: list.reduce((s, d) => s + Math.max(0, d.balance), 0) });
+    series.push({ month: months, balance: list.reduce((s, d) => s + d.balance, 0) });
   }
 
-  return { months, totalInterest, valid: true, series };
+  const valid = list.every((d) => d.paidOff);
+  return { months, totalInterest, valid, series };
 };
 
 const DebtSnowball = () => {
