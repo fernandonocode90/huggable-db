@@ -258,6 +258,34 @@ const DebtSnowball = () => {
         </section>
       )}
 
+      {snowball.valid && avalanche.valid && (
+        <ChartCard title="Total balance over time" subtitle="Compare how fast each strategy crushes the total debt.">
+          <LineChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+            <XAxis
+              dataKey="month"
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => `${Math.round((v as number) / 12)}y`}
+            />
+            <YAxis
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+              width={60}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(v: number, n) => [fmt(v), n]}
+              labelFormatter={(l) => `Month ${l}`}
+            />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="snowball" name="Snowball" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="avalanche" name="Avalanche" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="4 4" dot={false} />
+          </LineChart>
+        </ChartCard>
+      )}
+
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <p className="text-[11px] uppercase tracking-[0.18em] text-primary">Payoff order ({strategy})</p>
         <ol className="mt-3 space-y-1.5 text-sm text-foreground">
