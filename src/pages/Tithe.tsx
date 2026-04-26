@@ -152,6 +152,9 @@ const Tithe = () => {
           />
         </PieChart>
       </ChartCard>
+
+      <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
+        <h2 className="font-display text-base text-foreground">Honor the Lord with your wealth</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
           "Honor the Lord with your wealth, with the firstfruits of all your crops; then your barns
           will be filled to overflowing." — Proverbs 3:9-10
