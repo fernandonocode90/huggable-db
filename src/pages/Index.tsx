@@ -181,6 +181,22 @@ const Index = () => {
         </h1>
       </header>
 
+      {/* Upgrade nudge — only when user is non-premium */}
+      {!subscription.loading && !subscription.premium && (
+        <button
+          type="button"
+          onClick={() => navigate("/upgrade")}
+          className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-left transition hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+        >
+          <Crown className="h-5 w-5 shrink-0 text-primary" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Unlock daily audios — 7 days free</p>
+            <p className="text-[11px] text-muted-foreground">From $4.99 / month · cancel anytime</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+      )}
+
       {/* HERO — Today's audio (dominant card) */}
       <section
         className="relative mt-6 animate-fade-up"
