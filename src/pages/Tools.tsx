@@ -5,6 +5,7 @@ import {
   HandHeart,
   Home,
   Hourglass,
+  Lock,
   PieChart,
   Scale,
   Shield,
@@ -14,12 +15,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
 import { Disclaimer } from "@/components/Disclaimer";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/hooks/useAuth";
 
 type Tool = {
   icon: typeof CalculatorIcon;
   title: string;
   desc: string;
   to: string;
+  premium?: boolean;
 };
 
 type Category = {
@@ -35,8 +39,8 @@ const CATEGORIES: Category[] = [
     title: "Wealth Building",
     blurb: "Plant seeds today. Watch them multiply.",
     tools: [
-      { icon: CalculatorIcon, title: "Compound Interest", desc: "Plan investments with inflation in mind.", to: "/tools/calculator" },
-      { icon: Target, title: "Goal Planner", desc: "How much per month to hit your target.", to: "/tools/goal-planner" },
+      { icon: CalculatorIcon, title: "Compound Interest", desc: "Plan investments with inflation in mind.", to: "/tools/calculator", premium: true },
+      { icon: Target, title: "Goal Planner", desc: "How much per month to hit your target.", to: "/tools/goal-planner", premium: true },
       { icon: Crown, title: "Retirement", desc: "Project your nest egg and freedom.", to: "/tools/retirement" },
       { icon: Hourglass, title: "Rule of 72", desc: "How fast your money doubles.", to: "/tools/rule-of-72" },
       { icon: Scale, title: "Net Worth", desc: "The cold mirror of true wealth.", to: "/tools/net-worth" },
@@ -48,7 +52,7 @@ const CATEGORIES: Category[] = [
     blurb: "Build the fortress. Break the yoke.",
     tools: [
       { icon: Shield, title: "Emergency Fund", desc: "Build the fortress before the storm.", to: "/tools/emergency-fund" },
-      { icon: TrendingDown, title: "Debt Payoff", desc: "Snowball vs avalanche, simulated.", to: "/tools/debt-snowball" },
+      { icon: TrendingDown, title: "Debt Payoff", desc: "Snowball vs avalanche, simulated.", to: "/tools/debt-snowball", premium: true },
       { icon: Home, title: "Loans & Mortgage", desc: "Any loan or mortgage with extra payments.", to: "/tools/mortgage" },
     ],
   },
@@ -57,7 +61,7 @@ const CATEGORIES: Category[] = [
     title: "Daily Wisdom",
     blurb: "Order your house before you order your wealth.",
     tools: [
-      { icon: PieChart, title: "Budget 50/30/20", desc: "Split your income with steward's wisdom.", to: "/tools/budget" },
+      { icon: PieChart, title: "Budget 50/30/20", desc: "Split your income with steward's wisdom.", to: "/tools/budget", premium: true },
       { icon: HandHeart, title: "Tithe & Generosity", desc: "Plan firstfruits and a lifetime of giving.", to: "/tools/generosity" },
       { icon: Hourglass, title: "True Cost", desc: "Hours of life vs. opportunity cost.", to: "/tools/true-cost" },
     ],
@@ -66,6 +70,9 @@ const CATEGORIES: Category[] = [
 
 const Tools = () => {
   const navigate = useNavigate();
+  const { premium, loading: subLoading } = useSubscription();
+  const { isAdmin } = useAuth();
+  const hasAccess = premium || isAdmin;
 
   return (
     <AppShell>
@@ -106,30 +113,46 @@ const Tools = () => {
           </div>
 
           <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {cat.tools.map((t, i) => (
-              <li
-                key={t.title}
-                className="animate-fade-up"
-                style={{ animationDelay: `${120 + ci * 70 + i * 40}ms` }}
-              >
-                <button
-                  onClick={() => navigate(t.to)}
-                  className="glass-card flex h-full w-full flex-col items-start gap-3 rounded-3xl p-5 text-left transition-transform hover:scale-[1.03]"
+            {cat.tools.map((t, i) => {
+              const locked = t.premium && !subLoading && !hasAccess;
+              return (
+                <li
+                  key={t.title}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${120 + ci * 70 + i * 40}ms` }}
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15">
-                    <t.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
-                  </div>
-                  <div>
-                    <div className="font-display text-lg text-foreground">
-                      {t.title}
+                  <button
+                    onClick={() => navigate(locked ? "/upgrade" : t.to)}
+                    className="glass-card relative flex h-full w-full flex-col items-start gap-3 rounded-3xl p-5 text-left transition-transform hover:scale-[1.03]"
+                  >
+                    {locked && (
+                      <span
+                        className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40"
+                        aria-label="Premium"
+                      >
+                        <Lock className="h-3.5 w-3.5" strokeWidth={1.8} />
+                      </span>
+                    )}
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${locked ? "bg-primary/10" : "bg-primary/15"}`}>
+                      <t.icon className={`h-6 w-6 ${locked ? "text-primary/60" : "text-primary"}`} strokeWidth={1.5} />
                     </div>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      {t.desc}
-                    </p>
-                  </div>
-                </button>
-              </li>
-            ))}
+                    <div>
+                      <div className="font-display text-lg text-foreground">
+                        {t.title}
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {t.desc}
+                      </p>
+                      {locked && (
+                        <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-primary/80">
+                          Premium
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </section>
       ))}
