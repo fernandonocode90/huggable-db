@@ -93,6 +93,8 @@ const UserDetail = () => {
   const [setDay, setSetDay] = useState("");
   const [banReason, setBanReason] = useState("");
   const [newNote, setNewNote] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const load = async () => {
     if (!userId) return;
@@ -369,6 +371,76 @@ const UserDetail = () => {
                       }
                     >
                       Apagar tudo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+
+          {/* Delete user permanently */}
+          {!isMe && (
+            <div className="space-y-2 rounded-lg border border-destructive/50 bg-destructive/5 p-4 lg:col-span-2">
+              <Label className="flex items-center gap-2 text-sm">
+                <Trash2 className="h-4 w-4 text-destructive" /> Deletar usuário permanentemente
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Remove a conta do Supabase Auth + todos os dados. O email fica livre para se cadastrar
+                novamente. <strong className="text-destructive">Irreversível.</strong>
+              </p>
+              <AlertDialog
+                onOpenChange={(open) => {
+                  if (!open) setDeleteConfirm("");
+                }}
+              >
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" disabled={busy || deleting}>
+                    {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Deletar usuário"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Deletar {p.email} para sempre?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Isso vai apagar a conta de auth, todos os dados e liberar o email para um
+                      novo cadastro. Para confirmar, digite o email abaixo:
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <Input
+                    placeholder={p.email ?? ""}
+                    value={deleteConfirm}
+                    onChange={(e) => setDeleteConfirm(e.target.value)}
+                    autoComplete="off"
+                  />
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={deleteConfirm.trim().toLowerCase() !== (p.email ?? "").toLowerCase()}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={async () => {
+                        setDeleting(true);
+                        try {
+                          const { data: res, error } = await supabase.functions.invoke(
+                            "admin-delete-user",
+                            { body: { user_id: p.id } },
+                          );
+                          if (error) throw error;
+                          if ((res as { error?: string })?.error) {
+                            throw new Error((res as { error: string }).error);
+                          }
+                          toast.success("Usuário deletado");
+                          navigate("/admin/users");
+                        } catch (err) {
+                          toast.error(
+                            err instanceof Error ? err.message : "Falha ao deletar usuário",
+                          );
+                        } finally {
+                          setDeleting(false);
+                          setDeleteConfirm("");
+                        }
+                      }}
+                    >
+                      Deletar para sempre
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
