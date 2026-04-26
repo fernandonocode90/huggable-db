@@ -129,7 +129,7 @@ const Auth = () => {
             <span className="text-foreground">Wealth Code</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {mode === "signin" ? "Enter the sanctuary" : "Begin your journey"}
+            {mode === "signin" ? "Welcome back to your sanctuary" : "365 days of biblical wealth wisdom"}
           </p>
         </div>
 
