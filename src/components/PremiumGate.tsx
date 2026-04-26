@@ -2,6 +2,7 @@ import { ArrowRight, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PremiumGateProps {
@@ -17,6 +18,7 @@ export const PremiumGate = ({
 }: PremiumGateProps) => {
   const navigate = useNavigate();
   const { loading, premium } = useSubscription();
+  const { isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -29,7 +31,7 @@ export const PremiumGate = ({
     );
   }
 
-  if (premium) return <>{children}</>;
+  if (premium || isAdmin) return <>{children}</>;
 
   return (
     <AppShell>
