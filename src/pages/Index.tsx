@@ -91,7 +91,7 @@ const Index = () => {
     let cancelled = false;
 
     (async () => {
-      const [devotionalResult, previewResult] = await Promise.all([
+      const [devotionalResult, previewResult, audioResult] = await Promise.all([
         supabase
           .from("daily_devotionals")
           .select(
@@ -103,19 +103,26 @@ const Index = () => {
           _from_day: currentDay,
           _to_day: Math.min(currentDay + 6, totalDays),
         }),
+        supabase
+          .from("daily_audios")
+          .select("title, duration_seconds")
+          .eq("day_number", currentDay)
+          .maybeSingle(),
       ]);
 
       if (cancelled) return;
 
       const dev = (devotionalResult.data as Devotional | null) ?? null;
       const preview = (previewResult.data as WeekPreviewItem[] | null) ?? [];
+      const audio = (audioResult.data as TodayAudio | null) ?? null;
       setDevotional(dev);
       setWeekPreview(preview);
+      setTodayAudio(audio);
       setContentLoading(false);
       try {
         sessionStorage.setItem(
           HOME_CACHE_KEY,
-          JSON.stringify({ userId, day: currentDay, devotional: dev, weekPreview: preview } satisfies HomeCache),
+          JSON.stringify({ userId, day: currentDay, devotional: dev, weekPreview: preview, todayAudio: audio } satisfies HomeCache),
         );
       } catch { /* ignore */ }
     })();
