@@ -484,6 +484,39 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_calculations: {
+        Row: {
+          calculator: string
+          created_at: string
+          id: string
+          inputs: Json
+          name: string
+          snapshot: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calculator: string
+          created_at?: string
+          id?: string
+          inputs?: Json
+          name: string
+          snapshot?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calculator?: string
+          created_at?: string
+          id?: string
+          inputs?: Json
+          name?: string
+          snapshot?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_admin_notes: {
         Row: {
           admin_id: string

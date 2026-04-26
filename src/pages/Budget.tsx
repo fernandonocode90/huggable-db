@@ -27,6 +27,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatCurrency } from "@/lib/compoundInterest";
+import { SavedScenarios } from "@/components/SavedScenarios";
+
+interface BudgetInputs { income: string }
+interface BudgetSnapshot { income: number; needs: number; wants: number; savings: number }
 
 const DEFAULT_INCOME = 5000;
 
@@ -191,6 +195,14 @@ const Budget = () => {
           belongs to your future.
         </p>
       </section>
+
+      <SavedScenarios<BudgetInputs, BudgetSnapshot>
+        calculator="budget"
+        currentInputs={{ income }}
+        currentSnapshot={{ income: value, needs: split.needs, wants: split.wants, savings: split.savings }}
+        formatSummary={(e) => `${fmt(e.snapshot?.income ?? 0)}/mo income`}
+        onLoad={(e) => setIncome(String(e.inputs.income ?? DEFAULT_INCOME))}
+      />
     </AppShell>
   );
 };

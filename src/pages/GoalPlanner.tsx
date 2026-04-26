@@ -17,6 +17,10 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartCard, GoldGradients, tooltipStyle } from "@/components/charts/ChartTheme";
+import { SavedScenarios } from "@/components/SavedScenarios";
+
+interface GoalInputs { goal: string; years: string; principal: string; rate: string }
+interface GoalSnapshot { monthly: number; goal: number; years: number }
 
 const num = (v: string) => {
   const n = Number(v.replace(/,/g, "."));
@@ -182,6 +186,23 @@ const GoalPlanner = () => {
           to poverty." — Proverbs 21:5
         </p>
       </section>
+
+      <SavedScenarios<GoalInputs, GoalSnapshot>
+        calculator="goal_planner"
+        currentInputs={{ goal, years, principal, rate }}
+        currentSnapshot={{ monthly: monthly === Infinity ? 0 : monthly, goal: g, years: y }}
+        formatSummary={(e) => {
+          const fv = e.snapshot?.goal ?? 0;
+          const m = e.snapshot?.monthly ?? 0;
+          return `${formatCurrency(fv, "USD")} in ${e.snapshot?.years ?? 0}y · ${formatCurrency(m, "USD")}/mo`;
+        }}
+        onLoad={(e) => {
+          setGoal(String(e.inputs.goal ?? "100000"));
+          setYears(String(e.inputs.years ?? "10"));
+          setPrincipal(String(e.inputs.principal ?? "0"));
+          setRate(String(e.inputs.rate ?? "8"));
+        }}
+      />
 
       <Disclaimer variant="financial" />
     </AppShell>
