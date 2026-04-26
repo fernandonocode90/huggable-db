@@ -385,18 +385,83 @@ const HelpDialog = () => (
         <HelpCircle className="h-5 w-5" strokeWidth={1.5} />
       </button>
     </DialogTrigger>
-    <DialogContent className="max-w-md">
+    <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
       <DialogHeader>
-        <DialogTitle className="font-display text-xl">Snowball vs Avalanche</DialogTitle>
-        <DialogDescription className="text-sm leading-relaxed">
-          <strong>Snowball:</strong> pay smallest balance first. Quick wins build momentum.
-          Most people stick with it longer — proven by Northwestern + HBS research.
-          <br /><br />
-          <strong>Avalanche:</strong> pay highest interest rate first. Mathematically saves the
-          most money. Better for the disciplined.
-          <br /><br />
-          Add every debt with its balance, APR, and minimum payment. Add an extra payment you can
-          commit each month. We simulate both side-by-side.
+        <DialogTitle className="font-display text-xl">How this calculator works</DialogTitle>
+        <DialogDescription asChild>
+          <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
+            <section>
+              <p className="font-display text-foreground">1. The two strategies</p>
+              <p className="mt-1">
+                <strong className="text-foreground">Snowball</strong> — pay the
+                <em> smallest balance </em> first. The early "win" of erasing a debt builds
+                momentum. Northwestern + HBS research shows most people stick with this method
+                longer because of the psychological boost.
+              </p>
+              <p className="mt-2">
+                <strong className="text-foreground">Avalanche</strong> — pay the
+                <em> highest interest rate (APR) </em> first. Mathematically the cheapest path:
+                you stop paying the most expensive interest as fast as possible. Best when you
+                trust yourself to stay disciplined without quick wins.
+              </p>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">2. How payments are applied each month</p>
+              <ol className="mt-1 list-decimal space-y-1 pl-5">
+                <li>Interest accrues on every debt's current balance.</li>
+                <li>Every debt receives its <strong>minimum payment</strong>.</li>
+                <li>The full <strong>extra payment</strong> is thrown at the #1 debt for the
+                  current strategy (the one marked "← extra here").</li>
+                <li>When a debt hits zero, its minimum permanently <strong>rolls over</strong> and
+                  joins the extra pool — that's the real "snowball effect".</li>
+              </ol>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">3. Why snowball and avalanche sometimes look identical</p>
+              <p className="mt-1">
+                If your <em>smallest</em> balance also happens to be your <em>highest</em> APR
+                (very common with credit cards), both strategies pick the same order — so you'll
+                see the same time and interest. They only diverge when a small low-rate debt
+                competes with a big high-rate debt.
+              </p>
+              <p className="mt-2">
+                Try the default scenario: the $800 store card (26%) is smallest <em>and</em>
+                highest APR — both strategies start there. But after that, snowball jumps to the
+                $5,500 card while avalanche keeps attacking by rate. The order in the
+                "Payoff order" card updates live when you switch.
+              </p>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">4. What each result means</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li><strong>Debt-free in</strong> — months until <em>every</em> debt is at zero
+                  using the currently selected strategy.</li>
+                <li><strong>Total interest</strong> — every dollar you'll pay above the original
+                  balances, summed across all months and all debts.</li>
+                <li><strong>Snowball vs Avalanche cards</strong> — both run side by side so you
+                  can see the trade-off without switching tabs.</li>
+                <li><strong>Chart</strong> — total outstanding balance over time. The faster a
+                  curve hits zero, the faster that strategy wins.</li>
+              </ul>
+            </section>
+
+            <section>
+              <p className="font-display text-foreground">5. Inputs</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li><strong>Balance</strong> — what you currently owe on each debt.</li>
+                <li><strong>APR %</strong> — annual interest rate from the lender. We compound
+                  monthly (APR ÷ 12).</li>
+                <li><strong>Min/mo</strong> — the contractual minimum your lender requires. If the
+                  total minimums don't even cover the monthly interest, no payoff is possible —
+                  the calculator will flag that.</li>
+                <li><strong>Extra/mo</strong> — anything above the minimums. This is the lever
+                  that decides how fast you escape.</li>
+              </ul>
+            </section>
+          </div>
         </DialogDescription>
       </DialogHeader>
     </DialogContent>
