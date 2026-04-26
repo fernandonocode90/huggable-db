@@ -7,6 +7,7 @@ import {
   Crown,
   Flame,
   Headphones,
+  Lock,
   Share2,
   Sparkles,
 } from "lucide-react";
