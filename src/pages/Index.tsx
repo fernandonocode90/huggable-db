@@ -135,69 +135,114 @@ const Index = () => {
 
   return (
     <AppShell>
+      {/* Compact greeting */}
       <header className="animate-fade-up">
         <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
           Daily sanctuary
         </p>
-        <h1 className="mt-2 font-display text-4xl leading-tight text-foreground">
+        <h1 className="mt-2 font-display text-3xl leading-tight text-foreground">
           Peace be with you, <span className="gold-text">{greetingName}</span>
         </h1>
-        <p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground/80">
-          One verse. One reflection. One step closer to wisdom — your day {currentDay} of {totalDays} awaits.
-        </p>
       </header>
 
+      {/* HERO — Today's audio (dominant card) */}
       <section
-        className="glass-card mt-7 overflow-hidden rounded-3xl p-5 animate-fade-up"
-        style={{ animationDelay: "80ms" }}
+        className="relative mt-6 animate-fade-up"
+        style={{ animationDelay: "60ms" }}
       >
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-28 opacity-80"
-          style={{ background: "var(--gradient-radial-glow)" }}
-          aria-hidden
-        />
-        <div className="relative">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.24em] text-primary">
-                Today’s focus
-              </p>
-              <div className="mt-2 flex items-end gap-3">
-                <span className="font-display text-5xl leading-none gold-text inline-block pl-1 pr-0.5 -ml-1">{currentDay}</span>
-                <span className="pb-1 text-sm text-muted-foreground">of {totalDays} days</span>
-              </div>
-            </div>
-            <div className="rounded-2xl bg-primary/15 p-3 ring-1 ring-primary/30">
-              <Headphones className="h-6 w-6 text-primary" strokeWidth={1.6} />
-            </div>
-          </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/audio?day=${currentDay}`)}
+          className="glass-card relative w-full overflow-hidden rounded-[2rem] p-7 text-left transition-transform hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+          aria-label={`Play today's audio — Day ${currentDay}`}
+        >
+          {/* Layered radial glow */}
+          <div
+            className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full opacity-70 blur-3xl"
+            style={{ background: "hsl(var(--primary) / 0.45)" }}
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.18] mix-blend-screen"
+            style={{
+              backgroundImage: `url(${scriptureBg})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            aria-hidden
+          />
 
-          <div className="mt-6 grid grid-cols-3 gap-2">
-            {[
-              { label: "Streak", value: String(streak), icon: Flame },
-              { label: "Done", value: String(completedCount), icon: Sparkles },
-              { label: "Next", value: `Day ${Math.min(currentDay + 1, totalDays)}`, icon: ArrowRight },
-            ].map(({ label, value, icon: Icon }) => (
-              <div key={label} className="rounded-2xl bg-background/25 px-3 py-3 text-center ring-1 ring-border/50">
-                <Icon className="mx-auto h-4 w-4 text-primary" strokeWidth={1.7} />
-                <div className="mt-2 text-sm font-medium text-foreground">{value}</div>
-                <div className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  {label}
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-primary">
+                Today’s teaching
+              </p>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                Day {currentDay} / {totalDays}
+              </span>
+            </div>
+
+            {/* Big circular artwork */}
+            <div className="mx-auto mt-6 flex h-44 w-44 items-center justify-center">
+              <div
+                className="relative flex h-full w-full items-center justify-center rounded-full ring-1 ring-primary/40"
+                style={{
+                  background:
+                    "radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.55), hsl(var(--primary) / 0.15) 60%, transparent 75%), conic-gradient(from 0deg, hsl(var(--primary) / 0.3), hsl(var(--primary-glow) / 0.5), hsl(var(--primary) / 0.3))",
+                  boxShadow:
+                    "0 0 60px hsl(var(--primary) / 0.45), inset 0 0 30px hsl(var(--primary) / 0.25)",
+                }}
+              >
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-background/40 ring-1 ring-primary/30 backdrop-blur-sm">
+                  <span className="font-display text-5xl gold-text">{currentDay}</span>
+                </div>
+                <div
+                  className="absolute -bottom-1 -right-1 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_0_25px_hsl(var(--primary)/0.7)]"
+                  aria-hidden
+                >
+                  <Headphones className="h-6 w-6" strokeWidth={2} />
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="mt-5 flex gap-3">
-            <Button className="flex-1 gap-2" onClick={() => navigate(`/audio?day=${currentDay}`)}>
-              <Headphones className="h-4 w-4" />
-              Listen now
-            </Button>
-            <Button variant="outline" className="gap-2" onClick={() => navigate("/audio/history")}>
-              <ArrowRight className="h-4 w-4" />
-              History
-            </Button>
+            <div className="mt-6 text-center">
+              <h2 className="font-display text-2xl text-foreground">
+                Tap to begin
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                One audio · ~5 minutes · keeps your streak alive
+              </p>
+            </div>
+
+            {/* Stats strip */}
+            <div className="mt-6 grid grid-cols-3 gap-2">
+              {[
+                { label: "Streak", value: String(streak), icon: Flame },
+                { label: "Done", value: String(completedCount), icon: Sparkles },
+                { label: "Next", value: `Day ${Math.min(currentDay + 1, totalDays)}`, icon: ArrowRight },
+              ].map(({ label, value, icon: Icon }) => (
+                <div key={label} className="rounded-2xl bg-background/25 px-3 py-2.5 text-center ring-1 ring-border/50">
+                  <Icon className="mx-auto h-3.5 w-3.5 text-primary" strokeWidth={1.7} />
+                  <div className="mt-1 text-sm font-medium text-foreground">{value}</div>
+                  <div className="mt-0.5 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        </button>
+
+        {/* Secondary action below hero */}
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); navigate("/audio/history"); }}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
+          >
+            View history
+            <ArrowRight className="h-3 w-3" />
+          </button>
         </div>
       </section>
 
