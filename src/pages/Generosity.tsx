@@ -130,6 +130,34 @@ const Generosity = () => {
         </div>
       </section>
 
+      <ChartCard title={`Lifetime impact over ${h} years`} subtitle="Total given at each generosity stage. Your current pick is highlighted.">
+        <BarChart
+          data={TIERS.map((t) => ({ name: `${t.pct}%`, label: t.label, value: (i * t.pct / 100) * h }))}
+          margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+            width={60}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(v: number, _n, item: any) => [fmt(v), item?.payload?.label ?? "Total"]}
+          />
+          <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+            {TIERS.map((t) => (
+              <Cell
+                key={t.pct}
+                fill={p >= t.pct ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.4)"}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartCard>
+
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">More blessed to give</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
