@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS paywall_last_seen_at TIMESTAMPTZ;

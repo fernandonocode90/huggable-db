@@ -398,6 +398,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          paywall_last_seen_at: string | null
           reminder_enabled: boolean
           reminder_time: string | null
           start_date: string
@@ -410,6 +411,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          paywall_last_seen_at?: string | null
           reminder_enabled?: boolean
           reminder_time?: string | null
           start_date?: string
@@ -422,6 +424,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          paywall_last_seen_at?: string | null
           reminder_enabled?: boolean
           reminder_time?: string | null
           start_date?: string
