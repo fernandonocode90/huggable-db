@@ -54,6 +54,23 @@ const Retirement = () => {
     return { future, annualWithdraw, monthlyWithdraw };
   }, [cur, mo, r, years, wr]);
 
+  const chartData = useMemo(() => {
+    const monthlyRate = r / 100 / 12;
+    const data: { age: number; balance: number; contributed: number }[] = [];
+    let totalContrib = cur;
+    for (let yr = 0; yr <= years; yr++) {
+      const months = yr * 12;
+      const grown = cur * Math.pow(1 + monthlyRate, months);
+      const contribFV =
+        monthlyRate === 0
+          ? mo * months
+          : mo * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+      totalContrib = cur + mo * months;
+      data.push({ age: a + yr, balance: grown + contribFV, contributed: totalContrib });
+    }
+    return data;
+  }, [cur, mo, r, years, a]);
+
   const fmt = (n: number) => formatCurrency(n, "USD");
 
   const reset = () => {
