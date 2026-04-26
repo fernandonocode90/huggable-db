@@ -3,8 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
-  Minus,
-  Plus,
   Search,
   Star,
   StickyNote,
