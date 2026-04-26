@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Check,
   ChevronLeft,
@@ -7,6 +7,7 @@ import {
   Download,
   Gauge,
   Loader2,
+  Lock,
   Pause,
   Play,
   RefreshCw,
@@ -14,6 +15,7 @@ import {
   RotateCw,
   Trash2,
 } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
 import { AppShell } from "@/components/swc/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -51,6 +53,9 @@ const Audio = () => {
   const { currentDay, refresh: refreshProgress } = useProgress();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { loading: subLoading, premium } = useSubscription();
+  const isLocked = !subLoading && !premium && !isAdmin;
 
   const [audio, setAudio] = useState<DailyAudio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -642,6 +647,10 @@ const Audio = () => {
   }, []);
 
   const toggle = () => {
+    if (isLocked) {
+      navigate("/upgrade");
+      return;
+    }
     const el = audioRef.current;
     if (!el) return;
 
@@ -839,13 +848,15 @@ const Audio = () => {
               </button>
 
               <button
-                aria-label={playing ? "Pause" : "Play"}
+                aria-label={isLocked ? "Unlock audio with Premium" : playing ? "Pause" : "Play"}
                 onClick={toggle}
-                disabled={!signedUrl}
+                disabled={!isLocked && !signedUrl}
                 className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40 transition-transform hover:scale-105 active:scale-95 disabled:cursor-wait disabled:opacity-60"
                 style={{ boxShadow: "0 0 30px hsl(var(--primary) / 0.4)" }}
               >
-                {!signedUrl || buffering ? (
+                {isLocked ? (
+                  <Lock className="h-7 w-7" strokeWidth={1.8} />
+                ) : !signedUrl || buffering ? (
                   <Loader2 className="h-7 w-7 animate-spin" />
                 ) : playing ? (
                   <Pause className="h-8 w-8 fill-primary" strokeWidth={0} />
