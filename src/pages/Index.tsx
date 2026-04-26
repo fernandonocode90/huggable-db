@@ -21,6 +21,11 @@ import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/use-toast";
 
+type TodayAudio = {
+  title: string | null;
+  duration_seconds: number | null;
+};
+
 type Devotional = {
   verse_reference: string | null;
   verse_text: string | null;
@@ -44,6 +49,7 @@ type HomeCache = {
   day: number;
   devotional: Devotional | null;
   weekPreview: WeekPreviewItem[];
+  todayAudio: TodayAudio | null;
 };
 
 const readHomeCache = (userId: string | null, day: number): HomeCache | null => {
@@ -72,6 +78,7 @@ const Index = () => {
   const [contentLoading, setContentLoading] = useState(!cached);
   const [devotional, setDevotional] = useState<Devotional | null>(cached?.devotional ?? null);
   const [weekPreview, setWeekPreview] = useState<WeekPreviewItem[]>(cached?.weekPreview ?? []);
+  const [todayAudio, setTodayAudio] = useState<TodayAudio | null>(cached?.todayAudio ?? null);
   const [sharingDevotional, setSharingDevotional] = useState(false);
   const { theme } = useTheme();
   const { toast } = useToast();
@@ -84,7 +91,7 @@ const Index = () => {
     let cancelled = false;
 
     (async () => {
-      const [devotionalResult, previewResult] = await Promise.all([
+      const [devotionalResult, previewResult, audioResult] = await Promise.all([
         supabase
           .from("daily_devotionals")
           .select(
@@ -96,19 +103,26 @@ const Index = () => {
           _from_day: currentDay,
           _to_day: Math.min(currentDay + 6, totalDays),
         }),
+        supabase
+          .from("daily_audios")
+          .select("title, duration_seconds")
+          .eq("day_number", currentDay)
+          .maybeSingle(),
       ]);
 
       if (cancelled) return;
 
       const dev = (devotionalResult.data as Devotional | null) ?? null;
       const preview = (previewResult.data as WeekPreviewItem[] | null) ?? [];
+      const audio = (audioResult.data as TodayAudio | null) ?? null;
       setDevotional(dev);
       setWeekPreview(preview);
+      setTodayAudio(audio);
       setContentLoading(false);
       try {
         sessionStorage.setItem(
           HOME_CACHE_KEY,
-          JSON.stringify({ userId, day: currentDay, devotional: dev, weekPreview: preview } satisfies HomeCache),
+          JSON.stringify({ userId, day: currentDay, devotional: dev, weekPreview: preview, todayAudio: audio } satisfies HomeCache),
         );
       } catch { /* ignore */ }
     })();
@@ -194,11 +208,13 @@ const Index = () => {
                   </span>
                   <span className="text-sm text-muted-foreground">/ {totalDays}</span>
                 </div>
-                <p className="mt-3 text-sm leading-snug text-foreground/85">
-                  Tap to begin
+                <p className="mt-3 text-sm leading-snug text-foreground/85 line-clamp-2">
+                  {todayAudio?.title ?? "Tap to begin"}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  ~5 min · keeps your streak alive
+                  {todayAudio?.duration_seconds
+                    ? `${Math.max(1, Math.round(todayAudio.duration_seconds / 60))} min · keeps your streak alive`
+                    : "~5 min · keeps your streak alive"}
                 </p>
               </div>
 
