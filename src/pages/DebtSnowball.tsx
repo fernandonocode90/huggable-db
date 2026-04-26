@@ -326,15 +326,44 @@ const DebtSnowball = () => {
       )}
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-primary">Payoff order ({strategy})</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary">
+            Payoff order ({strategy})
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Extra goes to #1
+          </p>
+        </div>
         <ol className="mt-3 space-y-1.5 text-sm text-foreground">
           {ordered.map((d, i) => (
-            <li key={d.id} className="flex items-center justify-between gap-3">
-              <span><strong className="text-primary">{i + 1}.</strong> {d.name}</span>
-              <span className="text-xs text-muted-foreground">{fmt(num(d.balance))} · {num(d.rate)}%</span>
+            <li
+              key={d.id}
+              className={`flex items-center justify-between gap-3 rounded-xl px-2 py-1.5 ${
+                i === 0 ? "bg-primary/10 ring-1 ring-primary/30" : ""
+              }`}
+            >
+              <span>
+                <strong className={i === 0 ? "gold-text" : "text-primary"}>{i + 1}.</strong>{" "}
+                {d.name}
+                {i === 0 && (
+                  <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-primary">
+                    ← extra here
+                  </span>
+                )}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {fmt(num(d.balance))} · {num(d.rate)}%
+              </span>
             </li>
           ))}
         </ol>
+        {snowball.valid && avalanche.valid && snowball.months === avalanche.months && Math.abs(snowball.totalInterest - avalanche.totalInterest) < 1 && (
+          <p className="mt-4 rounded-2xl border border-border/40 bg-muted/10 p-3 text-xs leading-relaxed text-muted-foreground">
+            <strong className="text-foreground">Heads up —</strong> with these debts, snowball and
+            avalanche pick the <em>same</em> order, so the time and interest are identical. They
+            only diverge when your smallest balance is <em>not</em> your highest-APR debt.
+          </p>
+        )}
       </section>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
