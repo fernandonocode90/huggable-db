@@ -310,7 +310,8 @@ const Index = () => {
                     <button
                       type="button"
                       disabled={sharingDevotional}
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation();
                         if (!devotional.verse_text) return;
                         setSharingDevotional(true);
                         try {
