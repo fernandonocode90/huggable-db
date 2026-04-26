@@ -56,10 +56,10 @@ const Generosity = () => {
           <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
         </button>
         <div className="flex-1 text-center">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Open Hands</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">First Fruits & Open Hands</p>
           <h1 className="mt-1 font-display text-2xl">
-            <span className="gold-text">Generosity</span>{" "}
-            <span className="text-foreground">Planner</span>
+            <span className="gold-text">Tithe</span>{" "}
+            <span className="text-foreground">& Generosity</span>
           </h1>
         </div>
         <HelpDialog />
