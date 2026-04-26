@@ -311,7 +311,7 @@ const Audio = () => {
       cancelled = true;
       persistProgressSnapshot();
     };
-  }, [requestedDay, userId]);
+  }, [requestedDay, userId, isLocked]);
 
   useEffect(() => {
     const el = audioRef.current;
