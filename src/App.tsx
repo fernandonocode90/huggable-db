@@ -100,8 +100,8 @@ const App = () => (
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                    <Route path="/audio" element={<ProtectedRoute><PremiumGate title="Daily audios are premium" description="Unlock 365 days of guided audio teachings with a 7-day free trial."><Audio /></PremiumGate></ProtectedRoute>} />
-                    <Route path="/audio/history" element={<ProtectedRoute><PremiumGate title="Audio library is premium" description="Subscribe to access every past audio teaching."><AudioHistory /></PremiumGate></ProtectedRoute>} />
+                    <Route path="/audio" element={<ProtectedRoute><Audio /></ProtectedRoute>} />
+                    <Route path="/audio/history" element={<ProtectedRoute><AudioHistory /></ProtectedRoute>} />
                     <Route path="/read" element={<ProtectedRoute><Read /></ProtectedRoute>} />
                     <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
                     <Route path="/tools/calculator" element={<ProtectedRoute><PremiumGate title="Compound Interest is premium" description="Unlock the full calculator and save your scenarios."><Calculator /></PremiumGate></ProtectedRoute>} />
