@@ -478,6 +478,48 @@ const Users = () => {
           Next
         </Button>
       </div>
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteConfirm("");
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar {deleteTarget?.email} para sempre?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove a conta do Supabase Auth + todos os dados. O email fica livre para se cadastrar
+              novamente. Para confirmar, digite o email abaixo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            placeholder={deleteTarget?.email ?? ""}
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            autoComplete="off"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={
+                deleting ||
+                deleteConfirm.trim().toLowerCase() !== (deleteTarget?.email ?? "").toLowerCase()
+              }
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void deleteUser();
+              }}
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Deletar para sempre"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
