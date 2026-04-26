@@ -179,70 +179,113 @@ const Profile = () => {
         ))}
       </div>
 
-      <ul className="mt-6 space-y-3 animate-fade-up" style={{ animationDelay: "180ms" }}>
-        {([
-          ...(isAdmin ? [{ icon: Shield, label: "Admin Sanctuary", note: "Manage audios", onClick: () => navigate("/admin") }] : []),
-          { icon: Flame, label: "Streak & Activity", note: "Track your practice", onClick: () => navigate("/profile/streak") },
-          { icon: History, label: "Audio History", note: "Browse past audios by month", onClick: () => navigate("/audio/history") },
+      {(() => {
+        type MenuItem = {
+          icon: typeof Shield;
+          label: string;
+          note: string;
+          onClick?: () => void;
+        };
+
+        const sections: { title: string; items: MenuItem[] }[] = [
+          ...(isAdmin
+            ? [{
+                title: "Admin",
+                items: [{ icon: Shield, label: "Admin Sanctuary", note: "Manage audios", onClick: () => navigate("/admin") }],
+              }]
+            : []),
           {
-            icon: Share2,
-            label: "Share the app",
-            note: "Invite a friend to this sanctuary",
-            onClick: async () => {
-              const shareUrl = "https://solomonwealthcode.com";
-              const shareText =
-                "I'm using Solomon Wealth Code for daily Bible meditation. Join me:";
-              try {
-                if (navigator.share) {
-                  await navigator.share({
-                    title: "Solomon Wealth Code",
-                    text: shareText,
-                    url: shareUrl,
-                  });
-                } else {
-                  await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-                  toast({ title: "Link copied", description: "Share it with a friend." });
-                }
-              } catch (err) {
-                if ((err as Error).name !== "AbortError") {
-                  toast({
-                    title: "Couldn't share",
-                    description: (err as Error).message,
-                    variant: "destructive",
-                  });
-                }
-              }
-            },
+            title: "Activity",
+            items: [
+              { icon: Flame, label: "Streak & Activity", note: "Track your practice", onClick: () => navigate("/profile/streak") },
+              { icon: History, label: "Audio History", note: "Browse past audios by month", onClick: () => navigate("/audio/history") },
+            ],
           },
-          { icon: ShieldCheck, label: "Privacy & Account", note: "Name, password, account", onClick: () => navigate("/profile/privacy") },
-          { icon: FileText, label: "Privacy Policy", note: "How we handle your data", onClick: () => navigate("/privacy-policy") },
-          { icon: FileText, label: "Terms of Service", note: "The rules of this sanctuary", onClick: () => navigate("/terms") },
           {
-            icon: Mail,
-            label: "Contact Support",
-            note: "Questions, feedback or bug reports",
-            onClick: () => {
-              window.location.href =
-                "mailto:support@solomonwealthcode.com?subject=Solomon%20Wealth%20Code%20Support";
-            },
+            title: "Account",
+            items: [
+              { icon: ShieldCheck, label: "Privacy & Account", note: "Name, password, account", onClick: () => navigate("/profile/privacy") },
+              { icon: FileText, label: "Privacy Policy", note: "How we handle your data", onClick: () => navigate("/privacy-policy") },
+              { icon: FileText, label: "Terms of Service", note: "The rules of this sanctuary", onClick: () => navigate("/terms") },
+            ],
           },
-        ] as Array<{icon: typeof Shield; label: string; note: string; onClick?: () => void}>).map((item) => (
-          <li key={item.label}>
-            <button onClick={item.onClick} className="glass-card flex w-full items-center gap-4 rounded-2xl px-5 py-4 text-left transition-transform hover:scale-[1.02]">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
-                <item.icon className="h-5 w-5 text-primary" strokeWidth={1.6} />
+          {
+            title: "Support",
+            items: [
+              {
+                icon: Share2,
+                label: "Share the app",
+                note: "Invite a friend to this sanctuary",
+                onClick: async () => {
+                  const shareUrl = "https://solomonwealthcode.com";
+                  const shareText =
+                    "I'm using Solomon Wealth Code for daily Bible meditation. Join me:";
+                  try {
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: "Solomon Wealth Code",
+                        text: shareText,
+                        url: shareUrl,
+                      });
+                    } else {
+                      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+                      toast({ title: "Link copied", description: "Share it with a friend." });
+                    }
+                  } catch (err) {
+                    if ((err as Error).name !== "AbortError") {
+                      toast({
+                        title: "Couldn't share",
+                        description: (err as Error).message,
+                        variant: "destructive",
+                      });
+                    }
+                  }
+                },
+              },
+              {
+                icon: Mail,
+                label: "Contact Support",
+                note: "Questions, feedback or bug reports",
+                onClick: () => {
+                  window.location.href =
+                    "mailto:support@solomonwealthcode.com?subject=Solomon%20Wealth%20Code%20Support";
+                },
+              },
+            ],
+          },
+        ];
+
+        return (
+          <div className="mt-6 space-y-6 animate-fade-up" style={{ animationDelay: "180ms" }}>
+            {sections.map((section) => (
+              <div key={section.title}>
+                <p className="px-2 mb-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  {section.title}
+                </p>
+                <ul className="space-y-2">
+                  {section.items.map((item) => (
+                    <li key={item.label}>
+                      <button
+                        onClick={item.onClick}
+                        className="glass-card flex w-full items-center gap-4 rounded-2xl px-5 py-4 text-left transition-transform hover:scale-[1.02]"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+                          <item.icon className="h-5 w-5 text-primary" strokeWidth={1.6} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-foreground">{item.label}</div>
+                          <div className="text-xs text-muted-foreground">{item.note}</div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-foreground">
-                  {item.label}
-                </div>
-                <div className="text-xs text-muted-foreground">{item.note}</div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </li>
-        ))}
-      </ul>
+            ))}
+          </div>
+        );
+      })()}
 
       <div
         className="glass-card mt-6 rounded-2xl p-4 animate-fade-up"
@@ -317,14 +360,16 @@ const Profile = () => {
         </p>
       </div>
 
-      <button
-        onClick={async () => { await signOut(); navigate("/auth"); }}
-        className="glass-card mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-medium text-foreground/80 transition-colors hover:text-destructive animate-fade-up"
-        style={{ animationDelay: "280ms" }}
-      >
-        <LogOut className="h-4 w-4" />
-        Sign Out
-      </button>
+      {/* Sign Out — discreet text link, not a card competing with menu items */}
+      <div className="mt-8 mb-4 flex justify-center animate-fade-up" style={{ animationDelay: "280ms" }}>
+        <button
+          onClick={async () => { await signOut(); navigate("/auth"); }}
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-destructive"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          Sign out
+        </button>
+      </div>
     </AppShell>
   );
 };
