@@ -37,15 +37,17 @@ const simulate = (principal: number, annualRate: number, monthlyPayment: number)
   let months = 0;
   let interestPaid = 0;
   const MAX = 12 * 60;
-  if (monthlyPayment <= principal * r) return { months: Infinity, interest: Infinity };
+  const series: { month: number; balance: number }[] = [{ month: 0, balance: principal }];
+  if (monthlyPayment <= principal * r) return { months: Infinity, interest: Infinity, series };
   while (bal > 0 && months < MAX) {
     months++;
     const interest = bal * r;
     interestPaid += interest;
     bal = bal + interest - monthlyPayment;
     if (bal < 0) bal = 0;
+    series.push({ month: months, balance: bal });
   }
-  return { months, interest: interestPaid };
+  return { months, interest: interestPaid, series };
 };
 
 const LoanPayoff = () => {
