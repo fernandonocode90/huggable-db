@@ -17,6 +17,10 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { formatCurrency } from "@/lib/compoundInterest";
 import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartCard, tooltipStyle } from "@/components/charts/ChartTheme";
+import { SavedScenarios } from "@/components/SavedScenarios";
+
+interface DebtInputs { debts: Debt[]; extra: string; strategy: Strategy }
+interface DebtSnapshot { months: number; totalInterest: number; strategy: Strategy }
 
 interface Debt {
   id: string;
