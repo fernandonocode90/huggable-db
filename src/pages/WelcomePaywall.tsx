@@ -21,6 +21,8 @@ const WelcomePaywall = () => {
   const [plan, setPlan] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
 
+  const [dismissing, setDismissing] = useState(false);
+
   // Mark as seen as soon as the screen loads — even if user dismisses.
   useEffect(() => {
     if (!user) return;
@@ -30,7 +32,17 @@ const WelcomePaywall = () => {
       .eq("id", user.id);
   }, [user]);
 
-  const close = () => navigate("/", { replace: true });
+  const close = async () => {
+    if (dismissing) return;
+    setDismissing(true);
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ paywall_last_seen_at: new Date().toISOString() })
+        .eq("id", user.id);
+    }
+    navigate("/", { replace: true });
+  };
 
   const startCheckout = async () => {
     setLoading(true);
