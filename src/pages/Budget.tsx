@@ -195,6 +195,14 @@ const Budget = () => {
           belongs to your future.
         </p>
       </section>
+
+      <SavedScenarios<BudgetInputs, BudgetSnapshot>
+        calculator="budget"
+        currentInputs={{ income }}
+        currentSnapshot={{ income: value, needs: split.needs, wants: split.wants, savings: split.savings }}
+        formatSummary={(e) => `${fmt(e.snapshot?.income ?? 0)}/mo income`}
+        onLoad={(e) => setIncome(String(e.inputs.income ?? DEFAULT_INCOME))}
+      />
     </AppShell>
   );
 };
