@@ -55,6 +55,24 @@ const GoalPlanner = () => {
   const totalContrib = monthly * y * 12;
   const interestEarned = g - p - totalContrib;
 
+  const chartData = useMemo(() => {
+    const months = Math.max(1, Math.round(y * 12));
+    const monthlyRate = r / 100 / 12;
+    const points = Math.min(60, months);
+    const step = months / points;
+    const data: { year: number; balance: number }[] = [];
+    for (let i = 0; i <= points; i++) {
+      const m = Math.round(i * step);
+      const grown = p * Math.pow(1 + monthlyRate, m);
+      const contribFV =
+        monthlyRate === 0
+          ? monthly * m
+          : monthly * ((Math.pow(1 + monthlyRate, m) - 1) / monthlyRate);
+      data.push({ year: +(m / 12).toFixed(2), balance: grown + contribFV });
+    }
+    return data;
+  }, [g, p, r, y, monthly]);
+
   const fmt = (n: number) => formatCurrency(n, "USD");
 
   const reset = () => {
