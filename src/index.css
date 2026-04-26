@@ -235,7 +235,8 @@
   .animate-float-slow,
   .animate-glow-pulse,
   .animate-twinkle,
-  .animate-fade-up {
+  .animate-fade-up,
+  .animate-spin-slow {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
