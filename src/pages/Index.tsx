@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
-import { Button } from "@/components/ui/button";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import scriptureBg from "@/assets/scripture-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
