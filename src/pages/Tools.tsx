@@ -1,12 +1,10 @@
 import {
   Banknote,
   Calculator as CalculatorIcon,
-  Coins,
   Crown,
   HandHeart,
   Home,
   Hourglass,
-  Moon,
   PieChart,
   Scale,
   Shield,
@@ -51,8 +49,7 @@ const CATEGORIES: Category[] = [
     tools: [
       { icon: Shield, title: "Emergency Fund", desc: "Build the fortress before the storm.", to: "/tools/emergency-fund" },
       { icon: TrendingDown, title: "Debt Payoff", desc: "Snowball vs avalanche, simulated.", to: "/tools/debt-snowball" },
-      { icon: Banknote, title: "Loan Payoff", desc: "Save years and interest with extra.", to: "/tools/loan-payoff" },
-      { icon: Home, title: "Mortgage + Extra", desc: "Simulate financing with extra amortization.", to: "/tools/mortgage" },
+      { icon: Home, title: "Loans & Mortgage", desc: "Any loan or mortgage with extra payments.", to: "/tools/mortgage" },
     ],
   },
   {
@@ -61,10 +58,8 @@ const CATEGORIES: Category[] = [
     blurb: "Order your house before you order your wealth.",
     tools: [
       { icon: PieChart, title: "Budget 50/30/20", desc: "Split your income with steward's wisdom.", to: "/tools/budget" },
-      { icon: Coins, title: "Tithe & Offering", desc: "Honor the firstfruits with clarity.", to: "/tools/tithe" },
-      { icon: HandHeart, title: "Generosity", desc: "Plan a lifetime of open hands.", to: "/tools/generosity" },
+      { icon: HandHeart, title: "Tithe & Generosity", desc: "Plan firstfruits and a lifetime of giving.", to: "/tools/generosity" },
       { icon: Hourglass, title: "True Cost", desc: "Hours of life vs. opportunity cost.", to: "/tools/true-cost" },
-      { icon: Moon, title: "Sabbath Rest", desc: "The price — and gift — of stopping.", to: "/tools/sabbath" },
     ],
   },
 ];
@@ -83,7 +78,7 @@ const Tools = () => {
           <span className="text-foreground">& Practice</span>
         </h1>
         <p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground/75">
-          Fourteen instruments, three pillars. Each one turns biblical wisdom into a practical step.
+          Ten instruments, three pillars. Each one turns biblical wisdom into a practical step.
         </p>
       </header>
 

@@ -56,10 +56,10 @@ const Generosity = () => {
           <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
         </button>
         <div className="flex-1 text-center">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Open Hands</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">First Fruits & Open Hands</p>
           <h1 className="mt-1 font-display text-2xl">
-            <span className="gold-text">Generosity</span>{" "}
-            <span className="text-foreground">Planner</span>
+            <span className="gold-text">Tithe</span>{" "}
+            <span className="text-foreground">& Generosity</span>
           </h1>
         </div>
         <HelpDialog />
@@ -159,7 +159,10 @@ const Generosity = () => {
       </ChartCard>
 
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
-        <h2 className="font-display text-base text-foreground">More blessed to give</h2>
+        <h2 className="font-display text-base text-foreground">Honor with firstfruits — and beyond</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
+          "Honor the Lord with your wealth, with the firstfruits of all your crops." — Proverbs 3:9
+        </p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
           "Each of you should give what you have decided in your heart to give, not reluctantly or
           under compulsion, for God loves a cheerful giver." — 2 Corinthians 9:7
