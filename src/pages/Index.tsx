@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
   Calculator,
+  Crown,
   Flame,
   Headphones,
   Share2,
@@ -16,6 +17,7 @@ import scriptureBg from "@/assets/scripture-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/hooks/useProgress";
+import { useSubscription } from "@/hooks/useSubscription";
 import { isOnboardingComplete } from "@/lib/onboarding";
 import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 import { useTheme } from "@/hooks/useTheme";
@@ -82,6 +84,26 @@ const Index = () => {
   const [sharingDevotional, setSharingDevotional] = useState(false);
   const { theme } = useTheme();
   const { toast } = useToast();
+  const subscription = useSubscription();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle return from Stripe Checkout
+  useEffect(() => {
+    const status = searchParams.get("subscription");
+    if (!status) return;
+    if (status === "success") {
+      toast({
+        title: "Welcome to Premium 🎉",
+        description: "Your 7-day free trial has started. Syncing your account…",
+      });
+      void subscription.syncFromStripe();
+    } else if (status === "canceled") {
+      toast({ title: "Checkout canceled", description: "No charge was made." });
+    }
+    searchParams.delete("subscription");
+    setSearchParams(searchParams, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onboardingComplete = user ? isOnboardingComplete(user.id) : true;
 
