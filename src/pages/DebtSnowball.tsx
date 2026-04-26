@@ -52,7 +52,7 @@ const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
     }))
     .filter((d) => d.balance > 0);
 
-  if (!list.length) return { months: 0, totalInterest: 0, valid: false };
+  if (!list.length) return { months: 0, totalInterest: 0, valid: false, series: [] as { month: number; balance: number }[] };
 
   // Sort by strategy
   list.sort((a, b) =>
@@ -62,6 +62,9 @@ const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
   let months = 0;
   let totalInterest = 0;
   const MAX_MONTHS = 12 * 60; // 60-year safety cap
+  const series: { month: number; balance: number }[] = [
+    { month: 0, balance: list.reduce((s, d) => s + d.balance, 0) },
+  ];
 
   while (list.some((d) => d.balance > 0) && months < MAX_MONTHS) {
     months++;
@@ -94,9 +97,11 @@ const simulate = (debts: Debt[], strategy: Strategy, extra: number) => {
     // Spill freed minimums of paid-off debts into pool for next month
     const freed = list.filter((d) => d.balance <= 0).reduce((s, d) => s + d.min, 0);
     extra = num(String(extra)) > 0 || freed > 0 ? (extra ? extra : 0) + freed : extra;
+
+    series.push({ month: months, balance: list.reduce((s, d) => s + Math.max(0, d.balance), 0) });
   }
 
-  return { months, totalInterest, valid: true };
+  return { months, totalInterest, valid: true, series };
 };
 
 const DebtSnowball = () => {
