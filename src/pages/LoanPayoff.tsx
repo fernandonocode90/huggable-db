@@ -155,6 +155,35 @@ const LoanPayoff = () => {
         <p className="mt-1 text-xs text-muted-foreground">in interest · finish {monthsSaved} months early</p>
       </section>
 
+      {base.months !== Infinity && (
+        <ChartCard title="Outstanding balance" subtitle="How much faster the extra payment kills the debt.">
+          <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+            <GoldGradients />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+            <XAxis
+              dataKey="month"
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => `${Math.round((v as number) / 12)}y`}
+            />
+            <YAxis
+              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(v as number)}
+              width={60}
+            />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(v: number, n) => [fmt(v), n === "base" ? "Standard" : "With extra"]}
+              labelFormatter={(l) => `Month ${l}`}
+            />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Area type="monotone" dataKey="base" name="Standard" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} fill="url(#grad-muted)" />
+            <Area type="monotone" dataKey="accelerated" name="With extra" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#grad-gold)" />
+          </AreaChart>
+        </ChartCard>
+      )}
+
       <section className="glass-card mt-6 animate-fade-up rounded-3xl p-5">
         <h2 className="font-display text-base text-foreground">Owe no one anything</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
