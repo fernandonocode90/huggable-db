@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye } from "lucide-react";
+import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -78,6 +78,29 @@ const Users = () => {
   const [segment, setSegment] = useState<Segment>("all");
   const [stuckDay, setStuckDay] = useState<string>("3");
   const [exporting, setExporting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const deleteUser = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data: res, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: deleteTarget.id },
+      });
+      if (error) throw error;
+      if ((res as { error?: string })?.error) throw new Error((res as { error: string }).error);
+      toast.success("Usuário deletado");
+      setDeleteTarget(null);
+      setDeleteConfirm("");
+      void load(search, page, segment, stuckDay);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao deletar");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const callList = (q: string, p: number, seg: Segment, sd: string, limit = PAGE) =>
     supabase.rpc("admin_list_users_segmented", {
