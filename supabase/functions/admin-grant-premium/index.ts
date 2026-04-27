@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const html = buildExistingUserEmail({ displayName: foundDisplayName, months, reason });
+      const html = buildExistingUserEmail({ displayName: found.display_name, months, reason });
       const subject = months === null
         ? `🎁 You've been granted lifetime Premium on ${APP_NAME}`
         : `🎁 You've been granted Premium on ${APP_NAME}`;
