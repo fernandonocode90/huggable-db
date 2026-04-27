@@ -512,41 +512,6 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="mt-6 animate-fade-up" style={{ animationDelay: "180ms" }}>
-        <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Quick actions</p>
-        <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-          {[
-            {
-              title: "Read",
-              note: "Open Scripture",
-              icon: BookOpen,
-              onClick: () => navigate("/read"),
-            },
-            {
-              title: "Tools",
-              note: "Plan with clarity",
-              icon: Calculator,
-              onClick: () => navigate("/tools"),
-            },
-          ].map(({ title, note, icon: Icon, onClick }) => (
-            <button
-              key={title}
-              type="button"
-              onClick={onClick}
-              className="glass-card flex min-h-32 flex-col items-start justify-between rounded-3xl p-4 text-left transition-transform hover:scale-[1.02]"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15">
-                <Icon className="h-5 w-5 text-primary" strokeWidth={1.6} />
-              </div>
-              <div>
-                <div className="font-display text-lg text-foreground">{title}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{note}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </section>
-
       <section className="mt-6 animate-fade-up" style={{ animationDelay: "230ms" }}>
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
