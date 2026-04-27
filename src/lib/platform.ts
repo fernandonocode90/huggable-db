@@ -33,17 +33,45 @@ export const isNative = (): boolean => {
 
 export type Platform = "web" | "ios" | "android";
 
+/**
+ * DEV-ONLY platform override.
+ *
+ * Lets you simulate `ios` / `android` while running in the browser, so you can
+ * visually verify native-only UI changes (e.g. Stripe hidden, "Subscribe on
+ * web" notice) without building the native app.
+ *
+ * Activate from the browser console:
+ *   localStorage.setItem("__forcePlatform", "ios"); location.reload();
+ *   localStorage.setItem("__forcePlatform", "android"); location.reload();
+ *   localStorage.removeItem("__forcePlatform"); location.reload();
+ *
+ * The override is IGNORED in production builds and IGNORED when actually
+ * running natively — it can only ever flip a web preview to look like native.
+ */
+const getForcedPlatform = (): Platform | null => {
+  if (!import.meta.env.DEV) return null;
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.localStorage.getItem("__forcePlatform");
+    return v === "ios" || v === "android" || v === "web" ? v : null;
+  } catch {
+    return null;
+  }
+};
+
 export const getPlatform = (): Platform => {
   const cap = getCap();
-  if (!cap) return "web";
+  if (!cap) return getForcedPlatform() ?? "web";
   try {
     const p = typeof cap.getPlatform === "function" ? cap.getPlatform() : "web";
-    return p === "ios" || p === "android" ? p : "web";
+    if (p === "ios" || p === "android") return p;
+    return getForcedPlatform() ?? "web";
   } catch {
-    return "web";
+    return getForcedPlatform() ?? "web";
   }
 };
 
 export const isIOS = (): boolean => getPlatform() === "ios";
 export const isAndroid = (): boolean => getPlatform() === "android";
 export const isWeb = (): boolean => getPlatform() === "web";
+
