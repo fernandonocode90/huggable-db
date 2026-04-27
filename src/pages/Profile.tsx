@@ -229,6 +229,7 @@ const Profile = () => {
               { icon: ShieldCheck, label: "Privacy & Account", note: "Name, password, account", onClick: () => navigate("/profile/privacy") },
               { icon: FileText, label: "Privacy Policy", note: "How we handle your data", onClick: () => navigate("/privacy-policy") },
               { icon: FileText, label: "Terms of Service", note: "The rules of this sanctuary", onClick: () => navigate("/terms") },
+              { icon: FileText, label: "About", note: "Version, support, links", onClick: () => navigate("/about") },
             ],
           },
           {
