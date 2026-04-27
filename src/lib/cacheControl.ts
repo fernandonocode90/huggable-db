@@ -20,6 +20,40 @@ export function setSeenForceClearAt(v: string) {
 }
 
 /**
+ * Ask the active service worker registration to check for a new version
+ * and, if a new SW is waiting, tell it to activate immediately.
+ * Resolves once the new SW has taken control (or after a short timeout).
+ */
+async function activateLatestServiceWorker(timeoutMs = 4000): Promise<void> {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) return;
+    // Force the browser to fetch sw.js and check for an update.
+    await reg.update().catch(() => undefined);
+
+    const waiting = reg.waiting ?? reg.installing;
+    if (!waiting) return;
+
+    await new Promise<void>((resolve) => {
+      const done = () => resolve();
+      const timer = setTimeout(done, timeoutMs);
+      navigator.serviceWorker.addEventListener(
+        "controllerchange",
+        () => { clearTimeout(timer); done(); },
+        { once: true },
+      );
+      try {
+        waiting.postMessage({ type: "SKIP_WAITING" });
+      } catch {
+        clearTimeout(timer);
+        done();
+      }
+    });
+  } catch { /* ignore */ }
+}
+
+/**
  * Wipe everything we reasonably can on the client, then hard reload.
  * Preserves the auth session (Supabase keeps it under its own storage which
  * we deliberately do NOT clear, so the user stays logged in).
@@ -50,9 +84,29 @@ export async function fullCacheWipeAndReload() {
   window.location.replace(url.toString());
 }
 
-/** Soft reload — used for app_version bumps. */
-export function softReload() {
+/** Soft reload — used for app_version bumps. Activates a waiting SW first. */
+export async function softReload() {
+  await activateLatestServiceWorker();
   const url = new URL(window.location.href);
   url.searchParams.set("_swc_v", Date.now().toString(36));
   window.location.replace(url.toString());
+}
+
+/**
+ * One-time setup: when the active SW is replaced (a new build took over),
+ * reload the page so the user sees the new build immediately, instead of
+ * having to fully close the PWA.
+ */
+let controllerChangeBound = false;
+export function bindServiceWorkerAutoReload() {
+  if (controllerChangeBound) return;
+  if (!("serviceWorker" in navigator)) return;
+  controllerChangeBound = true;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloaded) return;
+    reloaded = true;
+    // Small delay so any in-flight request can settle.
+    setTimeout(() => window.location.reload(), 50);
+  });
 }
