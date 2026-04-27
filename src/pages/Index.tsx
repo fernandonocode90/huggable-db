@@ -77,7 +77,11 @@ const Index = () => {
     streak,
     completedCount,
     totalDays,
+    isVeteran,
+    journeyCompletions,
+    hasFinishedCurrentJourney,
   } = useProgress();
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   const userId = user?.id ?? null;
   const [cached] = useState(() => readHomeCache(userId, currentDay));
   const [contentLoading, setContentLoading] = useState(!cached);
