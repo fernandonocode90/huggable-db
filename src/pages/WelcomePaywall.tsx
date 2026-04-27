@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { NightBackground } from "@/components/swc/NightBackground";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrialEligibility } from "@/hooks/useTrialEligibility";
 import { toast } from "@/hooks/use-toast";
 
-const BENEFITS = [
+const BASE_BENEFITS = [
   "Unlock every daily audio devotional",
   "Save unlimited calculator scenarios",
   "Track your spiritual & financial progress",
   "Premium tools: Budget, Debt Payoff, Goals",
-  "7 days free, cancel anytime",
 ];
 
 const WelcomePaywall = () => {
