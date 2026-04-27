@@ -85,7 +85,7 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
         if (seenVersion !== null && version && version !== seenVersion) {
           reloadingRef.current = true;
           setSeenAppVersion(version);
-          softReload();
+          void softReload();
           return;
         }
       }
