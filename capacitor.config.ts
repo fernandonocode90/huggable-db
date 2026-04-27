@@ -56,6 +56,18 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
     },
+    // Capgo Live Updates (OTA) — dormant until you set CAPGO_APP_ID in
+    // src/lib/liveUpdates.ts. Defaults below are safe production values.
+    CapacitorUpdater: {
+      autoUpdate: true,
+      // Apply downloaded bundles on next cold start (non-disruptive).
+      directUpdate: false,
+      // Auto-rollback if the new bundle fails to call notifyAppReady() within 10s.
+      appReadyTimeout: 10000,
+      // Resets to built-in bundle if too many crashes happen.
+      autoDeleteFailed: true,
+      autoDeletePrevious: true,
+    },
   },
 };
 
