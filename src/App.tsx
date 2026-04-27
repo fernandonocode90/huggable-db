@@ -66,6 +66,7 @@ const AdminHealth = lazy(() => import("./pages/admin/Health.tsx"));
 const AdminClientErrors = lazy(() => import("./pages/admin/ClientErrors.tsx"));
 const AdminModeration = lazy(() => import("./pages/admin/Moderation.tsx"));
 const AdminOnboarding = lazy(() => import("./pages/admin/Onboarding.tsx"));
+const AdminPremium = lazy(() => import("./pages/admin/Premium.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
