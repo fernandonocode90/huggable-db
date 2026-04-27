@@ -13,6 +13,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * The `server.url` enables hot-reload from the Lovable preview while developing
  * native — comment it out before submitting to App Store / Google Play so the
  * production build is fully self-contained.
+ *
+ * For native asset generation (icon + splash) and OAuth deep links, see
+ * NATIVE_SETUP.md in the project root.
  */
 const config: CapacitorConfig = {
   appId: "app.lovable.5b8e1afd3df944d686520dc552bb9a80",
@@ -31,6 +34,10 @@ const config: CapacitorConfig = {
     backgroundColor: "#0a0a0f",
     // Keep status bar visible (we set its style at runtime via @capacitor/status-bar).
     preferredContentMode: "mobile",
+    // Custom URL scheme for OAuth deep-link callbacks.
+    // Supabase will redirect back to: app.solomonwealthcode://oauth-callback
+    // Must match CFBundleURLSchemes added to Info.plist (see NATIVE_SETUP.md).
+    scheme: "app.solomonwealthcode",
   },
 
   android: {
