@@ -10,11 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PremiumCrown } from "@/components/swc/PremiumCrown";
+import { VeteranCrown } from "@/components/swc/VeteranCrown";
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { premium } = useSubscription();
-  const { currentDay, streak, completedCount } = useProgress();
+  const { currentDay, streak, completedCount, isVeteran, journeyCompletions } = useProgress();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
