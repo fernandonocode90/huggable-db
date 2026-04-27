@@ -254,6 +254,251 @@ const UserDetail = () => {
         </div>
       </Card>
 
+      {/* Subscription / Premium */}
+      <Card className="p-6 bg-card/40 backdrop-blur border-border/40">
+        <h2 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <CreditCard className="h-4 w-4" /> Assinatura & Premium
+        </h2>
+
+        {data.subscription ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <Info label="Provedor" value={providerLabel(data.subscription.provider)} />
+              <Info label="Plano" value={planLabel(data.subscription.plan)} />
+              <Info label="Status" value={data.subscription.status} />
+              <Info
+                label="Renova/expira em"
+                value={
+                  data.subscription.current_period_end
+                    ? new Date(data.subscription.current_period_end).toLocaleString()
+                    : "—"
+                }
+              />
+              <Info
+                label="Trial até"
+                value={
+                  data.subscription.trial_end
+                    ? new Date(data.subscription.trial_end).toLocaleString()
+                    : "—"
+                }
+              />
+              <Info
+                label="Cancela ao fim do período"
+                value={data.subscription.cancel_at_period_end ? "Sim" : "Não"}
+              />
+              <Info
+                label="Valor estimado"
+                value={priceLabel(data.subscription.provider, data.subscription.plan)}
+              />
+              <Info
+                label="Atualizado em"
+                value={new Date(data.subscription.updated_at).toLocaleString()}
+              />
+            </div>
+
+            {(data.subscription.stripe_customer_id || data.subscription.stripe_subscription_id) && (
+              <div className="rounded-lg border border-border/40 p-3 space-y-2 text-xs">
+                {data.subscription.stripe_customer_id && (
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="text-muted-foreground">Stripe customer: </span>
+                      <code className="text-[10px] text-foreground break-all">
+                        {data.subscription.stripe_customer_id}
+                      </code>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => copy(data.subscription!.stripe_customer_id!, "Customer ID copiado")}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <a
+                        href={`https://dashboard.stripe.com/customers/${data.subscription.stripe_customer_id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Button size="icon" variant="ghost" className="h-7 w-7">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {data.subscription.stripe_subscription_id && (
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="text-muted-foreground">Stripe subscription: </span>
+                      <code className="text-[10px] text-foreground break-all">
+                        {data.subscription.stripe_subscription_id}
+                      </code>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => copy(data.subscription!.stripe_subscription_id!, "Subscription ID copiado")}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <a
+                        href={`https://dashboard.stripe.com/subscriptions/${data.subscription.stripe_subscription_id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Button size="icon" variant="ghost" className="h-7 w-7">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Nenhuma assinatura registrada. {p.is_premium && "(usuário tem premium grandfather)"}
+          </p>
+        )}
+
+        {/* Premium support actions */}
+        {!isMe && (
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-2 rounded-lg border border-border/40 p-4">
+              <Label className="flex items-center gap-2 text-sm">
+                <Crown className="h-4 w-4 text-primary" /> Presentear premium (manual)
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                Em branco = vitalício. Caso contrário, número de meses.
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="meses"
+                  value={grantMonths}
+                  onChange={(e) => setGrantMonths(e.target.value)}
+                  className="w-24"
+                />
+                <Input
+                  placeholder="motivo (opcional)"
+                  value={grantReason}
+                  onChange={(e) => setGrantReason(e.target.value)}
+                  className="flex-1 min-w-[120px]"
+                />
+                <Button
+                  size="sm"
+                  disabled={busy}
+                  onClick={() =>
+                    run("Premium concedido", () =>
+                      supabase.rpc("admin_grant_premium", {
+                        _user_id: p.id,
+                        _months: grantMonths ? parseInt(grantMonths, 10) : null,
+                        _reason: grantReason || null,
+                      }),
+                    )
+                  }
+                >
+                  Conceder
+                </Button>
+              </div>
+            </div>
+
+            {data.subscription?.provider === "manual" && (
+              <div className="space-y-2 rounded-lg border border-border/40 p-4">
+                <Label className="flex items-center gap-2 text-sm">
+                  <ShieldOff className="h-4 w-4 text-destructive" /> Revogar premium manual
+                </Label>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={busy}
+                  onClick={() =>
+                    run("Premium manual revogado", () =>
+                      supabase.rpc("admin_revoke_manual_premium", { _user_id: p.id }),
+                    )
+                  }
+                >
+                  Revogar agora
+                </Button>
+              </div>
+            )}
+
+            {data.subscription &&
+              data.subscription.status !== "canceled" &&
+              data.subscription.provider !== "manual" && (
+                <div className="space-y-2 rounded-lg border border-destructive/30 p-4">
+                  <Label className="flex items-center gap-2 text-sm">
+                    <Ban className="h-4 w-4 text-destructive" /> Cancelar assinatura imediatamente
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Marca como cancelada no banco. Não cancela no Stripe — faça isso pelo dashboard
+                    se necessário.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive" disabled={busy}>
+                        Cancelar agora
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          O acesso premium será encerrado imediatamente. Use apenas se o Stripe não
+                          conseguir cancelar via webhook.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Voltar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() =>
+                            run("Assinatura cancelada", () =>
+                              supabase.rpc("admin_mark_subscription_canceled", { _user_id: p.id }),
+                            )
+                          }
+                        >
+                          Confirmar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+          </div>
+        )}
+      </Card>
+
+      {/* Onboarding answers */}
+      <Card className="p-6 bg-card/40 backdrop-blur border-border/40">
+        <h2 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <ClipboardCheck className="h-4 w-4" /> Onboarding
+        </h2>
+        {data.onboarding ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <Info label="Intenção" value={data.onboarding.intent ?? "—"} />
+            <Info label="Fase de vida" value={data.onboarding.season_of_life ?? "—"} />
+            <Info label="Experiência" value={data.onboarding.experience ?? "—"} />
+            <Info label="Prática" value={data.onboarding.practice ?? "—"} />
+            <Info label="Compromisso" value={data.onboarding.commitment ?? "—"} />
+            <Info
+              label="Concluído em"
+              value={
+                data.onboarding.completed_at
+                  ? new Date(data.onboarding.completed_at).toLocaleString()
+                  : "Não concluído"
+              }
+            />
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">Usuário não respondeu ao onboarding.</p>
+        )}
+      </Card>
+
       {/* Actions */}
       <Card className="p-6 bg-card/40 backdrop-blur border-border/40">
         <h2 className="font-medium text-foreground mb-4">Ações administrativas</h2>
