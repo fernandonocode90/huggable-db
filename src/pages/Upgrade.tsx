@@ -118,44 +118,62 @@ const Upgrade = () => {
           </Card>
         )}
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <PlanCard
-            title="Monthly"
-            price="$4.99"
-            period="/ month"
-            features={[
-              "Daily audios",
-              "Save unlimited scenarios",
-              ...(trialEligible ? ["7-day free trial"] : []),
-            ]}
-            cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
-            onClick={() => startCheckout("monthly")}
-            loading={loadingPlan === "monthly"}
-            disabled={isPremium}
-          />
-          <PlanCard
-            title="Annual"
-            price="$49.99"
-            period="/ year"
-            badge="Save 17%"
-            highlighted
-            features={[
-              "Everything in Monthly",
-              "2 months free",
-              ...(trialEligible ? ["7-day free trial"] : []),
-            ]}
-            cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
-            onClick={() => startCheckout("annual")}
-            loading={loadingPlan === "annual"}
-            disabled={isPremium}
-          />
-        </div>
+        {iapRequired && !isPremium && (
+          <Card className="mt-6 border-primary/40 bg-primary/5 p-5">
+            <div className="font-medium text-foreground">Subscribe on the web</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              To start your subscription, please open this page in your phone's
+              browser. We're working on bringing in-app purchases to iOS soon.
+            </p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Already subscribed? Just sign in here — your premium access will
+              unlock automatically.
+            </p>
+          </Card>
+        )}
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          {trialEligible
-            ? "Secure payment via Stripe. You won't be charged during your 7-day trial."
-            : "Secure payment via Stripe. You'll be charged immediately."}
-        </p>
+        {!iapRequired && (
+          <>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <PlanCard
+                title="Monthly"
+                price="$4.99"
+                period="/ month"
+                features={[
+                  "Daily audios",
+                  "Save unlimited scenarios",
+                  ...(trialEligible ? ["7-day free trial"] : []),
+                ]}
+                cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
+                onClick={() => startCheckout("monthly")}
+                loading={loadingPlan === "monthly"}
+                disabled={isPremium}
+              />
+              <PlanCard
+                title="Annual"
+                price="$49.99"
+                period="/ year"
+                badge="Save 17%"
+                highlighted
+                features={[
+                  "Everything in Monthly",
+                  "2 months free",
+                  ...(trialEligible ? ["7-day free trial"] : []),
+                ]}
+                cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
+                onClick={() => startCheckout("annual")}
+                loading={loadingPlan === "annual"}
+                disabled={isPremium}
+              />
+            </div>
+
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              {trialEligible
+                ? "Secure payment via Stripe. You won't be charged during your 7-day trial."
+                : "Secure payment via Stripe. You'll be charged immediately."}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
