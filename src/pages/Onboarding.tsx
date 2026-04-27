@@ -143,7 +143,13 @@ const Onboarding = () => {
   const progress = ((index + 1) / STEPS.length) * 100;
 
   return (
-    <div className="bg-night relative flex min-h-[100dvh] w-full max-w-full flex-col overflow-x-hidden px-6 py-6 text-foreground">
+    <div
+      className="bg-night relative flex min-h-screen w-full max-w-full flex-col overflow-x-hidden px-6 text-foreground"
+      style={{
+        paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)",
+      }}
+    >
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: "var(--gradient-radial-glow)" }}
