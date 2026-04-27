@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export interface ProgressState {
   loading: boolean;
+  /** Visible day, capped at 365 — never shows "Day 400 / 365" in the UI. */
   currentDay: number;
   streak: number;
   completedCount: number;
@@ -11,7 +12,12 @@ export interface ProgressState {
   journeyCompletions: number;
   /** True when the user has finished the 365-day journey at least once. */
   isVeteran: boolean;
-  /** True when the user is currently past day 365 and has not yet restarted. */
+  /**
+   * True when the user is ready for the celebration screen — i.e. they've
+   * reached day 365 AND completed the day-365 audio. This is the only
+   * condition that should reveal the restart flow, so the user never loses
+   * the chance to actually consume the final day's content.
+   */
   hasFinishedCurrentJourney: boolean;
   refresh: () => Promise<void>;
   restartJourney: () => Promise<void>;
@@ -27,6 +33,7 @@ type CachedProgress = {
   completedCount: number;
   totalDays: number;
   journeyCompletions: number;
+  finalDayCompleted: boolean;
 };
 
 const readCache = (): CachedProgress | null => {
@@ -57,6 +64,7 @@ export const useProgress = (): ProgressState => {
   const [streak, setStreak] = useState(initial?.streak ?? 0);
   const [completedCount, setCompletedCount] = useState(initial?.completedCount ?? 0);
   const [journeyCompletions, setJourneyCompletions] = useState(initial?.journeyCompletions ?? 0);
+  const [finalDayCompleted, setFinalDayCompleted] = useState(initial?.finalDayCompleted ?? false);
 
   const refresh = useCallback(async () => {
     if (!userId) {
@@ -68,6 +76,7 @@ export const useProgress = (): ProgressState => {
       { data: streakVal },
       { count: completed },
       { data: profile },
+      { data: finalDay },
     ] = await Promise.all([
       supabase.rpc("get_current_day", { _user_id: userId }),
       supabase.rpc("get_user_streak", { _user_id: userId }),
@@ -81,6 +90,13 @@ export const useProgress = (): ProgressState => {
         .select("journey_completions")
         .eq("id", userId)
         .maybeSingle(),
+      supabase
+        .from("audio_progress")
+        .select("completed")
+        .eq("user_id", userId)
+        .eq("day_number", TOTAL_DAYS)
+        .eq("completed", true)
+        .maybeSingle(),
     ]);
 
     const nextDay = typeof day === "number" ? day : 1;
@@ -88,11 +104,13 @@ export const useProgress = (): ProgressState => {
     const nextCompleted = completed ?? 0;
     const nextCompletions =
       (profile as { journey_completions?: number } | null)?.journey_completions ?? 0;
+    const nextFinalDayDone = !!finalDay;
 
     setRawCurrentDay(nextDay);
     setStreak(nextStreak);
     setCompletedCount(nextCompleted);
     setJourneyCompletions(nextCompletions);
+    setFinalDayCompleted(nextFinalDayDone);
     writeCache({
       userId,
       currentDay: nextDay,
@@ -100,6 +118,7 @@ export const useProgress = (): ProgressState => {
       completedCount: nextCompleted,
       totalDays: TOTAL_DAYS,
       journeyCompletions: nextCompletions,
+      finalDayCompleted: nextFinalDayDone,
     });
     setLoading(false);
   }, [userId]);
@@ -107,7 +126,6 @@ export const useProgress = (): ProgressState => {
   const restartJourney = useCallback(async () => {
     const { error } = await supabase.rpc("restart_journey");
     if (error) throw error;
-    // Clear cache so the next refresh has fresh values immediately.
     try { sessionStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
     await refresh();
   }, [refresh]);
@@ -116,11 +134,12 @@ export const useProgress = (): ProgressState => {
     refresh();
   }, [refresh]);
 
-  // Cap displayed currentDay at 365 so the UI never shows "Day 400 / 365".
+  // UI never shows beyond the final day.
   const currentDay = Math.min(rawCurrentDay, TOTAL_DAYS);
-  const hasFinishedCurrentJourney = rawCurrentDay > TOTAL_DAYS || (rawCurrentDay === TOTAL_DAYS && false);
-  // Treat "past day 365" as the trigger for the celebration screen.
-  const finished = rawCurrentDay > TOTAL_DAYS;
+
+  // Celebration is only revealed AFTER the user has actually completed the
+  // day-365 audio. Until then they keep seeing day 365 and can finish it.
+  const finished = rawCurrentDay >= TOTAL_DAYS && finalDayCompleted;
 
   return {
     loading,
