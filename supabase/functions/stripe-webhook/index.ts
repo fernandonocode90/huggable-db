@@ -74,6 +74,15 @@ serve(async (req) => {
     const plan: "free" | "monthly" | "annual" =
       priceId === PRICE_ANNUAL ? "annual" : priceId === PRICE_MONTHLY ? "monthly" : "free";
 
+    // Clear stale rows from previous (deleted) users that share the same Stripe
+    // customer_id or subscription_id. These cause unique-constraint violations
+    // on upsert when an email is reused after account deletion.
+    await admin
+      .from("subscribers")
+      .delete()
+      .or(`stripe_customer_id.eq.${customerId},stripe_subscription_id.eq.${sub.id}`)
+      .neq("user_id", userId);
+
     await admin.from("subscribers").upsert({
       user_id: userId,
       email: email ?? "unknown@unknown",
