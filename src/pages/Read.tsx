@@ -165,13 +165,11 @@ const ES_NAMES: Record<string, string> = {
 const OT_BOOKS = BOOKS.filter((b) => b.testament === "OT");
 const NT_BOOKS = BOOKS.filter((b) => b.testament === "NT");
 
-type Translation = "bsb" | "kjv" | "acf" | "rvr1909";
+type Translation = "bsb" | "kjv";
 
 const TRANSLATIONS: { value: Translation; label: string; lang: string; ttsLang: string }[] = [
   { value: "bsb", label: "BSB (English)", lang: "en", ttsLang: "en-US" },
   { value: "kjv", label: "KJV (English)", lang: "en", ttsLang: "en-US" },
-  { value: "acf", label: "ACF (Português)", lang: "pt", ttsLang: "pt-BR" },
-  { value: "rvr1909", label: "RVR1909 (Español)", lang: "es", ttsLang: "es-ES" },
 ];
 
 interface Verse {
