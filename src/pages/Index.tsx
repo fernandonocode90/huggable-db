@@ -104,11 +104,17 @@ const Index = () => {
     const status = searchParams.get("subscription");
     if (!status) return;
     if (status === "success") {
-      toast({
-        title: "Welcome to Premium 🎉",
-        description: "Your 7-day free trial has started. Syncing your account…",
-      });
-      void subscription.syncFromStripe();
+      // Sync first, then show a toast that reflects whether a trial was granted.
+      void (async () => {
+        await subscription.syncFromStripe();
+        const isTrial = subscription.status === "trialing";
+        toast({
+          title: "Welcome to Premium 🎉",
+          description: isTrial
+            ? "Your 7-day free trial has started."
+            : "Your subscription is now active.",
+        });
+      })();
     } else if (status === "canceled") {
       toast({ title: "Checkout canceled", description: "No charge was made." });
     }
