@@ -832,7 +832,7 @@ const Audio = () => {
           </div>
           <button
             onClick={() => goDay(requestedDay + 1)}
-            disabled={!isAdmin && requestedDay >= currentDay}
+            disabled={!isAdmin && !isVeteran && requestedDay >= currentDay}
             className="rounded-full p-2 text-foreground/80 disabled:opacity-30 hover:text-primary"
             aria-label="Next day"
           >
