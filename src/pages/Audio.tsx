@@ -58,6 +58,7 @@ const Audio = () => {
   const isLocked = !subLoading && !premium && !isAdmin;
 
   const [audio, setAudio] = useState<DailyAudio | null>(null);
+  const [dayLocked, setDayLocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(0);
