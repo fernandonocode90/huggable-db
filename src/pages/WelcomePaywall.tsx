@@ -154,12 +154,12 @@ const WelcomePaywall = () => {
           <button
             type="button"
             onClick={close}
-            className="mt-4 text-center text-xs uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+            className="mt-4 mx-auto block rounded-full px-6 py-3 text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground hover:bg-foreground/5"
           >
             Maybe later
           </button>
 
-          <p className="mt-6 text-center text-[11px] text-muted-foreground">
+          <p className="mt-5 text-center text-xs text-muted-foreground">
             You won't be charged during your 7-day trial. Cancel anytime.
           </p>
         </div>
