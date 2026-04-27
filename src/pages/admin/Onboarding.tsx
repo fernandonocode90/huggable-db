@@ -40,6 +40,10 @@ interface Stats {
   cross_intent_season: { intent: string; season: string; count: number }[];
 }
 
+// Active onboarding questions (others kept in DB for legacy data, but hidden in UI)
+type ActiveField = "intent" | "season_of_life" | "commitment";
+const ACTIVE_FIELDS: ActiveField[] = ["intent", "season_of_life", "commitment"];
+
 // Friendly labels for the option ids used in src/pages/Onboarding.tsx
 const LABELS: Record<string, Record<string, string>> = {
   intent: {
@@ -364,8 +368,6 @@ const AdminOnboarding = () => {
       <div className="grid gap-4 lg:grid-cols-2">
         <DistributionCard field="intent" raw={stats.distributions.intent} />
         <DistributionCard field="season_of_life" raw={stats.distributions.season_of_life} />
-        <DistributionCard field="experience" raw={stats.distributions.experience} />
-        <DistributionCard field="practice" raw={stats.distributions.practice} />
         <DistributionCard field="commitment" raw={stats.distributions.commitment} />
 
         <Card className="border-border/40 bg-card/40 backdrop-blur">
