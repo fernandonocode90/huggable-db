@@ -31,9 +31,38 @@ import {
   Headphones,
   CheckCircle2,
   X,
+  Crown,
+  CreditCard,
+  ExternalLink,
+  ClipboardCheck,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+
+interface SubscriptionRow {
+  provider: string;
+  plan: string;
+  status: string;
+  trial_end: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface OnboardingRow {
+  intent: string | null;
+  season_of_life: string | null;
+  experience: string | null;
+  practice: string | null;
+  commitment: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
 
 interface UserDetail {
   profile: {
@@ -51,10 +80,15 @@ interface UserDetail {
     email_confirmed_at: string | null;
     current_day: number;
     current_streak: number;
+    journey_completions: number;
+    paywall_last_seen_at: string | null;
     is_admin: boolean;
     is_banned: boolean;
     ban_reason: string | null;
+    is_premium: boolean;
   } | null;
+  subscription: SubscriptionRow | null;
+  onboarding: OnboardingRow | null;
   audio_progress: Array<{
     day_number: number;
     completed: boolean;
