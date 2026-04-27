@@ -241,7 +241,9 @@ const Auth = () => {
       </div>
 
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent>
+        <DialogContent
+          className="top-[max(env(safe-area-inset-top),1rem)] translate-y-0 sm:top-[50%] sm:translate-y-[-50%] max-h-[calc(100dvh-2rem)] overflow-y-auto"
+        >
           <DialogHeader>
             <DialogTitle>Reset your password</DialogTitle>
             <DialogDescription>
@@ -256,6 +258,12 @@ const Auth = () => {
                 type="email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
+                onFocus={(e) => {
+                  // Keep input visible above the on-screen keyboard on mobile
+                  setTimeout(() => {
+                    e.currentTarget?.scrollIntoView({ block: "center", behavior: "smooth" });
+                  }, 300);
+                }}
                 required
                 autoFocus
               />
