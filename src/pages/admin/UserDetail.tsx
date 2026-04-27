@@ -129,6 +129,12 @@ const UserDetail = () => {
   const [newNote, setNewNote] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [grantMonths, setGrantMonths] = useState("");
+  const [grantReason, setGrantReason] = useState("");
+
+  const copy = (text: string, label = "Copiado") => {
+    void navigator.clipboard.writeText(text).then(() => toast.success(label));
+  };
 
   const load = async () => {
     if (!userId) return;
