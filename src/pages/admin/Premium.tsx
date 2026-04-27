@@ -574,16 +574,17 @@ const Premium = () => {
           <DialogHeader>
             <DialogTitle>Conceder premium (cortesia)</DialogTitle>
             <DialogDescription>
-              Dá acesso premium sem cobrança. Ideal para suporte, parcerias e correções.
+              Funciona com qualquer email — se a pessoa ainda não tem conta, enviamos um convite e o premium é ativado automaticamente quando ela se cadastrar com esse email.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-muted-foreground">Email do usuário</label>
+              <label className="text-xs text-muted-foreground">Email do beneficiário</label>
               <Input
+                type="email"
                 value={grantEmail}
                 onChange={(e) => setGrantEmail(e.target.value)}
-                placeholder="usuario@exemplo.com"
+                placeholder="email@exemplo.com"
               />
             </div>
             <div>
