@@ -865,6 +865,31 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_list_premium_users_by_status: {
+        Args: {
+          _limit?: number
+          _offset?: number
+          _provider?: string
+          _search?: string
+          _status?: string
+        }
+        Returns: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string
+          display_name: string
+          email: string
+          plan: string
+          provider: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          total_count: number
+          trial_end: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       admin_list_users: {
         Args: { _limit?: number; _offset?: number; _search?: string }
         Returns: {

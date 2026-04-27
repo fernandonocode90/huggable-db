@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -97,6 +98,7 @@ const Premium = () => {
   const [rows, setRows] = useState<PremiumUser[]>([]);
   const [search, setSearch] = useState("");
   const [provider, setProvider] = useState<string>("all");
+  const [statusTab, setStatusTab] = useState<"active" | "trialing" | "canceled">("active");
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -108,6 +110,7 @@ const Premium = () => {
   const [grantMonths, setGrantMonths] = useState("12");
   const [grantReason, setGrantReason] = useState("");
   const [working, setWorking] = useState(false);
+  const [copyingEmails, setCopyingEmails] = useState(false);
 
   const loadStats = async () => {
     const { data, error } = await supabase.rpc("admin_premium_stats");
@@ -118,10 +121,11 @@ const Premium = () => {
     setStats(data as unknown as PremiumStats);
   };
 
-  const load = async (q: string, p: number, prov: string) => {
+  const load = async (q: string, p: number, prov: string, status: typeof statusTab) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("admin_list_premium_users", {
+      const { data, error } = await supabase.rpc("admin_list_premium_users_by_status", {
+        _status: status,
         _search: q || null,
         _provider: prov === "all" ? null : prov,
         _limit: PAGE,
@@ -143,21 +147,52 @@ const Premium = () => {
   }, []);
 
   useEffect(() => {
-    void load(search, page, provider);
+    void load(search, page, provider, statusTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, provider]);
+  }, [page, provider, statusTab]);
 
   useEffect(() => {
     const t = setTimeout(() => {
       setPage(0);
-      void load(search, 0, provider);
+      void load(search, 0, provider, statusTab);
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
+  const copyAllEmails = async () => {
+    if (total === 0) return;
+    setCopyingEmails(true);
+    try {
+      const all: PremiumUser[] = [];
+      const pageSize = 500;
+      const pages = Math.ceil(total / pageSize);
+      for (let i = 0; i < pages; i++) {
+        const { data, error } = await supabase.rpc("admin_list_premium_users_by_status", {
+          _status: statusTab,
+          _search: search || null,
+          _provider: provider === "all" ? null : provider,
+          _limit: pageSize,
+          _offset: i * pageSize,
+        });
+        if (error) throw error;
+        all.push(...((data ?? []) as PremiumUser[]));
+      }
+      const emails = Array.from(
+        new Set(all.map((u) => u.email).filter((e): e is string => !!e)),
+      );
+      await navigator.clipboard.writeText(emails.join(", "));
+      toast.success(`${emails.length} emails copiados`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao copiar");
+    } finally {
+      setCopyingEmails(false);
+    }
+  };
+
+
   const refresh = async () => {
-    await Promise.all([loadStats(), load(search, page, provider)]);
+    await Promise.all([loadStats(), load(search, page, provider, statusTab)]);
   };
 
   const cancelImmediate = async () => {
@@ -315,6 +350,37 @@ const Premium = () => {
         </p>
       )}
 
+      {/* Status tabs */}
+      <Tabs
+        value={statusTab}
+        onValueChange={(v) => {
+          setStatusTab(v as typeof statusTab);
+          setPage(0);
+        }}
+      >
+        <TabsList>
+          <TabsTrigger value="active" className="gap-2">
+            Ativos
+            {stats && (
+              <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-300">
+                {stats.total_premium - stats.trialing}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="trialing" className="gap-2">
+            Em trial
+            {stats && (
+              <Badge variant="secondary" className="bg-blue-500/15 text-blue-300">
+                {stats.trialing}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="canceled" className="gap-2">
+            Cancelados
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative max-w-md flex-1 min-w-[220px]">
@@ -322,7 +388,7 @@ const Premium = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar premium por email ou nome…"
+            placeholder="Buscar por email ou nome…"
             className="pl-9"
           />
         </div>
@@ -344,6 +410,20 @@ const Premium = () => {
             <SelectItem value="manual">Cortesia</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void copyAllEmails()}
+          disabled={copyingEmails || total === 0}
+          className="gap-2"
+        >
+          {copyingEmails ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Gift className="h-3.5 w-3.5" />
+          )}
+          Copiar emails ({total})
+        </Button>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border/40 bg-card/40 backdrop-blur">
@@ -354,7 +434,7 @@ const Premium = () => {
               <TableHead>Origem</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Próxima cobrança</TableHead>
+              <TableHead>{statusTab === "canceled" ? "Cancelou em" : "Próxima cobrança"}</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
