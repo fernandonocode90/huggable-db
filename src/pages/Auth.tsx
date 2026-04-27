@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NightBackground } from "@/components/swc/NightBackground";
-import crownLogo from "@/assets/crown-logo.png";
+import crownLogo from "@/assets/golden-crown.webp";
 import {
   Dialog,
   DialogContent,
