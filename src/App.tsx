@@ -130,6 +130,7 @@ const App = () => (
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
                     <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+                    <Route path="/profile/subscription" element={<ProtectedRoute><SubscriptionManage /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                       <Route index element={<Admin />} />
                       <Route path="overview" element={<AdminOverview />} />
