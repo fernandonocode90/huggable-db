@@ -30,7 +30,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye, Trash2, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -81,6 +89,37 @@ const Users = () => {
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [giftTarget, setGiftTarget] = useState<AdminUser | null>(null);
+  const [giftMonths, setGiftMonths] = useState("12");
+  const [gifting, setGifting] = useState(false);
+
+  const grantCourtesy = async () => {
+    if (!giftTarget) return;
+    setGifting(true);
+    try {
+      const months = giftMonths === "lifetime" ? null : parseInt(giftMonths, 10);
+      const { data, error } = await supabase.functions.invoke("admin-grant-premium", {
+        body: { user_id: giftTarget.id, months, reason: "Quick gift from Users list" },
+      });
+      if (error) throw error;
+      const res = data as { error?: string; email_sent?: boolean; email_error?: string | null };
+      if (res?.error) throw new Error(res.error);
+      toast.success(
+        res.email_sent
+          ? `Premium concedido a ${giftTarget.email} · email enviado`
+          : `Premium concedido a ${giftTarget.email}`,
+      );
+      if (!res.email_sent && res.email_error) {
+        toast.warning(`Email não enviado: ${res.email_error}`);
+      }
+      setGiftTarget(null);
+      setGiftMonths("12");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao conceder");
+    } finally {
+      setGifting(false);
+    }
+  };
 
   const deleteUser = async () => {
     if (!deleteTarget) return;
@@ -434,6 +473,19 @@ const Users = () => {
                         </AlertDialogContent>
                       </AlertDialog>
 
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Conceder cortesia premium"
+                        className="text-amber-400 hover:text-amber-300 hover:bg-amber-400/10"
+                        onClick={() => {
+                          setGiftTarget(u);
+                          setGiftMonths("12");
+                        }}
+                      >
+                        <Gift className="h-4 w-4" />
+                      </Button>
+
                       {u.id !== me?.id && (
                         <Button
                           size="icon"
@@ -520,6 +572,44 @@ const Users = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!giftTarget} onOpenChange={(o) => !o && setGiftTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-amber-400" /> Conceder cortesia premium
+            </DialogTitle>
+            <DialogDescription>
+              {giftTarget?.email} receberá premium ativo + um email avisando.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Duração</label>
+              <Select value={giftMonths} onValueChange={setGiftMonths}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 mês</SelectItem>
+                  <SelectItem value="3">3 meses</SelectItem>
+                  <SelectItem value="6">6 meses</SelectItem>
+                  <SelectItem value="12">1 ano</SelectItem>
+                  <SelectItem value="lifetime">Vitalício</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGiftTarget(null)} disabled={gifting}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void grantCourtesy()} disabled={gifting} className="gap-2">
+              {gifting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Gift className="h-4 w-4" /> Conceder</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

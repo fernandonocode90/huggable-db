@@ -198,39 +198,41 @@ const Premium = () => {
   };
 
   const grantPremium = async () => {
-    if (!grantEmail.trim()) {
-      toast.error("Informe o email");
+    const email = grantEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Informe um email válido");
       return;
     }
     setWorking(true);
     try {
-      // Look up user by email
-      const { data: usersData, error: userErr } = await supabase.rpc("admin_list_users_segmented", {
-        _search: grantEmail.trim(),
-        _segment: null,
-        _limit: 1,
-        _offset: 0,
-      });
-      if (userErr) throw userErr;
-      const target = (usersData ?? [])[0] as { id: string; email: string } | undefined;
-      if (!target) throw new Error("Usuário não encontrado");
-
       const months = grantMonths === "lifetime" ? null : parseInt(grantMonths, 10);
       const { data: result, error } = await supabase.functions.invoke("admin-grant-premium", {
-        body: {
-          user_id: target.id,
-          months,
-          reason: grantReason || null,
-        },
+        body: { email, months, reason: grantReason || null },
       });
       if (error) throw error;
-      const res = result as { error?: string; email_sent?: boolean; email_error?: string | null };
+      const res = result as {
+        error?: string;
+        kind?: "existing_user" | "voucher";
+        email_sent?: boolean;
+        email_error?: string | null;
+      };
       if (res?.error) throw new Error(res.error);
-      if (res?.email_sent) {
-        toast.success(`Premium concedido a ${target.email} · email enviado`);
+
+      if (res.kind === "voucher") {
+        toast.success(
+          res.email_sent
+            ? `${email} ainda não tem conta — enviamos o convite com o presente`
+            : `Cortesia reservada para ${email} (claim no cadastro)`,
+        );
       } else {
-        toast.success(`Premium concedido a ${target.email}`);
-        if (res?.email_error) toast.warning(`Email não enviado: ${res.email_error}`);
+        toast.success(
+          res.email_sent
+            ? `Premium concedido a ${email} · email enviado`
+            : `Premium concedido a ${email}`,
+        );
+      }
+      if (!res.email_sent && res.email_error) {
+        toast.warning(`Email não enviado: ${res.email_error}`);
       }
       setGrantOpen(false);
       setGrantEmail("");
@@ -572,16 +574,17 @@ const Premium = () => {
           <DialogHeader>
             <DialogTitle>Conceder premium (cortesia)</DialogTitle>
             <DialogDescription>
-              Dá acesso premium sem cobrança. Ideal para suporte, parcerias e correções.
+              Funciona com qualquer email — se a pessoa ainda não tem conta, enviamos um convite e o premium é ativado automaticamente quando ela se cadastrar com esse email.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-muted-foreground">Email do usuário</label>
+              <label className="text-xs text-muted-foreground">Email do beneficiário</label>
               <Input
+                type="email"
                 value={grantEmail}
                 onChange={(e) => setGrantEmail(e.target.value)}
-                placeholder="usuario@exemplo.com"
+                placeholder="email@exemplo.com"
               />
             </div>
             <div>
