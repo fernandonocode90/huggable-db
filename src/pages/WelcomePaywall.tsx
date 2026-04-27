@@ -20,6 +20,11 @@ const WelcomePaywall = () => {
   const { user } = useAuth();
   const [plan, setPlan] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
+  const trialEligible = useTrialEligibility();
+  const benefits = [
+    ...BASE_BENEFITS,
+    trialEligible ? "7 days free, cancel anytime" : "Cancel anytime",
+  ];
 
   const [dismissing, setDismissing] = useState(false);
 
