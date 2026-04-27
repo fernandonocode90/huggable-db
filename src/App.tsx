@@ -9,6 +9,7 @@ import { ThemeProvider } from "./hooks/useTheme";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { OnlineStatusWatcher } from "./hooks/useOnlineStatus";
 import { AppSettingsProvider } from "./hooks/useAppSettings";
+import { SubscriptionProvider } from "./hooks/useSubscription";
 import { MaintenanceGate } from "./components/MaintenanceGate";
 import { GlobalBanner } from "./components/GlobalBanner";
 import { PageTransition } from "./components/PageTransition";
@@ -94,6 +95,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AppSettingsProvider>
+              <SubscriptionProvider>
               <GlobalBanner />
               <MaintenanceGate>
                 <Suspense fallback={<RouteFallback />}>
@@ -156,6 +158,7 @@ const App = () => (
                   <PersistentBottomNav />
                 </Suspense>
               </MaintenanceGate>
+              </SubscriptionProvider>
             </AppSettingsProvider>
           </AuthProvider>
         </BrowserRouter>

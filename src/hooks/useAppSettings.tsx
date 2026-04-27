@@ -98,9 +98,15 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     void refresh();
-    const interval = setInterval(() => void refresh(), 60_000);
-    // Also refresh when the tab regains focus — picks up updates faster than the 60s poll.
-    const onFocus = () => void refresh();
+    // Poll every 5 minutes (was 60s) — drastically reduces background traffic.
+    const interval = setInterval(() => void refresh(), 5 * 60_000);
+    // Throttled focus refresh: only re-fetch if last refresh was >2 minutes ago.
+    let lastFocusRefresh = Date.now();
+    const onFocus = () => {
+      if (Date.now() - lastFocusRefresh < 2 * 60_000) return;
+      lastFocusRefresh = Date.now();
+      void refresh();
+    };
     window.addEventListener("focus", onFocus);
     return () => {
       clearInterval(interval);
