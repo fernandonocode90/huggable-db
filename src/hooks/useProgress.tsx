@@ -113,15 +113,30 @@ export const useProgress = (): ProgressState => {
     const nextDay = typeof day === "number" ? day : 1;
     const nextStreak = typeof streakVal === "number" ? streakVal : 0;
     const nextCompleted = completed ?? 0;
-    const nextCompletions =
-      (profile as { journey_completions?: number } | null)?.journey_completions ?? 0;
+    const profileRow = profile as
+      | { journey_completions?: number; start_date?: string; timezone?: string }
+      | null;
+    const nextCompletions = profileRow?.journey_completions ?? 0;
     const nextFinalDayDone = !!finalDay;
+
+    // Compute "is start_date strictly in the future" in the user's local TZ.
+    let nextFutureStart = false;
+    if (profileRow?.start_date) {
+      try {
+        const tz = profileRow.timezone || "UTC";
+        const localToday = new Date().toLocaleDateString("en-CA", { timeZone: tz });
+        nextFutureStart = profileRow.start_date > localToday;
+      } catch {
+        nextFutureStart = false;
+      }
+    }
 
     setRawCurrentDay(nextDay);
     setStreak(nextStreak);
     setCompletedCount(nextCompleted);
     setJourneyCompletions(nextCompletions);
     setFinalDayCompleted(nextFinalDayDone);
+    setStartDateInFuture(nextFutureStart);
     writeCache({
       userId,
       currentDay: nextDay,
@@ -130,6 +145,7 @@ export const useProgress = (): ProgressState => {
       totalDays: TOTAL_DAYS,
       journeyCompletions: nextCompletions,
       finalDayCompleted: nextFinalDayDone,
+      startDateInFuture: nextFutureStart,
     });
     setLoading(false);
   }, [userId]);
