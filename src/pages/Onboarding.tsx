@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import {
   markOnboardingComplete,
+  persistOnboardingToDb,
   saveOnboardingProfile,
   type OnboardingProfile,
 } from "@/lib/onboarding";
@@ -118,6 +119,8 @@ const Onboarding = () => {
     if (user) {
       saveOnboardingProfile(user.id, profile);
       markOnboardingComplete(user.id);
+      // Final write — stamps completed_at so the dashboard counts this user as completed.
+      void persistOnboardingToDb(user.id, profile, true).catch(() => { /* best-effort */ });
     }
     // After onboarding, send the user to the welcome paywall.
     // The paywall page itself decides whether to show or skip (premium / recently seen).
@@ -127,7 +130,12 @@ const Onboarding = () => {
   const goNext = () => (isLast ? finish() : setIndex((i) => i + 1));
 
   const select = (key: keyof OnboardingProfile, value: string) => {
-    setProfile((p) => ({ ...p, [key]: value }));
+    const next = { ...profile, [key]: value };
+    setProfile(next);
+    // Persist the partial answer so we still capture data even if the user drops off.
+    if (user) {
+      void persistOnboardingToDb(user.id, next, false).catch(() => { /* best-effort */ });
+    }
     // Auto-advance after a short beat for tactile feedback
     setTimeout(() => setIndex((i) => Math.min(i + 1, STEPS.length - 1)), 220);
   };

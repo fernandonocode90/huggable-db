@@ -391,6 +391,42 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_responses: {
+        Row: {
+          commitment: string | null
+          completed_at: string | null
+          created_at: string
+          experience: string | null
+          intent: string | null
+          practice: string | null
+          season_of_life: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commitment?: string | null
+          completed_at?: string | null
+          created_at?: string
+          experience?: string | null
+          intent?: string | null
+          practice?: string | null
+          season_of_life?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commitment?: string | null
+          completed_at?: string | null
+          created_at?: string
+          experience?: string | null
+          intent?: string | null
+          practice?: string | null
+          season_of_life?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -680,6 +716,7 @@ export type Database = {
         }[]
       }
       admin_get_health: { Args: never; Returns: Json }
+      admin_get_onboarding_stats: { Args: { _days?: number }; Returns: Json }
       admin_get_overview_stats: { Args: never; Returns: Json }
       admin_get_reminder_stats: { Args: never; Returns: Json }
       admin_get_signups_by_day: {
@@ -730,6 +767,22 @@ export type Database = {
           total_count: number
           user_agent: string
           user_email: string
+          user_id: string
+        }[]
+      }
+      admin_list_onboarding_responses: {
+        Args: { _limit?: number; _offset?: number }
+        Returns: {
+          commitment: string
+          completed_at: string
+          created_at: string
+          display_name: string
+          email: string
+          experience: string
+          intent: string
+          practice: string
+          season_of_life: string
+          total_count: number
           user_id: string
         }[]
       }
