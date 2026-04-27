@@ -58,7 +58,60 @@ const Privacy = () => {
         .maybeSingle();
       if (data?.display_name) setDisplayName(data.display_name);
     })();
+    (async () => {
+      const { data } = await supabase
+        .from("subscribers")
+        .select("provider, status, current_period_end")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setSubscription(data ?? null);
+    })();
   }, [user]);
+
+  const hasActiveSub =
+    subscription &&
+    (subscription.status === "active" || subscription.status === "trialing") &&
+    (!subscription.current_period_end ||
+      new Date(subscription.current_period_end) > new Date());
+
+  const isStoreSub =
+    subscription?.provider === "apple" || subscription?.provider === "google";
+
+  const cancelMySubscription = async () => {
+    setCanceling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cancel-my-subscription");
+      if (error) throw error;
+      const d = data as { needs_store_cancel?: boolean; provider?: string } | null;
+      if (d?.needs_store_cancel) {
+        toast({
+          title: "Almost done",
+          description:
+            d.provider === "apple"
+              ? "Open Settings → Apple ID → Subscriptions on your iPhone to fully stop billing."
+              : "Open Play Store → Profile → Payments & subscriptions to fully stop billing.",
+        });
+      } else {
+        toast({ title: "Subscription canceled", description: "You're now on the free plan." });
+      }
+      // Refresh
+      const { data: fresh } = await supabase
+        .from("subscribers")
+        .select("provider, status, current_period_end")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      setSubscription(fresh ?? null);
+    } catch (e) {
+      toast({
+        title: "Couldn't cancel subscription",
+        description: (e as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setCanceling(false);
+      setCancelDialogOpen(false);
+    }
+  };
 
   const saveName = async () => {
     if (!user) return;
