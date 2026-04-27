@@ -427,6 +427,45 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_vouchers: {
+        Row: {
+          claimed_at: string | null
+          claimed_user_id: string | null
+          created_at: string
+          created_by: string
+          email: string
+          id: string
+          months: number | null
+          reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_user_id?: string | null
+          created_at?: string
+          created_by: string
+          email: string
+          id?: string
+          months?: number | null
+          reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_user_id?: string | null
+          created_at?: string
+          created_by?: string
+          email?: string
+          id?: string
+          months?: number | null
+          reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -688,6 +727,10 @@ export type Database = {
         Args: { _bookmark_id: string }
         Returns: undefined
       }
+      admin_create_voucher: {
+        Args: { _email: string; _months?: number; _reason?: string }
+        Returns: string
+      }
       admin_delete_user_note: { Args: { _note_id: string }; Returns: undefined }
       admin_force_clear_cache: { Args: never; Returns: string }
       admin_get_audio_metrics: {
@@ -860,6 +903,25 @@ export type Database = {
           total_count: number
         }[]
       }
+      admin_list_vouchers: {
+        Args: {
+          _limit?: number
+          _offset?: number
+          _search?: string
+          _status?: string
+        }
+        Returns: {
+          claimed_at: string
+          claimed_user_id: string
+          created_at: string
+          email: string
+          id: string
+          months: number
+          reason: string
+          revoked_at: string
+          total_count: number
+        }[]
+      }
       admin_mark_subscription_canceled: {
         Args: { _user_id: string }
         Returns: undefined
@@ -871,6 +933,10 @@ export type Database = {
       }
       admin_revoke_manual_premium: {
         Args: { _user_id: string }
+        Returns: undefined
+      }
+      admin_revoke_voucher: {
+        Args: { _voucher_id: string }
         Returns: undefined
       }
       admin_set_app_setting: {
