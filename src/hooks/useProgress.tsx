@@ -43,6 +43,7 @@ type CachedProgress = {
   totalDays: number;
   journeyCompletions: number;
   finalDayCompleted: boolean;
+  startDateInFuture: boolean;
 };
 
 const readCache = (): CachedProgress | null => {
@@ -74,6 +75,7 @@ export const useProgress = (): ProgressState => {
   const [completedCount, setCompletedCount] = useState(initial?.completedCount ?? 0);
   const [journeyCompletions, setJourneyCompletions] = useState(initial?.journeyCompletions ?? 0);
   const [finalDayCompleted, setFinalDayCompleted] = useState(initial?.finalDayCompleted ?? false);
+  const [startDateInFuture, setStartDateInFuture] = useState(initial?.startDateInFuture ?? false);
 
   const refresh = useCallback(async () => {
     if (!userId) {
@@ -96,7 +98,7 @@ export const useProgress = (): ProgressState => {
         .eq("completed", true),
       supabase
         .from("profiles")
-        .select("journey_completions")
+        .select("journey_completions, start_date, timezone")
         .eq("id", userId)
         .maybeSingle(),
       supabase
