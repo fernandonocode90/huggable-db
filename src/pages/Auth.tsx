@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefillEmail = (location.state as { email?: string } | null)?.email ?? "";
   const { user, loading } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -67,7 +69,17 @@ const Auth = () => {
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          // Email ainda não confirmado → manda pra tela de reenvio com o email preenchido
+          const code = (error as { code?: string }).code;
+          const msg = error.message?.toLowerCase() ?? "";
+          if (code === "email_not_confirmed" || msg.includes("not confirmed")) {
+            toast.message("Please confirm your email to continue.");
+            navigate("/check-email", { state: { email }, replace: true });
+            return;
+          }
+          throw error;
+        }
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
