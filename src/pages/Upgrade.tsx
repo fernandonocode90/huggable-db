@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrialEligibility } from "@/hooks/useTrialEligibility";
 import { toast } from "@/hooks/use-toast";
 import { Check, Loader2 } from "lucide-react";
 
@@ -12,6 +13,7 @@ const Upgrade = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const sub = useSubscription();
+  const trialEligible = useTrialEligibility();
   const [loadingPlan, setLoadingPlan] = useState<null | "monthly" | "annual">(null);
   const [openingPortal, setOpeningPortal] = useState(false);
 
@@ -64,7 +66,8 @@ const Upgrade = () => {
 
         <h1 className="text-3xl font-semibold tracking-tight">Go Premium</h1>
         <p className="mt-2 text-muted-foreground">
-          Unlock daily audios and save unlimited calculator scenarios. 7 days free, cancel anytime.
+          Unlock daily audios and save unlimited calculator scenarios.
+          {trialEligible ? " 7 days free, cancel anytime." : " Cancel anytime."}
         </p>
 
         {sub.grandfathered && (
@@ -103,7 +106,12 @@ const Upgrade = () => {
             title="Monthly"
             price="$4.99"
             period="/ month"
-            features={["Daily audios", "Save unlimited scenarios", "7-day free trial"]}
+            features={[
+              "Daily audios",
+              "Save unlimited scenarios",
+              ...(trialEligible ? ["7-day free trial"] : []),
+            ]}
+            cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
             onClick={() => startCheckout("monthly")}
             loading={loadingPlan === "monthly"}
             disabled={isPremium}
@@ -117,8 +125,9 @@ const Upgrade = () => {
             features={[
               "Everything in Monthly",
               "2 months free",
-              "7-day free trial",
+              ...(trialEligible ? ["7-day free trial"] : []),
             ]}
+            cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
             onClick={() => startCheckout("annual")}
             loading={loadingPlan === "annual"}
             disabled={isPremium}
@@ -126,7 +135,9 @@ const Upgrade = () => {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Secure payment via Stripe. You won't be charged during your 7-day trial.
+          {trialEligible
+            ? "Secure payment via Stripe. You won't be charged during your 7-day trial."
+            : "Secure payment via Stripe. You'll be charged immediately."}
         </p>
       </div>
     </div>
@@ -142,6 +153,7 @@ interface PlanCardProps {
   highlighted?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  cta: string;
   onClick: () => void;
 }
 
@@ -154,6 +166,7 @@ const PlanCard = ({
   highlighted,
   loading,
   disabled,
+  cta,
   onClick,
 }: PlanCardProps) => (
   <Card
@@ -188,7 +201,7 @@ const PlanCard = ({
       ) : disabled ? (
         "Current plan"
       ) : (
-        "Start 7-day free trial"
+        cta
       )}
     </Button>
   </Card>

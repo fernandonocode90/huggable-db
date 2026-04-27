@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { NightBackground } from "@/components/swc/NightBackground";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrialEligibility } from "@/hooks/useTrialEligibility";
 import { toast } from "@/hooks/use-toast";
 
-const BENEFITS = [
+const BASE_BENEFITS = [
   "Unlock every daily audio devotional",
   "Save unlimited calculator scenarios",
   "Track your spiritual & financial progress",
   "Premium tools: Budget, Debt Payoff, Goals",
-  "7 days free, cancel anytime",
 ];
 
 const WelcomePaywall = () => {
@@ -20,6 +20,11 @@ const WelcomePaywall = () => {
   const { user } = useAuth();
   const [plan, setPlan] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
+  const trialEligible = useTrialEligibility();
+  const benefits = [
+    ...BASE_BENEFITS,
+    trialEligible ? "7 days free, cancel anytime" : "Cancel anytime",
+  ];
 
   const [dismissing, setDismissing] = useState(false);
 
@@ -99,7 +104,7 @@ const WelcomePaywall = () => {
               Welcome
             </p>
             <h1 className="mt-2 font-display text-3xl text-foreground">
-              Try Premium free for 7 days
+              {trialEligible ? "Try Premium free for 7 days" : "Unlock Premium"}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               Get full access to every daily audio and unlock all premium tools.
@@ -127,7 +132,7 @@ const WelcomePaywall = () => {
 
           {/* Benefits */}
           <ul className="mt-8 space-y-3">
-            {BENEFITS.map((b) => (
+            {benefits.map((b) => (
               <li key={b} className="flex items-start gap-3 text-sm text-foreground/90">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15">
                   <Check className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} />
@@ -146,8 +151,10 @@ const WelcomePaywall = () => {
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
+            ) : trialEligible ? (
               "Start 7-day free trial"
+            ) : (
+              "Subscribe now"
             )}
           </Button>
 
@@ -160,7 +167,9 @@ const WelcomePaywall = () => {
           </button>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            You won't be charged during your 7-day trial. Cancel anytime.
+            {trialEligible
+              ? "You won't be charged during your 7-day trial. Cancel anytime."
+              : "You'll be charged immediately. Cancel anytime."}
           </p>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrialEligibility } from "@/hooks/useTrialEligibility";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PremiumGateProps {
@@ -19,6 +20,7 @@ export const PremiumGate = ({
   const navigate = useNavigate();
   const { loading, premium } = useSubscription();
   const { isAdmin } = useAuth();
+  const trialEligible = useTrialEligibility();
 
   if (loading) {
     return (
@@ -57,7 +59,7 @@ export const PremiumGate = ({
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           style={{ boxShadow: "0 0 30px hsl(var(--primary) / 0.45)" }}
         >
-          Start 7-day free trial
+          {trialEligible ? "Start 7-day free trial" : "Subscribe now"}
           <ArrowRight className="h-4 w-4" />
         </button>
 

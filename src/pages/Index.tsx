@@ -104,11 +104,17 @@ const Index = () => {
     const status = searchParams.get("subscription");
     if (!status) return;
     if (status === "success") {
-      toast({
-        title: "Welcome to Premium 🎉",
-        description: "Your 7-day free trial has started. Syncing your account…",
-      });
-      void subscription.syncFromStripe();
+      // Sync first, then show a toast that reflects whether a trial was granted.
+      void (async () => {
+        await subscription.syncFromStripe();
+        const isTrial = subscription.status === "trialing";
+        toast({
+          title: "Welcome to Premium 🎉",
+          description: isTrial
+            ? "Your 7-day free trial has started."
+            : "Your subscription is now active.",
+        });
+      })();
     } else if (status === "canceled") {
       toast({ title: "Checkout canceled", description: "No charge was made." });
     }
@@ -226,7 +232,7 @@ const Index = () => {
         >
           <Crown className="h-5 w-5 shrink-0 text-primary" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Unlock daily audios — 7 days free</p>
+            <p className="text-sm font-medium">Unlock daily audios with Premium</p>
             <p className="text-[11px] text-muted-foreground">From $4.99 / month · cancel anytime</p>
           </div>
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
