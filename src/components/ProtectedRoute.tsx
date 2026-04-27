@@ -71,7 +71,11 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     };
   }, [user, sub.loading, sub.premium, location.pathname]);
 
-  if (loading) {
+  // Wait for both auth AND subscription to finish before rendering anything.
+  // Rendering early causes a brief flash of the wrong UI (e.g. "Free" state)
+  // before the real data arrives — particularly noticeable on installed PWAs
+  // after a cold start.
+  if (loading || (user && sub.loading)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />

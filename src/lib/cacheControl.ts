@@ -115,7 +115,21 @@ export function bindServiceWorkerAutoReload() {
     }
     if (reloaded) return;
     reloaded = true;
-    // Small delay so any in-flight request can settle.
-    setTimeout(() => window.location.reload(), 50);
+    // Defer the reload until the app is hidden/backgrounded so the user
+    // never sees a flash while actively using the PWA.
+    const reloadNow = () => {
+      try { window.location.reload(); } catch { /* ignore */ }
+    };
+    if (document.visibilityState === "hidden") {
+      setTimeout(reloadNow, 50);
+    } else {
+      const onHide = () => {
+        if (document.visibilityState === "hidden") {
+          document.removeEventListener("visibilitychange", onHide);
+          reloadNow();
+        }
+      };
+      document.addEventListener("visibilitychange", onHide);
+    }
   });
 }
