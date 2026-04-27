@@ -799,7 +799,9 @@ const Audio = () => {
 
   const goDay = (d: number) => {
     if (d < 1) return;
-    if (!isAdmin && d > currentDay) return;
+    // Admins and veterans (finished the 365-day journey at least once) can
+    // navigate freely. First-journey users can only step forward up to today.
+    if (!isAdmin && !isVeteran && d > currentDay) return;
     setSearchParams(d === currentDay ? {} : { day: String(d) });
   };
 
