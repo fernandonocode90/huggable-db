@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { syncLocalOnboardingToDb } from "@/lib/onboarding";
 
 type Role = "admin" | "user";
 
@@ -51,6 +52,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               await supabase.from("profiles").update({ timezone: tz }).eq("id", s.user.id);
             }
           } catch { /* non-blocking */ }
+        }, 0);
+        setTimeout(() => {
+          // Migrate any legacy localStorage onboarding answers into the DB.
+          void syncLocalOnboardingToDb(s.user.id);
         }, 0);
       } else {
         setRoles([]);
