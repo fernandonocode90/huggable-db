@@ -106,7 +106,12 @@ const Upgrade = () => {
             title="Monthly"
             price="$4.99"
             period="/ month"
-            features={["Daily audios", "Save unlimited scenarios", "7-day free trial"]}
+            features={[
+              "Daily audios",
+              "Save unlimited scenarios",
+              ...(trialEligible ? ["7-day free trial"] : []),
+            ]}
+            cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
             onClick={() => startCheckout("monthly")}
             loading={loadingPlan === "monthly"}
             disabled={isPremium}
@@ -120,8 +125,9 @@ const Upgrade = () => {
             features={[
               "Everything in Monthly",
               "2 months free",
-              "7-day free trial",
+              ...(trialEligible ? ["7-day free trial"] : []),
             ]}
+            cta={trialEligible ? "Start 7-day free trial" : "Subscribe"}
             onClick={() => startCheckout("annual")}
             loading={loadingPlan === "annual"}
             disabled={isPremium}
@@ -129,7 +135,9 @@ const Upgrade = () => {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Secure payment via Stripe. You won't be charged during your 7-day trial.
+          {trialEligible
+            ? "Secure payment via Stripe. You won't be charged during your 7-day trial."
+            : "Secure payment via Stripe. You'll be charged immediately."}
         </p>
       </div>
     </div>
