@@ -70,6 +70,15 @@ const Upgrade = () => {
           {trialEligible ? " 7 days free, cancel anytime." : " Cancel anytime."}
         </p>
 
+        {trialEligible === false && !isPremium && !sub.grandfathered && (
+          <Card className="mt-6 border-amber-500/40 bg-amber-500/10 p-4 text-sm">
+            <div className="font-medium">Heads up: free trial not available</div>
+            <p className="mt-1 text-muted-foreground">
+              This email has already used a 7-day free trial in the past. If you subscribe now, you'll be charged immediately — no second trial.
+            </p>
+          </Card>
+        )}
+
         {sub.grandfathered && (
           <Card className="mt-6 border-primary/40 bg-primary/5 p-4 text-sm">
             🎁 You have free lifetime access to daily audios as a founding user.

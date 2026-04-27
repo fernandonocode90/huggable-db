@@ -111,6 +111,15 @@ const WelcomePaywall = () => {
             </p>
           </div>
 
+          {trialEligible === false && (
+            <div className="mt-6 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-foreground/90">
+              <div className="font-medium">Free trial not available</div>
+              <p className="mt-1 text-foreground/70">
+                This email has already used a 7-day free trial. Subscribing now will charge you immediately.
+              </p>
+            </div>
+          )}
+
           {/* Plan toggle */}
           <div className="mt-8 grid grid-cols-2 gap-3">
             <PlanOption
