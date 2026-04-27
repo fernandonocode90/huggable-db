@@ -132,7 +132,7 @@ const WelcomePaywall = () => {
 
           {/* Benefits */}
           <ul className="mt-8 space-y-3">
-            {BENEFITS.map((b) => (
+            {benefits.map((b) => (
               <li key={b} className="flex items-start gap-3 text-sm text-foreground/90">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15">
                   <Check className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} />
