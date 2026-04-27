@@ -454,6 +454,72 @@ const Privacy = () => {
         </div>
       </section>
 
+      {/* Subscription */}
+      {hasActiveSub && (
+        <section className="mt-6 animate-fade-up rounded-3xl border border-border/40 bg-card/40 p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+              <CreditCard className="h-5 w-5 text-primary" strokeWidth={1.6} />
+            </div>
+            <div>
+              <div className="font-display text-base text-foreground">
+                Subscription
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {subscription?.provider === "stripe" && "Billed via Stripe."}
+                {subscription?.provider === "apple" && "Billed via Apple."}
+                {subscription?.provider === "google" && "Billed via Google Play."}
+                {subscription?.provider === "manual" && "Granted manually."}
+                {" "}You can cancel and keep using the free version.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">Cancel subscription</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Cancel your subscription?</DialogTitle>
+                  <DialogDescription>
+                    Your account will stay active on the free plan. You can
+                    re-subscribe anytime.
+                  </DialogDescription>
+                </DialogHeader>
+                {isStoreSub && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200">
+                    <div className="mb-1 flex items-center gap-2 font-medium">
+                      <AlertTriangle className="h-4 w-4" />
+                      Action required on your device
+                    </div>
+                    {subscription?.provider === "apple"
+                      ? "Apple subscriptions can only be canceled in iPhone Settings → Apple ID → Subscriptions. We'll mark it canceled here, but you must also cancel in Settings to stop billing."
+                      : "Google Play subscriptions can only be canceled in Play Store → Profile → Payments & subscriptions. We'll mark it canceled here, but you must also cancel in Play Store to stop billing."}
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCancelDialogOpen(false)}
+                    disabled={canceling}
+                  >
+                    Keep subscription
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={cancelMySubscription}
+                    disabled={canceling}
+                  >
+                    {canceling ? "Canceling…" : "Cancel subscription"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </section>
+      )}
+
       {/* Delete account */}
       <section className="mt-6 animate-fade-up rounded-3xl border border-destructive/30 bg-destructive/5 p-5">
         <div className="flex items-center gap-3">
@@ -471,7 +537,13 @@ const Privacy = () => {
           </div>
         </div>
         <div className="mt-4 flex justify-end">
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={(o) => {
+              setDialogOpen(o);
+              if (!o) setStoreAck(false);
+            }}
+          >
             <DialogTrigger asChild>
               <Button variant="destructive">Delete my account</Button>
             </DialogTrigger>
@@ -483,6 +555,39 @@ const Privacy = () => {
                   your avatar. To confirm, type <strong>DELETE</strong> below.
                 </DialogDescription>
               </DialogHeader>
+
+              {hasActiveSub && subscription?.provider === "stripe" && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-foreground/80">
+                  Your Stripe subscription will be canceled automatically.
+                </div>
+              )}
+
+              {hasActiveSub && isStoreSub && (
+                <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
+                  <div className="mb-1 flex items-center gap-2 font-medium">
+                    <AlertTriangle className="h-4 w-4" />
+                    You must cancel your subscription manually
+                  </div>
+                  <p className="mb-2">
+                    {subscription?.provider === "apple"
+                      ? "Deleting your account does NOT cancel your Apple subscription. You'll keep being charged unless you cancel it in iPhone Settings → Apple ID → Subscriptions."
+                      : "Deleting your account does NOT cancel your Google Play subscription. You'll keep being charged unless you cancel it in Play Store → Profile → Payments & subscriptions."}
+                  </p>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={storeAck}
+                      onChange={(e) => setStoreAck(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      I understand and will cancel my subscription in{" "}
+                      {subscription?.provider === "apple" ? "iPhone Settings" : "Play Store"}.
+                    </span>
+                  </label>
+                </div>
+              )}
+
               <Input
                 value={deleteConfirm}
                 onChange={(e) => setDeleteConfirm(e.target.value)}
@@ -499,7 +604,11 @@ const Privacy = () => {
                 </Button>
                 <Button
                   variant="destructive"
-                  disabled={deleteConfirm !== "DELETE" || deleting}
+                  disabled={
+                    deleteConfirm !== "DELETE" ||
+                    deleting ||
+                    (hasActiveSub && isStoreSub && !storeAck)
+                  }
                   onClick={deleteAccount}
                 >
                   {deleting ? "Deleting…" : "Delete forever"}
