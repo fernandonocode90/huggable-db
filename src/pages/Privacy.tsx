@@ -58,10 +58,25 @@ const Privacy = () => {
       return;
     }
     setSavingName(true);
+    const trimmed = displayName.trim();
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: displayName.trim() })
+      .update({ display_name: trimmed })
       .eq("id", user.id);
+    if (!error) {
+      // Keep auth metadata in sync so greetings on other screens update immediately.
+      await supabase.auth.updateUser({ data: { full_name: trimmed } }).catch(() => {});
+      // Update the cached profile so Profile screen shows the new name without a refetch.
+      try {
+        const raw = sessionStorage.getItem("swc:profile");
+        const parsed = raw ? JSON.parse(raw) : { userId: user.id, avatar_url: null };
+        sessionStorage.setItem(
+          "swc:profile",
+          JSON.stringify({ ...parsed, userId: user.id, display_name: trimmed }),
+        );
+      } catch { /* ignore */ }
+      window.dispatchEvent(new CustomEvent("swc:display-name-updated", { detail: { display_name: trimmed } }));
+    }
     setSavingName(false);
     if (error) {
       toast({
