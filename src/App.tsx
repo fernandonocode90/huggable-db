@@ -15,6 +15,7 @@ import { GlobalBanner } from "./components/GlobalBanner";
 import { PageTransition } from "./components/PageTransition";
 import { PremiumGate } from "./components/PremiumGate";
 import { PersistentBottomNav } from "./components/swc/PersistentBottomNav";
+import { OfflineBanner } from "./components/OfflineBanner";
 
 // Eager: small + on critical path
 import Index from "./pages/Index.tsx";
@@ -94,6 +95,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <OnlineStatusWatcher />
+        <OfflineBanner />
         <BrowserRouter>
           <AuthProvider>
             <AppSettingsProvider>
