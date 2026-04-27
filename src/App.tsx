@@ -147,6 +147,7 @@ const App = () => (
                       <Route path="errors" element={<AdminClientErrors />} />
                       <Route path="moderation" element={<AdminModeration />} />
                       <Route path="onboarding" element={<AdminOnboarding />} />
+                      <Route path="premium" element={<AdminPremium />} />
                       <Route path="audit" element={<AdminAuditLog />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
