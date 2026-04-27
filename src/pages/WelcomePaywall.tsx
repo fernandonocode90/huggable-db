@@ -104,7 +104,7 @@ const WelcomePaywall = () => {
               Welcome
             </p>
             <h1 className="mt-2 font-display text-3xl text-foreground">
-              Try Premium free for 7 days
+              {trialEligible ? "Try Premium free for 7 days" : "Unlock Premium"}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               Get full access to every daily audio and unlock all premium tools.
