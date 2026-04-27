@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Wrench, Megaphone, Save } from "lucide-react";
+import { Loader2, Wrench, Megaphone, Save, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppSettings } from "@/hooks/useAppSettings";
 
