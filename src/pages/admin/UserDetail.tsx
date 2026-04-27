@@ -199,7 +199,17 @@ const UserDetail = () => {
         <Button variant="ghost" size="sm" onClick={() => navigate("/admin/users")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to users
         </Button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {p.is_premium && (
+            <Badge className="bg-primary/20 text-primary hover:bg-primary/20 gap-1">
+              <Crown className="h-3 w-3" /> Premium
+            </Badge>
+          )}
+          {p.journey_completions > 0 && (
+            <Badge className="bg-amber-500/20 text-amber-300 hover:bg-amber-500/20">
+              Veteran ×{p.journey_completions}
+            </Badge>
+          )}
           {p.is_banned && <Badge variant="destructive">Banned</Badge>}
           {p.is_admin && <Badge className="bg-primary/20 text-primary hover:bg-primary/20">Admin</Badge>}
         </div>
