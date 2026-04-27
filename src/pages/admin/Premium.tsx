@@ -434,7 +434,7 @@ const Premium = () => {
               <TableHead>Origem</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Próxima cobrança</TableHead>
+              <TableHead>{statusTab === "canceled" ? "Cancelou em" : "Próxima cobrança"}</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
