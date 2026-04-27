@@ -194,13 +194,21 @@ const Index = () => {
 
   return (
     <AppShell>
+      {hasFinishedCurrentJourney && !celebrationDismissed && (
+        <JourneyCompleteCelebration onClose={() => setCelebrationDismissed(true)} />
+      )}
+
       {/* Compact greeting */}
       <header className="animate-fade-up">
         <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
           Daily sanctuary
         </p>
         <h1 className="mt-2 font-display text-3xl leading-tight text-foreground">
-          Peace be with you, <span className="gold-text">{greetingName}</span>
+          Peace be with you,{" "}
+          <span className="gold-text">{greetingName}</span>
+          {isVeteran && (
+            <VeteranCrown className="ml-2" count={journeyCompletions} size={20} />
+          )}
         </h1>
       </header>
 
