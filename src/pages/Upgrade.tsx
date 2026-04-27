@@ -66,7 +66,8 @@ const Upgrade = () => {
 
         <h1 className="text-3xl font-semibold tracking-tight">Go Premium</h1>
         <p className="mt-2 text-muted-foreground">
-          Unlock daily audios and save unlimited calculator scenarios. 7 days free, cancel anytime.
+          Unlock daily audios and save unlimited calculator scenarios.
+          {trialEligible ? " 7 days free, cancel anytime." : " Cancel anytime."}
         </p>
 
         {sub.grandfathered && (
