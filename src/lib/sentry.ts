@@ -42,34 +42,19 @@ export const initializeSentry = async (): Promise<void> => {
 
   try {
     const release = `solomon-wealth-code@${APP_VERSION}+${APP_BUILD_DATE}`;
-    const environment = "production";
+    const environment = isNative() ? `native-${isNative() ? "app" : "web"}` : "web";
 
-    if (isNative()) {
-      // Native build → use the Capacitor SDK (wraps React + adds native).
-      const Sentry = await import("@sentry/capacitor");
-      const SentryReact = await import("@sentry/react");
-      Sentry.init(
-        {
-          dsn: SENTRY_DSN,
-          release,
-          environment,
-          tracesSampleRate: 0.1,
-          // Avoid noisy breadcrumb spam.
-          attachStacktrace: true,
-        },
-        SentryReact.init,
-      );
-    } else {
-      // Web/PWA → React SDK is enough.
-      const Sentry = await import("@sentry/react");
-      Sentry.init({
-        dsn: SENTRY_DSN,
-        release,
-        environment,
-        tracesSampleRate: 0.1,
-        attachStacktrace: true,
-      });
-    }
+    // We use @sentry/react for both web and native — it captures all JS
+    // errors. For native-level crashes (Swift/Kotlin), wire @sentry/capacitor
+    // separately in your Xcode/Android Studio project per Sentry's docs.
+    const Sentry = await import("@sentry/react");
+    Sentry.init({
+      dsn: SENTRY_DSN,
+      release,
+      environment,
+      tracesSampleRate: 0.1,
+      attachStacktrace: true,
+    });
   } catch (err) {
     console.warn("[sentry] Initialization failed:", err);
   }
