@@ -572,6 +572,44 @@ const Users = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!giftTarget} onOpenChange={(o) => !o && setGiftTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-amber-400" /> Conceder cortesia premium
+            </DialogTitle>
+            <DialogDescription>
+              {giftTarget?.email} receberá premium ativo + um email avisando.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Duração</label>
+              <Select value={giftMonths} onValueChange={setGiftMonths}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 mês</SelectItem>
+                  <SelectItem value="3">3 meses</SelectItem>
+                  <SelectItem value="6">6 meses</SelectItem>
+                  <SelectItem value="12">1 ano</SelectItem>
+                  <SelectItem value="lifetime">Vitalício</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGiftTarget(null)} disabled={gifting}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void grantCourtesy()} disabled={gifting} className="gap-2">
+              {gifting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Gift className="h-4 w-4" /> Conceder</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
