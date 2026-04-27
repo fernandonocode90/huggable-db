@@ -16,12 +16,14 @@ import {
   Activity,
   AlertCircle,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/admin/overview", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/onboarding", label: "Onboarding", icon: Sparkles },
   { to: "/admin/audios", label: "Audios", icon: Headphones },
   { to: "/admin/devotionals", label: "Devotionals", icon: BookOpen },
   { to: "/admin/bible", label: "Bible Content", icon: Library },
