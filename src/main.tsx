@@ -83,10 +83,41 @@ if (isPreviewHost || isInIframe || isCapacitorNative) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
-      .then((reg) => {
-        // Periodically poll for an updated SW (every 5 min) so installed PWAs
-        // pick up new builds without needing a manual reload.
+      .then(async (reg) => {
+        // Force an immediate update check on every cold start so a freshly
+        // reopened PWA picks up the latest build without needing a 2nd open.
+        try { await reg.update(); } catch { /* ignore */ }
+
+        // If a new SW is already waiting at boot (common when user closed and
+        // reopened the app), activate it now. The app just started rendering,
+        // so the reload is invisible and avoids the "needs another close/open" issue.
+        const activateIfWaiting = (worker: ServiceWorker | null) => {
+          if (!worker) return;
+          try { worker.postMessage({ type: "SKIP_WAITING" }); } catch { /* ignore */ }
+        };
+        activateIfWaiting(reg.waiting);
+
+        // Also handle the case where a new SW finishes installing right after boot.
+        reg.addEventListener("updatefound", () => {
+          const installing = reg.installing;
+          if (!installing) return;
+          installing.addEventListener("statechange", () => {
+            if (installing.state === "installed" && navigator.serviceWorker.controller) {
+              activateIfWaiting(reg.waiting ?? installing);
+            }
+          });
+        });
+
+        // Periodically poll for an updated SW (every 5 min) so long-lived
+        // sessions also pick up new builds.
         setInterval(() => { reg.update().catch(() => undefined); }, 5 * 60 * 1000);
+
+        // Re-check whenever the app comes back to the foreground.
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") {
+            reg.update().catch(() => undefined);
+          }
+        });
       })
       .catch((err) => console.warn("SW registration failed:", err));
   });
