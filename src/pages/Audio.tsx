@@ -56,6 +56,10 @@ const Audio = () => {
   const navigate = useNavigate();
   const { loading: subLoading, premium } = useSubscription();
   const isLocked = !subLoading && !premium && !isAdmin;
+  // True when the user can't play this audio for ANY reason (no premium OR
+  // the day itself isn't unlocked yet in their journey). Used by the UI so
+  // future days show a cadeado preview instead of trying to play.
+  const effectivelyLocked = isLocked || dayLocked;
 
   const [audio, setAudio] = useState<DailyAudio | null>(null);
   const [dayLocked, setDayLocked] = useState(false);
