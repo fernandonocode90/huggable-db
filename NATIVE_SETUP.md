@@ -39,12 +39,43 @@ Open `ios/App/App/Info.plist` in Xcode and add:
 
 ### 2.1 Permission usage descriptions (REQUIRED — Apple rejects without them)
 
+Apple rejects vague strings. Be specific about *what* the app does and *why
+the user benefits*.
+
 ```xml
-<key>NSUserNotificationsUsageDescription</key>
-<string>We send you reminders for your wealth practices and milestones.</string>
+<!-- Required answer to App Store Connect encryption question.
+     The app only uses standard HTTPS / system crypto, so this is "false". -->
+<key>ITSAppUsesNonExemptEncryption</key>
+<false/>
+
+<!-- We do not track users across other apps. Declare it explicitly. -->
+<key>NSUserTrackingUsageDescription</key>
+<string>Solomon Wealth Code does not track you across other apps or websites.</string>
 ```
 
-Add more only if you later use those features (camera, photos, location, etc).
+> **Push notifications:** iOS does NOT require a usage string in Info.plist.
+> The system prompt fires on `PushNotifications.requestPermissions()`. The
+> in-app priming screen (`PushPermissionPrime.tsx`) explains the value first.
+
+Add the strings below **only if** you later add the corresponding feature.
+If the key is missing when the API is called, the app will crash at review.
+
+```xml
+<!-- Only if you add profile photo capture from camera -->
+<key>NSCameraUsageDescription</key>
+<string>Used so you can take a profile photo for your Solomon Wealth Code account.</string>
+
+<!-- Only if you add profile photo upload from gallery -->
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Used so you can choose a profile photo for your Solomon Wealth Code account.</string>
+
+<!-- Required for daily audio playback to continue when phone is locked -->
+<key>UIBackgroundModes</key>
+<array>
+  <string>audio</string>
+</array>
+```
+
 
 ### 2.2 OAuth deep-link URL scheme (REQUIRED for Google sign-in on native)
 
