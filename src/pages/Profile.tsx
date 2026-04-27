@@ -144,14 +144,6 @@ const Profile = () => {
               <Loader2 className="h-6 w-6 animate-spin text-foreground" />
             </span>
           )}
-          {premium && (
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-background ring-2 ring-primary/60 shadow-[0_0_12px_hsl(var(--primary)/0.55)]"
-            >
-              <PremiumCrown size={16} />
-            </span>
-          )}
         </button>
         <input
           ref={fileInputRef}
