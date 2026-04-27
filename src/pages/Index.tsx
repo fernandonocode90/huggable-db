@@ -25,6 +25,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/use-toast";
 import { VeteranCrown } from "@/components/swc/VeteranCrown";
 import { JourneyCompleteCelebration } from "@/components/swc/JourneyCompleteCelebration";
+import { FinalDayBanner } from "@/components/swc/FinalDayBanner";
 
 type TodayAudio = {
   title: string | null;
@@ -80,6 +81,8 @@ const Index = () => {
     isVeteran,
     journeyCompletions,
     hasFinishedCurrentJourney,
+    awaitingFinalAudio,
+    finalAudioOverdue,
   } = useProgress();
   const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   const userId = user?.id ?? null;
@@ -227,6 +230,8 @@ const Index = () => {
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </button>
       )}
+
+      {awaitingFinalAudio && <FinalDayBanner overdue={finalAudioOverdue} />}
 
       {/* HERO — Today's audio (dominant card) */}
       <section

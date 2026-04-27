@@ -19,6 +19,10 @@ export interface ProgressState {
    * the chance to actually consume the final day's content.
    */
   hasFinishedCurrentJourney: boolean;
+  /** True when the user is on/past day 365 but hasn't completed the day-365 audio yet. */
+  awaitingFinalAudio: boolean;
+  /** True when the calendar has already moved past day 365 without the final audio being completed. */
+  finalAudioOverdue: boolean;
   refresh: () => Promise<void>;
   restartJourney: () => Promise<void>;
 }
@@ -141,6 +145,10 @@ export const useProgress = (): ProgressState => {
   // day-365 audio. Until then they keep seeing day 365 and can finish it.
   const finished = rawCurrentDay >= TOTAL_DAYS && finalDayCompleted;
 
+  // For veterans we never show the "final day" banner — they already finished once.
+  const awaitingFinalAudio = !finished && rawCurrentDay >= TOTAL_DAYS && journeyCompletions < 1;
+  const finalAudioOverdue = awaitingFinalAudio && rawCurrentDay > TOTAL_DAYS;
+
   return {
     loading,
     currentDay,
@@ -150,6 +158,8 @@ export const useProgress = (): ProgressState => {
     journeyCompletions,
     isVeteran: journeyCompletions >= 1,
     hasFinishedCurrentJourney: finished,
+    awaitingFinalAudio,
+    finalAudioOverdue,
     refresh,
     restartJourney,
   };
