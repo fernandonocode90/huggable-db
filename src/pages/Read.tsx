@@ -779,11 +779,7 @@ const Read = () => {
           </SelectTrigger>
           <SelectContent className="max-h-80">
             <div className="px-2 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {translation === "kjv"
-                ? "Old Testament"
-                : translation === "rvr1909"
-                ? "Antiguo Testamento"
-                : "Antigo Testamento"}
+              Old Testament
             </div>
             {OT_BOOKS.map((b) => (
               <SelectItem key={b.key} value={b.key}>
@@ -791,11 +787,7 @@ const Read = () => {
               </SelectItem>
             ))}
             <div className="mt-1 px-2 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {translation === "kjv"
-                ? "New Testament"
-                : translation === "rvr1909"
-                ? "Nuevo Testamento"
-                : "Novo Testamento"}
+              New Testament
             </div>
             {NT_BOOKS.map((b) => (
               <SelectItem key={b.key} value={b.key}>
