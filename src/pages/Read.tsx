@@ -165,13 +165,11 @@ const ES_NAMES: Record<string, string> = {
 const OT_BOOKS = BOOKS.filter((b) => b.testament === "OT");
 const NT_BOOKS = BOOKS.filter((b) => b.testament === "NT");
 
-type Translation = "bsb" | "kjv" | "acf" | "rvr1909";
+type Translation = "bsb" | "kjv";
 
 const TRANSLATIONS: { value: Translation; label: string; lang: string; ttsLang: string }[] = [
   { value: "bsb", label: "BSB (English)", lang: "en", ttsLang: "en-US" },
   { value: "kjv", label: "KJV (English)", lang: "en", ttsLang: "en-US" },
-  { value: "acf", label: "ACF (Português)", lang: "pt", ttsLang: "pt-BR" },
-  { value: "rvr1909", label: "RVR1909 (Español)", lang: "es", ttsLang: "es-ES" },
 ];
 
 interface Verse {
@@ -201,10 +199,8 @@ const HIGHLIGHT_COLORS = [
   { name: "pink", value: "hsl(330 80% 65% / 0.28)" },
 ];
 
-function bookDisplayName(book: Book, translation: Translation) {
-  if (translation === "bsb" || translation === "kjv") return book.name;
-  if (translation === "rvr1909") return ES_NAMES[book.key] ?? book.name;
-  return PT_NAMES[book.key] ?? book.name;
+function bookDisplayName(book: Book, _translation: Translation) {
+  return book.name;
 }
 
 const Read = () => {
@@ -781,11 +777,7 @@ const Read = () => {
           </SelectTrigger>
           <SelectContent className="max-h-80">
             <div className="px-2 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {translation === "kjv"
-                ? "Old Testament"
-                : translation === "rvr1909"
-                ? "Antiguo Testamento"
-                : "Antigo Testamento"}
+              Old Testament
             </div>
             {OT_BOOKS.map((b) => (
               <SelectItem key={b.key} value={b.key}>
@@ -793,11 +785,7 @@ const Read = () => {
               </SelectItem>
             ))}
             <div className="mt-1 px-2 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {translation === "kjv"
-                ? "New Testament"
-                : translation === "rvr1909"
-                ? "Nuevo Testamento"
-                : "Novo Testamento"}
+              New Testament
             </div>
             {NT_BOOKS.map((b) => (
               <SelectItem key={b.key} value={b.key}>
