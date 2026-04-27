@@ -47,6 +47,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const CheckEmail = lazy(() => import("./pages/CheckEmail.tsx"));
 const Upgrade = lazy(() => import("./pages/Upgrade.tsx"));
 const WelcomePaywall = lazy(() => import("./pages/WelcomePaywall.tsx"));
+const SubscriptionManage = lazy(() => import("./pages/SubscriptionManage.tsx"));
 
 // Admin: lazy as a single area — nunca carrega para usuários comuns
 const Admin = lazy(() => import("./pages/Admin.tsx"));
