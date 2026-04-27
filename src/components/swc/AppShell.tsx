@@ -19,9 +19,14 @@ export const AppShell = ({
     <NightBackground>
       <div
         className={cn(
-          "mx-auto flex min-h-screen flex-col px-6 pb-32 pt-12 md:px-10 lg:px-12",
+          "mx-auto flex min-h-[100dvh] flex-col px-6 pb-32 pt-12 md:px-10 lg:px-12",
           maxWidthClass,
         )}
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 3rem)",
+          paddingLeft: "max(env(safe-area-inset-left), 1.5rem)",
+          paddingRight: "max(env(safe-area-inset-right), 1.5rem)",
+        }}
       >
         {children}
       </div>
