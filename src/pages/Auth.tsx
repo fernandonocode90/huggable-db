@@ -120,7 +120,7 @@ const Auth = () => {
         redirectTo: `${window.location.origin}/`,
       });
       if (error) throw error;
-      toast.success("Check your email for the reset link.");
+      toast.success("Reset link sent. Check your inbox (and your spam folder).");
       setForgotOpen(false);
       setForgotEmail("");
     } catch (err) {
