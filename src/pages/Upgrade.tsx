@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrialEligibility } from "@/hooks/useTrialEligibility";
+import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "@/hooks/use-toast";
 import { Check, Loader2 } from "lucide-react";
 
@@ -14,8 +15,15 @@ const Upgrade = () => {
   const { user } = useAuth();
   const sub = useSubscription();
   const trialEligible = useTrialEligibility();
+  const { platform } = usePlatform();
   const [loadingPlan, setLoadingPlan] = useState<null | "monthly" | "annual">(null);
   const [openingPortal, setOpeningPortal] = useState(false);
+
+  // Apple App Store rule 3.1.1: in-app purchase is REQUIRED for digital
+  // subscriptions on iOS. We show a "manage on web" message instead of the
+  // Stripe checkout button when running inside the iOS native shell.
+  // RevenueCat / StoreKit integration will replace this branch later.
+  const iapRequired = platform === "ios";
 
   useEffect(() => {
     if (!user) navigate("/auth");
