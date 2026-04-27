@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye, Trash2 } from "lucide-react";
+import { ShieldCheck, ShieldOff, RotateCcw, Search, Download, Loader2, Eye, Trash2, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
