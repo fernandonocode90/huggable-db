@@ -155,10 +155,26 @@ const Index = () => {
     };
   }, [userId, progressLoading, onboardingComplete, currentDay, totalDays]);
 
+  const [profileName, setProfileName] = useState<string | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("swc:profile");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { display_name: string | null };
+      return parsed?.display_name ?? null;
+    } catch { return null; }
+  });
+  useEffect(() => {
+    const onUpdated = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { display_name?: string } | undefined;
+      if (detail?.display_name) setProfileName(detail.display_name);
+    };
+    window.addEventListener("swc:display-name-updated", onUpdated);
+    return () => window.removeEventListener("swc:display-name-updated", onUpdated);
+  }, []);
   const greetingName = useMemo(() => {
-    const raw = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "traveler";
+    const raw = profileName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "traveler";
     return String(raw).split(" ")[0];
-  }, [user]);
+  }, [user, profileName]);
 
   const reflectionExcerpt = useMemo(() => {
     const text = devotional?.reflection_text?.trim();
