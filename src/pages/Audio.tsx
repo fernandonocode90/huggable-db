@@ -874,6 +874,11 @@ const Audio = () => {
             <div className="text-center">
               <h2 className="font-display text-2xl text-foreground">{audio.title}</h2>
               {audio.subtitle && <p className="mt-1 text-sm text-muted-foreground">{audio.subtitle}</p>}
+              {dayLocked && (
+                <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-3 py-1 text-[11px] font-medium text-muted-foreground ring-1 ring-border/60">
+                  <Lock className="h-3 w-3" /> Unlocks on day {requestedDay}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-10">
