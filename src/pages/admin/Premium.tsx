@@ -216,13 +216,22 @@ const Premium = () => {
       if (!target) throw new Error("Usuário não encontrado");
 
       const months = grantMonths === "lifetime" ? null : parseInt(grantMonths, 10);
-      const { error } = await supabase.rpc("admin_grant_premium", {
-        _user_id: target.id,
-        _months: months,
-        _reason: grantReason || null,
+      const { data: result, error } = await supabase.functions.invoke("admin-grant-premium", {
+        body: {
+          user_id: target.id,
+          months,
+          reason: grantReason || null,
+        },
       });
       if (error) throw error;
-      toast.success(`Premium concedido a ${target.email}`);
+      const res = result as { error?: string; email_sent?: boolean; email_error?: string | null };
+      if (res?.error) throw new Error(res.error);
+      if (res?.email_sent) {
+        toast.success(`Premium concedido a ${target.email} · email enviado`);
+      } else {
+        toast.success(`Premium concedido a ${target.email}`);
+        if (res?.email_error) toast.warning(`Email não enviado: ${res.email_error}`);
+      }
       setGrantOpen(false);
       setGrantEmail("");
       setGrantMonths("12");
