@@ -682,6 +682,10 @@ const Audio = () => {
   }, []);
 
   const toggle = () => {
+    if (dayLocked) {
+      // Día bloqueado en la jornada — no hay nada que reproducir todavía.
+      return;
+    }
     if (isLocked) {
       navigate("/upgrade");
       return;
