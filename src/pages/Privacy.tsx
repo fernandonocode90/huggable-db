@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, BellRing, KeyRound, Trash2, UserCircle2 } from "lucide-react";
+import { ArrowLeft, BellRing, KeyRound, Trash2, UserCircle2, CreditCard, AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/swc/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,15 @@ const Privacy = () => {
   const [deleting, setDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [prePromptOpen, setPrePromptOpen] = useState(false);
+  const [storeAck, setStoreAck] = useState(false);
+
+  const [subscription, setSubscription] = useState<{
+    provider: string | null;
+    status: string | null;
+    current_period_end: string | null;
+  } | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [canceling, setCanceling] = useState(false);
 
   const { state: reminders, setTime: setReminderTime, save: saveReminders } = useReminders();
 
