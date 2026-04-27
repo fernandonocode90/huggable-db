@@ -23,6 +23,11 @@ export interface ProgressState {
   awaitingFinalAudio: boolean;
   /** True when the calendar has already moved past day 365 without the final audio being completed. */
   finalAudioOverdue: boolean;
+  /**
+   * True when the user finished day 365 and is waiting for tomorrow's reset
+   * (post-celebration "victory lap" state). Used to show the congrats banner.
+   */
+  journeyJustCompleted: boolean;
   refresh: () => Promise<void>;
   restartJourney: () => Promise<void>;
 }
@@ -38,6 +43,7 @@ type CachedProgress = {
   totalDays: number;
   journeyCompletions: number;
   finalDayCompleted: boolean;
+  startDateInFuture: boolean;
 };
 
 const readCache = (): CachedProgress | null => {
@@ -69,6 +75,7 @@ export const useProgress = (): ProgressState => {
   const [completedCount, setCompletedCount] = useState(initial?.completedCount ?? 0);
   const [journeyCompletions, setJourneyCompletions] = useState(initial?.journeyCompletions ?? 0);
   const [finalDayCompleted, setFinalDayCompleted] = useState(initial?.finalDayCompleted ?? false);
+  const [startDateInFuture, setStartDateInFuture] = useState(initial?.startDateInFuture ?? false);
 
   const refresh = useCallback(async () => {
     if (!userId) {
@@ -91,7 +98,7 @@ export const useProgress = (): ProgressState => {
         .eq("completed", true),
       supabase
         .from("profiles")
-        .select("journey_completions")
+        .select("journey_completions, start_date, timezone")
         .eq("id", userId)
         .maybeSingle(),
       supabase
@@ -106,15 +113,30 @@ export const useProgress = (): ProgressState => {
     const nextDay = typeof day === "number" ? day : 1;
     const nextStreak = typeof streakVal === "number" ? streakVal : 0;
     const nextCompleted = completed ?? 0;
-    const nextCompletions =
-      (profile as { journey_completions?: number } | null)?.journey_completions ?? 0;
+    const profileRow = profile as
+      | { journey_completions?: number; start_date?: string; timezone?: string }
+      | null;
+    const nextCompletions = profileRow?.journey_completions ?? 0;
     const nextFinalDayDone = !!finalDay;
+
+    // Compute "is start_date strictly in the future" in the user's local TZ.
+    let nextFutureStart = false;
+    if (profileRow?.start_date) {
+      try {
+        const tz = profileRow.timezone || "UTC";
+        const localToday = new Date().toLocaleDateString("en-CA", { timeZone: tz });
+        nextFutureStart = profileRow.start_date > localToday;
+      } catch {
+        nextFutureStart = false;
+      }
+    }
 
     setRawCurrentDay(nextDay);
     setStreak(nextStreak);
     setCompletedCount(nextCompleted);
     setJourneyCompletions(nextCompletions);
     setFinalDayCompleted(nextFinalDayDone);
+    setStartDateInFuture(nextFutureStart);
     writeCache({
       userId,
       currentDay: nextDay,
@@ -123,6 +145,7 @@ export const useProgress = (): ProgressState => {
       totalDays: TOTAL_DAYS,
       journeyCompletions: nextCompletions,
       finalDayCompleted: nextFinalDayDone,
+      startDateInFuture: nextFutureStart,
     });
     setLoading(false);
   }, [userId]);
@@ -154,6 +177,11 @@ export const useProgress = (): ProgressState => {
   const awaitingFinalAudio = !finished && rawCurrentDay >= TOTAL_DAYS;
   const finalAudioOverdue = awaitingFinalAudio && rawCurrentDay > TOTAL_DAYS;
 
+  // Post-celebration state, two cases:
+  //  1. Finished day 365 audio, still on day 365 (before pressing "Begin again")
+  //  2. Pressed "Begin again" but the new start_date is tomorrow (waiting today out)
+  const journeyJustCompleted = finished || (journeyCompletions >= 1 && startDateInFuture);
+
   return {
     loading,
     currentDay,
@@ -165,6 +193,7 @@ export const useProgress = (): ProgressState => {
     hasFinishedCurrentJourney: finished,
     awaitingFinalAudio,
     finalAudioOverdue,
+    journeyJustCompleted,
     refresh,
     restartJourney,
   };
