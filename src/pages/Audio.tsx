@@ -206,6 +206,8 @@ const Audio = () => {
         return;
       }
 
+      setDayLocked(false);
+
       const { data } = await supabase
         .from("daily_audios")
         .select("id,title,subtitle,day_number,r2_key,description,prayer_text")
@@ -215,6 +217,32 @@ const Audio = () => {
       if (cancelled) return;
 
       if (!data) {
+        // RLS hides future days from non-admins. If the requested day is in
+        // the future, fetch lightweight metadata via the safe RPC and render
+        // a locked preview (title/subtitle only, no audio playback).
+        if (!isAdmin && requestedDay > currentDay) {
+          const { data: previewRows } = await supabase.rpc("get_week_preview", {
+            _from_day: requestedDay,
+            _to_day: requestedDay,
+          });
+          if (cancelled) return;
+          const preview = (previewRows as Array<{ day_number: number; title: string; subtitle: string | null }> | null)?.[0];
+          if (preview) {
+            setAudio({
+              id: `locked-${requestedDay}`,
+              title: preview.title,
+              subtitle: preview.subtitle,
+              day_number: preview.day_number,
+              r2_key: "",
+              description: null,
+              prayer_text: null,
+            });
+            currentAudioRef.current = null;
+            setDayLocked(true);
+            setLoading(false);
+            return;
+          }
+        }
         setAudio(null);
         currentAudioRef.current = null;
         setLoading(false);
