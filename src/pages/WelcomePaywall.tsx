@@ -62,14 +62,29 @@ const WelcomePaywall = () => {
 
   return (
     <NightBackground>
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-8">
+      <div
+        className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-8"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 2rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 2rem)",
+        }}
+      >
         <button
           type="button"
           onClick={close}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            void close();
+          }}
           aria-label="Close"
-          className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-foreground/10 text-foreground transition-colors hover:bg-foreground/20"
+          className="fixed right-3 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-foreground/15 text-foreground backdrop-blur-sm transition-colors hover:bg-foreground/25 active:bg-foreground/30"
+          style={{
+            top: "calc(env(safe-area-inset-top) + 0.75rem)",
+            WebkitTapHighlightColor: "transparent",
+            touchAction: "manipulation",
+          }}
         >
-          <X className="h-5 w-5" strokeWidth={1.8} />
+          <X className="h-6 w-6" strokeWidth={2} />
         </button>
 
         <div className="flex flex-1 flex-col justify-center animate-fade-up">
