@@ -66,6 +66,7 @@ const AdminHealth = lazy(() => import("./pages/admin/Health.tsx"));
 const AdminClientErrors = lazy(() => import("./pages/admin/ClientErrors.tsx"));
 const AdminModeration = lazy(() => import("./pages/admin/Moderation.tsx"));
 const AdminOnboarding = lazy(() => import("./pages/admin/Onboarding.tsx"));
+const AdminPremium = lazy(() => import("./pages/admin/Premium.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -146,6 +147,7 @@ const App = () => (
                       <Route path="errors" element={<AdminClientErrors />} />
                       <Route path="moderation" element={<AdminModeration />} />
                       <Route path="onboarding" element={<AdminOnboarding />} />
+                      <Route path="premium" element={<AdminPremium />} />
                       <Route path="audit" element={<AdminAuditLog />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />

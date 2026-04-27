@@ -564,6 +564,7 @@ export type Database = {
           email: string
           id: string
           plan: string
+          provider: string
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -578,6 +579,7 @@ export type Database = {
           email: string
           id?: string
           plan?: string
+          provider?: string
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -592,6 +594,7 @@ export type Database = {
           email?: string
           id?: string
           plan?: string
+          provider?: string
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -720,6 +723,10 @@ export type Database = {
       admin_get_health: { Args: never; Returns: Json }
       admin_get_onboarding_stats: { Args: { _days?: number }; Returns: Json }
       admin_get_overview_stats: { Args: never; Returns: Json }
+      admin_get_premium_user_detail: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
       admin_get_reminder_stats: { Args: never; Returns: Json }
       admin_get_signups_by_day: {
         Args: { _days?: number }
@@ -738,6 +745,10 @@ export type Database = {
       admin_get_user_detail: { Args: { _user_id: string }; Returns: Json }
       admin_gift_streak: {
         Args: { _new_best_streak: number; _user_id: string }
+        Returns: undefined
+      }
+      admin_grant_premium: {
+        Args: { _months?: number; _reason?: string; _user_id: string }
         Returns: undefined
       }
       admin_list_bookmark_notes: {
@@ -788,6 +799,29 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_list_premium_users: {
+        Args: {
+          _limit?: number
+          _offset?: number
+          _provider?: string
+          _search?: string
+        }
+        Returns: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string
+          display_name: string
+          email: string
+          plan: string
+          provider: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          total_count: number
+          trial_end: string
+          user_id: string
+        }[]
+      }
       admin_list_users: {
         Args: { _limit?: number; _offset?: number; _search?: string }
         Returns: {
@@ -826,7 +860,16 @@ export type Database = {
           total_count: number
         }[]
       }
+      admin_mark_subscription_canceled: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      admin_premium_stats: { Args: never; Returns: Json }
       admin_reset_user_streak: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      admin_revoke_manual_premium: {
         Args: { _user_id: string }
         Returns: undefined
       }

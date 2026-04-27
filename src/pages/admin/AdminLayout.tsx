@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/admin/overview", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/premium", label: "Premium", icon: Crown },
   { to: "/admin/onboarding", label: "Onboarding", icon: Sparkles },
   { to: "/admin/audios", label: "Audios", icon: Headphones },
   { to: "/admin/devotionals", label: "Devotionals", icon: BookOpen },
