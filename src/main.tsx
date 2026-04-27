@@ -75,9 +75,19 @@ if (isPreviewHost || isInIframe || isCapacitorNative) {
     regs.forEach((r) => r.unregister());
   });
 } else if ("serviceWorker" in navigator) {
+  // Auto-reload as soon as a new SW takes control — fixes the "PWA stuck on
+  // old build until I close the app" problem.
+  void import("./lib/cacheControl").then(({ bindServiceWorkerAutoReload }) => {
+    bindServiceWorkerAutoReload();
+  });
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
+      .then((reg) => {
+        // Periodically poll for an updated SW (every 5 min) so installed PWAs
+        // pick up new builds without needing a manual reload.
+        setInterval(() => { reg.update().catch(() => undefined); }, 5 * 60 * 1000);
+      })
       .catch((err) => console.warn("SW registration failed:", err));
   });
 }
