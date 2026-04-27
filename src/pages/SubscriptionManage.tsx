@@ -56,6 +56,20 @@ const SubscriptionManage = () => {
           View your plan, update payment, or cancel.
         </p>
 
+        {sub.loading ? (
+          <Card className="mt-6 p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 h-6 w-6 animate-pulse rounded-full bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+                <div className="h-4 w-56 animate-pulse rounded bg-muted/70" />
+                <div className="h-4 w-32 animate-pulse rounded bg-muted/70" />
+              </div>
+            </div>
+          </Card>
+        ) : (
+        <>
+
         {/* Status card */}
         <Card className="mt-6 p-5">
           <div className="flex items-start gap-3">
