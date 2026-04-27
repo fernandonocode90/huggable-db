@@ -228,12 +228,17 @@ const Audio = () => {
         // every day's audio — no cadeado for them. Only first-journey users
         // get the locked preview for days they haven't reached yet.
         if (!isAdmin && !isVeteran && requestedDay > currentDay) {
-          const { data: previewRows } = await supabase.rpc("get_week_preview", {
-            _from_day: requestedDay,
-            _to_day: requestedDay,
+          const { data: previewRow } = await supabase.rpc("get_audio_preview", {
+            _day: requestedDay,
           });
           if (cancelled) return;
-          const preview = (previewRows as Array<{ day_number: number; title: string; subtitle: string | null }> | null)?.[0];
+          const preview = (previewRow as Array<{
+            day_number: number;
+            title: string;
+            subtitle: string | null;
+            description: string | null;
+            prayer_text: string | null;
+          }> | null)?.[0];
           if (preview) {
             setAudio({
               id: `locked-${requestedDay}`,
@@ -241,8 +246,8 @@ const Audio = () => {
               subtitle: preview.subtitle,
               day_number: preview.day_number,
               r2_key: "",
-              description: null,
-              prayer_text: null,
+              description: preview.description,
+              prayer_text: preview.prayer_text,
             });
             currentAudioRef.current = null;
             setDayLocked(true);
