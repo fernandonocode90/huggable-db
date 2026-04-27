@@ -47,6 +47,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const CheckEmail = lazy(() => import("./pages/CheckEmail.tsx"));
 const Upgrade = lazy(() => import("./pages/Upgrade.tsx"));
 const WelcomePaywall = lazy(() => import("./pages/WelcomePaywall.tsx"));
+const SubscriptionManage = lazy(() => import("./pages/SubscriptionManage.tsx"));
 
 // Admin: lazy as a single area — nunca carrega para usuários comuns
 const Admin = lazy(() => import("./pages/Admin.tsx"));
@@ -129,6 +130,7 @@ const App = () => (
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/profile/streak" element={<ProtectedRoute><Streak /></ProtectedRoute>} />
                     <Route path="/profile/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+                    <Route path="/profile/subscription" element={<ProtectedRoute><SubscriptionManage /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                       <Route index element={<Admin />} />
                       <Route path="overview" element={<AdminOverview />} />
