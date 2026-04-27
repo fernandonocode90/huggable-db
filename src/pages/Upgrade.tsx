@@ -153,6 +153,7 @@ interface PlanCardProps {
   highlighted?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  cta: string;
   onClick: () => void;
 }
 
@@ -165,6 +166,7 @@ const PlanCard = ({
   highlighted,
   loading,
   disabled,
+  cta,
   onClick,
 }: PlanCardProps) => (
   <Card
@@ -199,7 +201,7 @@ const PlanCard = ({
       ) : disabled ? (
         "Current plan"
       ) : (
-        "Start 7-day free trial"
+        cta
       )}
     </Button>
   </Card>
