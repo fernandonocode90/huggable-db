@@ -922,6 +922,14 @@ export type Database = {
           total_count: number
         }[]
       }
+      admin_lookup_user_by_email: {
+        Args: { _email: string }
+        Returns: {
+          display_name: string
+          email: string
+          id: string
+        }[]
+      }
       admin_mark_subscription_canceled: {
         Args: { _user_id: string }
         Returns: undefined

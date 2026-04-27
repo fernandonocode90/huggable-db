@@ -223,47 +223,21 @@ Deno.serve(async (req) => {
     }
     const targetEmail = body.email!.trim().toLowerCase();
 
-    // Try to find existing auth user with this email
-    // (no native getUserByEmail; use listUsers filter)
-    const { data: existing, error: lookErr } = await adminClient.auth.admin.listUsers({
-      page: 1, perPage: 1,
-    });
+    // Lookup auth user by email via admin RPC
+    const { data: lookup, error: lookErr } = await userClient.rpc(
+      "admin_lookup_user_by_email",
+      { _email: targetEmail },
+    );
     if (lookErr) {
-      // continue anyway; we'll fallback to voucher
-      console.error("listUsers error", lookErr);
-    }
-    // listUsers doesn't filter by email server-side; do a profile search instead
-    const { data: foundUserRow } = await adminClient
-      .from("profiles")
-      .select("id")
-      .limit(1)
-      .maybeSingle();
-    void foundUserRow; // unused — we use auth lookup below
-
-    // Robust email lookup via auth schema using a service-role RPC equivalent:
-    // We query auth.users directly via the admin client's auth schema is not exposed,
-    // so we use listUsers with page iteration and email filter.
-    let foundId: string | null = null;
-    let foundDisplayName: string | null = null;
-    {
-      // Use the GoTrue admin endpoint which DOES support filter
-      const ulist = await adminClient.auth.admin.listUsers({
-        page: 1, perPage: 200,
+      return new Response(JSON.stringify({ error: lookErr.message }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      for (const u of ulist.data?.users ?? []) {
-        if ((u.email ?? "").toLowerCase() === targetEmail) {
-          foundId = u.id;
-          break;
-        }
-      }
     }
-    if (foundId) {
-      const { data: prof } = await adminClient
-        .from("profiles").select("display_name").eq("id", foundId).maybeSingle();
-      foundDisplayName = prof?.display_name ?? null;
+    const found = (lookup as Array<{ id: string; email: string; display_name: string | null }> | null)?.[0] ?? null;
 
+    if (found) {
       const { error: rpcErr } = await userClient.rpc("admin_grant_premium", {
-        _user_id: foundId, _months: months, _reason: reason,
+        _user_id: found.id, _months: months, _reason: reason,
       });
       if (rpcErr) {
         return new Response(JSON.stringify({ error: rpcErr.message }), {
