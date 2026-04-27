@@ -165,12 +165,16 @@ export const useProgress = (): ProgressState => {
     refresh();
   }, [refresh]);
 
-  // UI never shows beyond the final day.
-  const currentDay = Math.min(rawCurrentDay, TOTAL_DAYS);
-
   // Celebration is only revealed AFTER the user has actually completed the
   // day-365 audio. Until then they keep seeing day 365 and can finish it.
   const finished = rawCurrentDay >= TOTAL_DAYS && finalDayCompleted;
+
+  // UI never shows beyond the final day. Also: if the user just restarted
+  // (start_date is tomorrow), keep showing day 365 for the rest of today
+  // instead of jumping back to day 1 prematurely.
+  const currentDay = startDateInFuture
+    ? TOTAL_DAYS
+    : Math.min(rawCurrentDay, TOTAL_DAYS);
 
   // Banner appears any time the user reaches day 365 without having completed
   // the day-365 audio in the current cycle — including veterans on a new run.
