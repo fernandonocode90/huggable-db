@@ -864,4 +864,30 @@ const Info = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
+const providerLabel = (p: string): string => {
+  switch (p) {
+    case "stripe": return "Stripe (cartão)";
+    case "apple": return "Apple In-App";
+    case "google": return "Google Play";
+    case "manual": return "Manual / cortesia";
+    default: return p;
+  }
+};
+
+const planLabel = (p: string): string => {
+  switch (p) {
+    case "monthly": return "Mensal";
+    case "annual": return "Anual";
+    case "free": return "Gratuito";
+    default: return p;
+  }
+};
+
+const priceLabel = (provider: string, plan: string): string => {
+  if (provider === "manual") return "Cortesia";
+  if (plan === "monthly") return "R$ 4,99 / mês";
+  if (plan === "annual") return "R$ 49,99 / ano";
+  return "—";
+};
+
 export default UserDetail;
