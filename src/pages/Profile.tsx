@@ -8,9 +8,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PremiumCrown } from "@/components/swc/PremiumCrown";
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
+  const { premium } = useSubscription();
   const { currentDay, streak, completedCount } = useProgress();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
@@ -141,6 +144,14 @@ const Profile = () => {
               <Loader2 className="h-6 w-6 animate-spin text-foreground" />
             </span>
           )}
+          {premium && (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-background ring-2 ring-primary/60 shadow-[0_0_12px_hsl(var(--primary)/0.55)]"
+            >
+              <PremiumCrown size={16} />
+            </span>
+          )}
         </button>
         <input
           ref={fileInputRef}
@@ -153,12 +164,20 @@ const Profile = () => {
           {profileLoading && !displayName ? (
             <Skeleton className="mx-auto h-8 w-40" />
           ) : (
-            displayName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"
+            <span className="inline-flex items-center justify-center gap-2">
+              {displayName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"}
+              {premium && <PremiumCrown size={22} />}
+            </span>
           )}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {user?.email}
         </p>
+        {premium && (
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary">
+            <PremiumCrown size={12} /> Premium member
+          </p>
+        )}
       </header>
 
       <div

@@ -43,7 +43,7 @@ const STEPS: Step[] = [
   {
     kind: "question",
     key: "intent",
-    eyebrow: "Question 1 of 5",
+    eyebrow: "Question 1 of 3",
     title: "What brings you here?",
     subtitle: "We'll tailor your daily journey to what matters most to you.",
     options: [
@@ -56,7 +56,7 @@ const STEPS: Step[] = [
   {
     kind: "question",
     key: "seasonOfLife",
-    eyebrow: "Question 2 of 5",
+    eyebrow: "Question 2 of 3",
     title: "Where are you right now?",
     subtitle: "Your season shapes the practice we suggest.",
     options: [
@@ -68,33 +68,8 @@ const STEPS: Step[] = [
   },
   {
     kind: "question",
-    key: "experience",
-    eyebrow: "Question 3 of 5",
-    title: "How familiar are you with biblical wisdom on money?",
-    subtitle: "We'll meet you exactly where you are.",
-    options: [
-      { id: "new", label: "New to it", desc: "Curious and open.", icon: Sprout },
-      { id: "some", label: "Some familiarity", desc: "I've heard the verses.", icon: Star },
-      { id: "deep", label: "I study it regularly", desc: "Give me depth.", icon: Brain },
-    ],
-  },
-  {
-    kind: "question",
-    key: "practice",
-    eyebrow: "Question 4 of 5",
-    title: "When will you practice?",
-    subtitle: "Choosing a time triples your odds of staying with it.",
-    options: [
-      { id: "morning", label: "Morning", desc: "Set the tone for the day.", icon: Sunrise },
-      { id: "midday", label: "Midday", desc: "A pause in the noise.", icon: Sun },
-      { id: "evening", label: "Evening", desc: "Reflect before resting.", icon: Moon },
-      { id: "flexible", label: "Whenever I can", desc: "I'll find the moment.", icon: Sparkles },
-    ],
-  },
-  {
-    kind: "question",
     key: "commitment",
-    eyebrow: "Question 5 of 5",
+    eyebrow: "Question 3 of 3",
     title: "What's a realistic daily commitment?",
     subtitle: "Small and consistent beats heroic and rare.",
     options: [

@@ -120,7 +120,7 @@ const Auth = () => {
         redirectTo: `${window.location.origin}/`,
       });
       if (error) throw error;
-      toast.success("Check your email for the reset link.");
+      toast.success("Reset link sent. Check your inbox (and your spam folder).");
       setForgotOpen(false);
       setForgotEmail("");
     } catch (err) {
@@ -169,7 +169,7 @@ const Auth = () => {
                 setForgotEmail(email);
                 setForgotOpen(true);
               }}
-              className="block w-full text-center text-xs text-muted-foreground hover:text-primary"
+              className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
             >
               Forgot your password?
             </button>
@@ -259,15 +259,16 @@ const Auth = () => {
           <DialogHeader>
             <DialogTitle>Reset your password</DialogTitle>
             <DialogDescription>
-              Enter the email tied to your account. We'll send you a link to choose a new password.
+              Type the email you used to sign up. We'll send a secure link you can tap to choose a new password.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={sendReset} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="forgot-email">Email</Label>
+              <Label htmlFor="forgot-email">Your email</Label>
               <Input
                 id="forgot-email"
                 type="email"
+                placeholder="you@example.com"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
                 onFocus={(e) => {
@@ -279,6 +280,12 @@ const Auth = () => {
                 required
                 autoFocus
               />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                The email usually arrives within a minute. If you don't see it,
+                check your <span className="font-medium text-foreground">Spam</span> or
+                <span className="font-medium text-foreground"> Promotions</span> folder.
+                The link expires in 1 hour.
+              </p>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setForgotOpen(false)} disabled={forgotBusy}>
