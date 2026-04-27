@@ -7,6 +7,21 @@ import { ExpirationPlugin } from "workbox-expiration";
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Take control as soon as a new SW is installed/activated, so users don't get
+// stuck on an old build until they fully close every tab/PWA window.
+self.addEventListener("install", () => {
+  void self.skipWaiting();
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+// Allow the page to ask the waiting SW to activate immediately.
+self.addEventListener("message", (event) => {
+  if ((event.data as { type?: string } | null)?.type === "SKIP_WAITING") {
+    void self.skipWaiting();
+  }
+});
+
 // Precache build assets
 precacheAndRoute((self as unknown as { __WB_MANIFEST: Array<{ url: string; revision: string | null }> }).__WB_MANIFEST);
 cleanupOutdatedCaches();
