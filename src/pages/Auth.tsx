@@ -169,7 +169,7 @@ const Auth = () => {
                 setForgotEmail(email);
                 setForgotOpen(true);
               }}
-              className="block w-full text-center text-xs text-muted-foreground hover:text-primary"
+              className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
             >
               Forgot your password?
             </button>
