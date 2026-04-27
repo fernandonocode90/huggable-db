@@ -231,6 +231,8 @@ const Index = () => {
         </button>
       )}
 
+      {awaitingFinalAudio && <FinalDayBanner overdue={finalAudioOverdue} />}
+
       {/* HERO — Today's audio (dominant card) */}
       <section
         className="relative mt-6 animate-fade-up"
