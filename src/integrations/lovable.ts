@@ -13,7 +13,7 @@
  *   4. Tratar o callback com `@capacitor/app` listener `appUrlOpen` no main.tsx.
  */
 import { supabase } from "@/integrations/supabase/client";
-import { isNativePlatform } from "@/lib/nativeStorage";
+import { isNative as isNativePlatform } from "@/lib/platform";
 
 type OAuthProvider = "google" | "github" | "apple";
 
