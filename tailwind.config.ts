@@ -116,6 +116,22 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        "breathe": {
+          "0%, 100%": {
+            transform: "scale(1)",
+            boxShadow:
+              "0 0 35px hsl(var(--primary) / 0.55), inset 0 -6px 14px hsl(var(--primary-deep) / 0.4)",
+          },
+          "50%": {
+            transform: "scale(1.08)",
+            boxShadow:
+              "0 0 65px hsl(var(--primary) / 0.95), inset 0 -6px 14px hsl(var(--primary-deep) / 0.4)",
+          },
+        },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -126,6 +142,8 @@ export default {
         "fade-in": "fade-in 0.35s ease-out both",
         "twinkle": "twinkle 3s ease-in-out infinite",
         "spin-slow": "spin-slow 18s linear infinite",
+        "breathe": "breathe 2.4s ease-in-out infinite",
+        "shimmer": "shimmer 3s linear infinite",
       },
     },
   },

@@ -286,17 +286,23 @@ const Index = () => {
                   {todayAudio?.title ?? "Tap to begin"}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  Keeps your streak alive
+                  {awaitingFinalAudio ? "Last audio of your journey" : "Keeps your streak alive"}
                 </p>
               </div>
 
-              {/* Premium play button */}
+              {/* Premium play button — pulses on the final day to draw the eye */}
               <div
-                className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                style={{
-                  boxShadow:
-                    "0 0 35px hsl(var(--primary) / 0.55), inset 0 -6px 14px hsl(var(--primary-deep) / 0.4)",
-                }}
+                className={`relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground ${
+                  awaitingFinalAudio ? "animate-breathe" : ""
+                }`}
+                style={
+                  awaitingFinalAudio
+                    ? undefined
+                    : {
+                        boxShadow:
+                          "0 0 35px hsl(var(--primary) / 0.55), inset 0 -6px 14px hsl(var(--primary-deep) / 0.4)",
+                      }
+                }
                 aria-hidden
               >
                 {!subscription.loading && !subscription.premium ? (
