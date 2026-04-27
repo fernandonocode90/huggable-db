@@ -50,7 +50,7 @@ interface DailyAudio {
 const Audio = () => {
   const { user, isAdmin } = useAuth();
   const userId = user?.id ?? null;
-  const { currentDay, refresh: refreshProgress } = useProgress();
+  const { currentDay, isVeteran, refresh: refreshProgress } = useProgress();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -224,7 +224,10 @@ const Audio = () => {
         // RLS hides future days from non-admins. If the requested day is in
         // the future, fetch lightweight metadata via the safe RPC and render
         // a locked preview (title/subtitle only, no audio playback).
-        if (!isAdmin && requestedDay > currentDay) {
+        // Veterans (journey_completions >= 1) and admins have full access to
+        // every day's audio — no cadeado for them. Only first-journey users
+        // get the locked preview for days they haven't reached yet.
+        if (!isAdmin && !isVeteran && requestedDay > currentDay) {
           const { data: previewRows } = await supabase.rpc("get_week_preview", {
             _from_day: requestedDay,
             _to_day: requestedDay,
@@ -339,7 +342,7 @@ const Audio = () => {
       cancelled = true;
       persistProgressSnapshot();
     };
-  }, [requestedDay, userId, isLocked, isAdmin, currentDay]);
+  }, [requestedDay, userId, isLocked, isAdmin, isVeteran, currentDay]);
 
   useEffect(() => {
     const el = audioRef.current;
@@ -796,7 +799,9 @@ const Audio = () => {
 
   const goDay = (d: number) => {
     if (d < 1) return;
-    if (!isAdmin && d > currentDay) return;
+    // Admins and veterans (finished the 365-day journey at least once) can
+    // navigate freely. First-journey users can only step forward up to today.
+    if (!isAdmin && !isVeteran && d > currentDay) return;
     setSearchParams(d === currentDay ? {} : { day: String(d) });
   };
 
@@ -827,7 +832,7 @@ const Audio = () => {
           </div>
           <button
             onClick={() => goDay(requestedDay + 1)}
-            disabled={!isAdmin && requestedDay >= currentDay}
+            disabled={!isAdmin && !isVeteran && requestedDay >= currentDay}
             className="rounded-full p-2 text-foreground/80 disabled:opacity-30 hover:text-primary"
             aria-label="Next day"
           >
