@@ -167,6 +167,8 @@ const SubscriptionManage = () => {
             </Button>
           </Card>
         )}
+        </>
+        )}
       </div>
     </AppShell>
   );
