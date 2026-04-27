@@ -13,6 +13,7 @@ const Upgrade = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const sub = useSubscription();
+  const trialEligible = useTrialEligibility();
   const [loadingPlan, setLoadingPlan] = useState<null | "monthly" | "annual">(null);
   const [openingPortal, setOpeningPortal] = useState(false);
 
