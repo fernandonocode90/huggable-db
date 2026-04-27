@@ -81,6 +81,37 @@ const Users = () => {
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [giftTarget, setGiftTarget] = useState<AdminUser | null>(null);
+  const [giftMonths, setGiftMonths] = useState("12");
+  const [gifting, setGifting] = useState(false);
+
+  const grantCourtesy = async () => {
+    if (!giftTarget) return;
+    setGifting(true);
+    try {
+      const months = giftMonths === "lifetime" ? null : parseInt(giftMonths, 10);
+      const { data, error } = await supabase.functions.invoke("admin-grant-premium", {
+        body: { user_id: giftTarget.id, months, reason: "Quick gift from Users list" },
+      });
+      if (error) throw error;
+      const res = data as { error?: string; email_sent?: boolean; email_error?: string | null };
+      if (res?.error) throw new Error(res.error);
+      toast.success(
+        res.email_sent
+          ? `Premium concedido a ${giftTarget.email} · email enviado`
+          : `Premium concedido a ${giftTarget.email}`,
+      );
+      if (!res.email_sent && res.email_error) {
+        toast.warning(`Email não enviado: ${res.email_error}`);
+      }
+      setGiftTarget(null);
+      setGiftMonths("12");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao conceder");
+    } finally {
+      setGifting(false);
+    }
+  };
 
   const deleteUser = async () => {
     if (!deleteTarget) return;
