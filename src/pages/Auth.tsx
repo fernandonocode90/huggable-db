@@ -69,7 +69,17 @@ const Auth = () => {
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          // Email ainda não confirmado → manda pra tela de reenvio com o email preenchido
+          const code = (error as { code?: string }).code;
+          const msg = error.message?.toLowerCase() ?? "";
+          if (code === "email_not_confirmed" || msg.includes("not confirmed")) {
+            toast.message("Please confirm your email to continue.");
+            navigate("/check-email", { state: { email }, replace: true });
+            return;
+          }
+          throw error;
+        }
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
