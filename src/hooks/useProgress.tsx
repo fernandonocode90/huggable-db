@@ -145,8 +145,9 @@ export const useProgress = (): ProgressState => {
   // day-365 audio. Until then they keep seeing day 365 and can finish it.
   const finished = rawCurrentDay >= TOTAL_DAYS && finalDayCompleted;
 
-  // For veterans we never show the "final day" banner — they already finished once.
-  const awaitingFinalAudio = !finished && rawCurrentDay >= TOTAL_DAYS && journeyCompletions < 1;
+  // Banner appears any time the user reaches day 365 without having completed
+  // the day-365 audio in the current cycle — including veterans on a new run.
+  const awaitingFinalAudio = !finished && rawCurrentDay >= TOTAL_DAYS;
   const finalAudioOverdue = awaitingFinalAudio && rawCurrentDay > TOTAL_DAYS;
 
   return {
