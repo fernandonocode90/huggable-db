@@ -160,14 +160,10 @@ const Audio = () => {
     return { signed, signedErr };
   };
 
-  useEffect(() => {
-    const stored = Number(localStorage.getItem("swc:audio:rate") || "1");
-    if (SPEED_OPTIONS.includes(stored)) setPlaybackRate(stored);
-  }, []);
-
+  // Playback rate intentionally always starts at 1x on page load to avoid
+  // any mismatch between the selected speed chip and the actual audio rate.
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = playbackRate;
-    localStorage.setItem("swc:audio:rate", String(playbackRate));
   }, [playbackRate]);
 
   useEffect(() => {
