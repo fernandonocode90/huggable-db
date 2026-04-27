@@ -6,6 +6,7 @@ import { NightBackground } from "@/components/swc/NightBackground";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrialEligibility } from "@/hooks/useTrialEligibility";
+import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "@/hooks/use-toast";
 
 const BASE_BENEFITS = [
@@ -21,12 +22,23 @@ const WelcomePaywall = () => {
   const [plan, setPlan] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
   const trialEligible = useTrialEligibility();
+  const { platform } = usePlatform();
+  // Apple App Store rule 3.1.1: cannot prompt iOS users to subscribe via
+  // external payment systems. Skip this paywall on iOS until IAP is wired up.
+  const iapRequired = platform === "ios";
   const benefits = [
     ...BASE_BENEFITS,
     trialEligible ? "7 days free, cancel anytime" : "Cancel anytime",
   ];
 
   const [dismissing, setDismissing] = useState(false);
+
+  // Auto-dismiss on iOS native — never show the paywall there.
+  useEffect(() => {
+    if (iapRequired) {
+      navigate("/", { replace: true });
+    }
+  }, [iapRequired, navigate]);
 
   // Mark as seen as soon as the screen loads — even if user dismisses.
   useEffect(() => {

@@ -1,18 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import { isNative } from "@/lib/platform";
 
-export const isNativeCapacitor = (): boolean => {
-  if (typeof window === "undefined") return false;
-  // Capacitor injects window.Capacitor at runtime in native builds.
-  const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
-  if (!w.Capacitor) return false;
-  try {
-    return typeof w.Capacitor.isNativePlatform === "function"
-      ? w.Capacitor.isNativePlatform()
-      : true;
-  } catch {
-    return true;
-  }
-};
+export const isNativeCapacitor = (): boolean => isNative();
 
 export const isPreviewOrIframe = (): boolean => {
   if (typeof window === "undefined") return true;

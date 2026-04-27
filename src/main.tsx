@@ -45,6 +45,12 @@ createRoot(document.getElementById("root")!).render(
   </ErrorBoundary>,
 );
 
+// Native (Capacitor) bootstrap — no-op on web.
+// Configures status bar, hides splash, wires deep-link OAuth handler.
+void import("./lib/nativeBootstrap").then(({ initializeNativeApp }) => {
+  void initializeNativeApp();
+});
+
 // PWA Service Worker registration — only in production and outside Lovable preview/iframes
 const isInIframe = (() => {
   try {
