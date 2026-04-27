@@ -20,6 +20,7 @@ export const PremiumGate = ({
   const navigate = useNavigate();
   const { loading, premium } = useSubscription();
   const { isAdmin } = useAuth();
+  const trialEligible = useTrialEligibility();
 
   if (loading) {
     return (
