@@ -186,3 +186,176 @@ npx cap open ios      # Open Xcode workspace
 npx cap run ios       # Build + run on simulator / device
 npx cap doctor        # Diagnose native setup issues
 ```
+
+---
+
+## 9. App Privacy Manifest (iOS) — REQUIRED since 2024
+
+Apple rejects apps without `PrivacyInfo.xcprivacy`. Create this file in
+Xcode at `ios/App/App/PrivacyInfo.xcprivacy` with the content below.
+
+It declares what data the app collects and what "required reason APIs" it
+uses. The values below match what Solomon Wealth Code actually does today
+— update if you add features that collect different data.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSPrivacyCollectedDataTypes</key>
+  <array>
+    <!-- Email for Supabase auth -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeEmailAddress</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+        <string>NSPrivacyCollectedDataTypePurposeAccountManagement</string>
+      </array>
+    </dict>
+    <!-- Name (optional, for personalization) -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeName</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <true/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+    <!-- Crash data (only if you enable Sentry) -->
+    <dict>
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeCrashData</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+  </array>
+
+  <key>NSPrivacyAccessedAPITypes</key>
+  <array>
+    <!-- @capacitor/preferences uses UserDefaults -->
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>CA92.1</string>
+      </array>
+    </dict>
+    <!-- File timestamps (Capacitor uses these for caching) -->
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>C617.1</string>
+      </array>
+    </dict>
+  </array>
+
+  <key>NSPrivacyTracking</key>
+  <false/>
+</dict>
+</plist>
+```
+
+If you later add **Sentry**, **RevenueCat**, **Capgo**, or any other SDK,
+each one publishes its own `PrivacyInfo.xcprivacy` — you must MERGE their
+declared APIs into yours, OR (easier) just include the SDK and Xcode
+auto-aggregates them at build time. Sentry docs:
+https://docs.sentry.io/platforms/apple/data-management/apple-privacy-manifest/
+
+---
+
+## 10. Store listing assets (when submitting)
+
+You'll need to prepare these OUTSIDE the codebase before submitting. Most
+should reuse content from your landing page at https://www.solomonwealthcode.com:
+
+### App Store (iOS)
+- App icon 1024×1024 (PNG, no alpha) — same crown
+- Screenshots: 6.7" iPhone (1290×2796), 6.5" (1242×2688), 5.5" (1242×2208)
+- Optional: 12.9" iPad Pro
+- App description (4000 chars) — pull from landing
+- Keywords (100 chars)
+- Promotional text (170 chars)
+- Support URL: https://www.solomonwealthcode.com/support
+- Privacy URL: https://www.solomonwealthcode.com/privacy (or the in-app /privacy-policy hosted publicly)
+- Category: Lifestyle (primary), Education or Reference (secondary)
+- Age rating: 4+ (no objectionable content)
+
+### Google Play
+- App icon 512×512 (PNG)
+- Feature graphic 1024×500
+- Phone screenshots (min 2, max 8) — at least 1080px on the short side
+- 7" tablet screenshots (recommended)
+- Short description (80 chars), full description (4000 chars)
+- Privacy policy URL (REQUIRED)
+- Content rating questionnaire
+- Target audience: 18+
+
+### Reuse from landing
+- Brand copy / value proposition
+- Hero screenshots → can be reframed as App Store screenshots
+- About text / mission statement
+
+---
+
+## 11. Crash reporting (Sentry) — optional, dormant
+
+Plugin `@sentry/react` is installed and `src/lib/sentry.ts` is wired into
+`main.tsx`. To activate:
+
+1. Sign up at https://sentry.io (free: 5k errors/month)
+2. Create a React project, copy the DSN
+3. Paste it into `src/lib/sentry.ts` → `SENTRY_DSN`
+4. (Native crash capture, optional) Follow https://docs.sentry.io/platforms/javascript/guides/capacitor/
+   to wire `@sentry/capacitor` in Xcode/Android Studio for Swift/Kotlin crashes
+
+Until SENTRY_DSN is set, this is fully dormant — zero network calls.
+
+---
+
+## 12. Push notification priming
+
+The app uses a "priming sheet" (`<PushPermissionPrime>`) BEFORE calling
+the native iOS/Android permission prompt. You only get one shot at the
+native prompt — if the user denies, you can't ask again. The priming
+sheet boosts opt-in from ~30% to ~80%.
+
+Already wired — add `<PushPermissionPrime trigger="onboarding-finished" />`
+at the right moment in your onboarding flow when you're ready to ship
+push notifications. Backend (FCM/APNs) setup is separate and only needed
+once you have signing certificates from Apple/Google.
+
+---
+
+## 13. Pre-submission final checklist
+
+- [ ] Bumped `APP_VERSION` in `src/lib/appVersion.ts` AND in Xcode/Android
+- [ ] Commented out `server` block in `capacitor.config.ts`
+- [ ] Removed `NSAllowsArbitraryLoads` from Info.plist if added
+- [ ] `PrivacyInfo.xcprivacy` present (iOS)
+- [ ] All permission usage strings present in Info.plist (iOS)
+- [ ] Privacy Policy + Terms hosted publicly (use landing page)
+- [ ] Support email reachable (`support@solomonwealthcode.com`)
+- [ ] Tested on a REAL device (not just simulator) — simulators hide many bugs
+- [ ] Tested offline behavior (airplane mode) doesn't crash
+- [ ] Tested cold-start with no Supabase session
+- [ ] Tested OAuth (Google sign-in) deep link round trip
