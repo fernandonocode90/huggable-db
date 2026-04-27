@@ -192,7 +192,7 @@ const Premium = () => {
 
 
   const refresh = async () => {
-    await Promise.all([loadStats(), load(search, page, provider)]);
+    await Promise.all([loadStats(), load(search, page, provider, statusTab)]);
   };
 
   const cancelImmediate = async () => {
