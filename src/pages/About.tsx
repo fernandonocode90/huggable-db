@@ -53,7 +53,7 @@ const About = () => {
         {/* Links */}
         <section className="space-y-2">
           <button
-            onClick={() => openExternal(`mailto:${SUPPORT_EMAIL}?subject=Solomon%20Wealth%20Code%20support`)}
+            onClick={() => openExternalUrl(`mailto:${SUPPORT_EMAIL}?subject=Solomon%20Wealth%20Code%20support`)}
             className="flex w-full items-center justify-between rounded-xl border border-border/40 bg-card/40 px-4 py-3 text-left text-sm transition-colors hover:bg-card/60"
           >
             <span className="flex items-center gap-3">
@@ -64,7 +64,7 @@ const About = () => {
           </button>
 
           <button
-            onClick={() => openExternal(LANDING_URL)}
+            onClick={() => openExternalUrl(LANDING_URL)}
             className="flex w-full items-center justify-between rounded-xl border border-border/40 bg-card/40 px-4 py-3 text-left text-sm transition-colors hover:bg-card/60"
           >
             <span className="flex items-center gap-3">
