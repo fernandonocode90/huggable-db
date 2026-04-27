@@ -19,6 +19,10 @@ export interface ProgressState {
    * the chance to actually consume the final day's content.
    */
   hasFinishedCurrentJourney: boolean;
+  /** True when the user is on/past day 365 but hasn't completed the day-365 audio yet. */
+  awaitingFinalAudio: boolean;
+  /** True when the calendar has already moved past day 365 without the final audio being completed. */
+  finalAudioOverdue: boolean;
   refresh: () => Promise<void>;
   restartJourney: () => Promise<void>;
 }
