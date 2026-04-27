@@ -224,7 +224,10 @@ const Audio = () => {
         // RLS hides future days from non-admins. If the requested day is in
         // the future, fetch lightweight metadata via the safe RPC and render
         // a locked preview (title/subtitle only, no audio playback).
-        if (!isAdmin && requestedDay > currentDay) {
+        // Veterans (journey_completions >= 1) and admins have full access to
+        // every day's audio — no cadeado for them. Only first-journey users
+        // get the locked preview for days they haven't reached yet.
+        if (!isAdmin && !isVeteran && requestedDay > currentDay) {
           const { data: previewRows } = await supabase.rpc("get_week_preview", {
             _from_day: requestedDay,
             _to_day: requestedDay,
