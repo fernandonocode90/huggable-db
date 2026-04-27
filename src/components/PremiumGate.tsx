@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/swc/AppShell";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrialEligibility } from "@/hooks/useTrialEligibility";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PremiumGateProps {
