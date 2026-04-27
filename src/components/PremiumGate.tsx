@@ -53,6 +53,12 @@ export const PremiumGate = ({
           {description}
         </p>
 
+        {trialEligible === false && (
+          <p className="mt-6 max-w-sm rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-foreground/80">
+            Free trial not available for this email — you'll be charged immediately if you subscribe.
+          </p>
+        )}
+
         <button
           type="button"
           onClick={() => navigate("/upgrade")}
