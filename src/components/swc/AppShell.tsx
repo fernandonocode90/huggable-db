@@ -1,5 +1,4 @@
 import { NightBackground } from "./NightBackground";
-import { BottomNav } from "./BottomNav";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -26,7 +25,6 @@ export const AppShell = ({
       >
         {children}
       </div>
-      <BottomNav />
     </NightBackground>
   );
 };
