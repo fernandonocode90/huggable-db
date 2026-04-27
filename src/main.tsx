@@ -39,6 +39,12 @@ if (pendingSpaRedirect) {
   window.history.replaceState({}, "", `/reset-password${window.location.search}${window.location.hash}`);
 }
 
+// Sentry crash reporting — no-op until SENTRY_DSN is set in src/lib/sentry.ts.
+// Initialized BEFORE React renders so it captures init errors too.
+void import("./lib/sentry").then(({ initializeSentry }) => {
+  void initializeSentry();
+});
+
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <App />

@@ -50,6 +50,7 @@ const Upgrade = lazy(() => import("./pages/Upgrade.tsx"));
 const WelcomePaywall = lazy(() => import("./pages/WelcomePaywall.tsx"));
 const SubscriptionManage = lazy(() => import("./pages/SubscriptionManage.tsx"));
 const SplashPreview = lazy(() => import("./pages/SplashPreview.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
 
 // Admin: lazy as a single area — nunca carrega para usuários comuns
 const Admin = lazy(() => import("./pages/Admin.tsx"));
@@ -154,6 +155,7 @@ const App = () => (
                       <Route path="audit" element={<AdminAuditLog />} />
                     </Route>
                     <Route path="/splash-preview" element={<SplashPreview />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </PageTransition>

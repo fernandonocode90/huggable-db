@@ -6,6 +6,11 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  define: {
+    // Build timestamp injected into the bundle. Used by the About screen and
+    // crash reporter to identify which build a user is running.
+    __APP_BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+  },
   server: {
     host: "::",
     port: 8080,
