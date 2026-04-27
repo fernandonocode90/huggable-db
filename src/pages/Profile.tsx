@@ -10,11 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PremiumCrown } from "@/components/swc/PremiumCrown";
+import { VeteranCrown } from "@/components/swc/VeteranCrown";
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { premium } = useSubscription();
-  const { currentDay, streak, completedCount } = useProgress();
+  const { currentDay, streak, completedCount, isVeteran, journeyCompletions } = useProgress();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -156,7 +157,12 @@ const Profile = () => {
           {profileLoading && !displayName ? (
             <Skeleton className="mx-auto h-8 w-40" />
           ) : (
-            displayName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"
+            <>
+              {displayName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"}
+              {isVeteran && (
+                <VeteranCrown className="ml-2" count={journeyCompletions} size={20} />
+              )}
+            </>
           )}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">

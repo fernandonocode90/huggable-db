@@ -23,6 +23,8 @@ import { isOnboardingComplete } from "@/lib/onboarding";
 import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/use-toast";
+import { VeteranCrown } from "@/components/swc/VeteranCrown";
+import { JourneyCompleteCelebration } from "@/components/swc/JourneyCompleteCelebration";
 
 type TodayAudio = {
   title: string | null;
@@ -75,7 +77,11 @@ const Index = () => {
     streak,
     completedCount,
     totalDays,
+    isVeteran,
+    journeyCompletions,
+    hasFinishedCurrentJourney,
   } = useProgress();
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   const userId = user?.id ?? null;
   const [cached] = useState(() => readHomeCache(userId, currentDay));
   const [contentLoading, setContentLoading] = useState(!cached);
@@ -188,13 +194,21 @@ const Index = () => {
 
   return (
     <AppShell>
+      {hasFinishedCurrentJourney && !celebrationDismissed && (
+        <JourneyCompleteCelebration onClose={() => setCelebrationDismissed(true)} />
+      )}
+
       {/* Compact greeting */}
       <header className="animate-fade-up">
         <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
           Daily sanctuary
         </p>
         <h1 className="mt-2 font-display text-3xl leading-tight text-foreground">
-          Peace be with you, <span className="gold-text">{greetingName}</span>
+          Peace be with you,{" "}
+          <span className="gold-text">{greetingName}</span>
+          {isVeteran && (
+            <VeteranCrown className="ml-2" count={journeyCompletions} size={20} />
+          )}
         </h1>
       </header>
 
