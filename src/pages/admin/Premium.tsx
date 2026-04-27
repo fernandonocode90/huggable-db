@@ -350,6 +350,37 @@ const Premium = () => {
         </p>
       )}
 
+      {/* Status tabs */}
+      <Tabs
+        value={statusTab}
+        onValueChange={(v) => {
+          setStatusTab(v as typeof statusTab);
+          setPage(0);
+        }}
+      >
+        <TabsList>
+          <TabsTrigger value="active" className="gap-2">
+            Ativos
+            {stats && (
+              <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-300">
+                {stats.total_premium - stats.trialing}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="trialing" className="gap-2">
+            Em trial
+            {stats && (
+              <Badge variant="secondary" className="bg-blue-500/15 text-blue-300">
+                {stats.trialing}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="canceled" className="gap-2">
+            Cancelados
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative max-w-md flex-1 min-w-[220px]">
@@ -357,7 +388,7 @@ const Premium = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar premium por email ou nome…"
+            placeholder="Buscar por email ou nome…"
             className="pl-9"
           />
         </div>
@@ -379,6 +410,20 @@ const Premium = () => {
             <SelectItem value="manual">Cortesia</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void copyAllEmails()}
+          disabled={copyingEmails || total === 0}
+          className="gap-2"
+        >
+          {copyingEmails ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Gift className="h-3.5 w-3.5" />
+          )}
+          Copiar emails ({total})
+        </Button>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border/40 bg-card/40 backdrop-blur">
