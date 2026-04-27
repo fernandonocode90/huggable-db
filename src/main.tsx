@@ -51,6 +51,12 @@ void import("./lib/nativeBootstrap").then(({ initializeNativeApp }) => {
   void initializeNativeApp();
 });
 
+// Capgo Live Updates (OTA) — no-op on web; dormant on native until configured.
+// See src/lib/liveUpdates.ts for activation steps.
+void import("./lib/liveUpdates").then(({ initializeLiveUpdates }) => {
+  void initializeLiveUpdates();
+});
+
 // PWA Service Worker registration — only in production and outside Lovable preview/iframes
 const isInIframe = (() => {
   try {
