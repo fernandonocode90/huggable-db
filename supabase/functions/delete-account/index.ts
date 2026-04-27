@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,6 +43,31 @@ Deno.serve(async (req) => {
     // Admin client for cascading deletes
     const admin = createClient(supabaseUrl, serviceKey);
 
+    // 0. Cancel Stripe subscription if any (best-effort)
+    try {
+      const { data: sub } = await admin
+        .from("subscribers")
+        .select("provider, stripe_subscription_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (sub?.provider === "stripe" && sub.stripe_subscription_id) {
+        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+        if (stripeKey) {
+          const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+          try {
+            await stripe.subscriptions.cancel(sub.stripe_subscription_id);
+            console.log("stripe sub canceled on account delete", sub.stripe_subscription_id);
+          } catch (e) {
+            console.warn("stripe cancel error (continuing delete)", e);
+          }
+        } else {
+          console.warn("STRIPE_SECRET_KEY not set; skipping stripe cancel");
+        }
+      }
+    } catch (e) {
+      console.warn("subscription lookup error", e);
+    }
+
     // 1. Delete avatar files for this user
     try {
       const { data: files } = await admin.storage
@@ -57,6 +83,7 @@ Deno.serve(async (req) => {
 
     // 2. Delete app data
     await admin.from("audio_progress").delete().eq("user_id", userId);
+    await admin.from("subscribers").delete().eq("user_id", userId);
     await admin.from("user_roles").delete().eq("user_id", userId);
     await admin.from("profiles").delete().eq("id", userId);
 
