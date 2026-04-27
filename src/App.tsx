@@ -13,6 +13,7 @@ import { MaintenanceGate } from "./components/MaintenanceGate";
 import { GlobalBanner } from "./components/GlobalBanner";
 import { PageTransition } from "./components/PageTransition";
 import { PremiumGate } from "./components/PremiumGate";
+import { PersistentBottomNav } from "./components/swc/PersistentBottomNav";
 
 // Eager: small + on critical path
 import Index from "./pages/Index.tsx";
@@ -148,6 +149,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </PageTransition>
+                  <PersistentBottomNav />
                 </Suspense>
               </MaintenanceGate>
             </AppSettingsProvider>
