@@ -87,9 +87,41 @@ export async function fullCacheWipeAndReload() {
 /** Soft reload — used for app_version bumps. Activates a waiting SW first. */
 export async function softReload() {
   await activateLatestServiceWorker();
+  // Never interrupt active audio/video playback.
+  await waitUntilSafeToReload();
   const url = new URL(window.location.href);
   url.searchParams.set("_swc_v", Date.now().toString(36));
   window.location.replace(url.toString());
+}
+
+/**
+ * Resolves once no <audio>/<video> in the document is currently playing,
+ * so it's safe to navigate/reload without cutting off the user.
+ */
+function waitUntilSafeToReload(): Promise<void> {
+  return new Promise((resolve) => {
+    const isPlaying = () => {
+      try {
+        const els = document.querySelectorAll("audio, video");
+        for (const el of Array.from(els) as Array<HTMLMediaElement>) {
+          if (!el.paused && !el.ended && el.currentTime > 0) return true;
+        }
+      } catch { /* ignore */ }
+      return false;
+    };
+    if (!isPlaying()) return resolve();
+    const check = () => {
+      if (!isPlaying()) {
+        document.removeEventListener("pause", check, true);
+        document.removeEventListener("ended", check, true);
+        clearInterval(poll);
+        resolve();
+      }
+    };
+    document.addEventListener("pause", check, true);
+    document.addEventListener("ended", check, true);
+    const poll = setInterval(check, 5_000);
+  });
 }
 
 /**
