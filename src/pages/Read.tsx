@@ -199,10 +199,8 @@ const HIGHLIGHT_COLORS = [
   { name: "pink", value: "hsl(330 80% 65% / 0.28)" },
 ];
 
-function bookDisplayName(book: Book, translation: Translation) {
-  if (translation === "bsb" || translation === "kjv") return book.name;
-  if (translation === "rvr1909") return ES_NAMES[book.key] ?? book.name;
-  return PT_NAMES[book.key] ?? book.name;
+function bookDisplayName(book: Book, _translation: Translation) {
+  return book.name;
 }
 
 const Read = () => {
