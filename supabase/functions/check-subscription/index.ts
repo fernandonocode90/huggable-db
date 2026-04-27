@@ -88,6 +88,18 @@ serve(async (req) => {
       else if (priceId === PRICE_MONTHLY) plan = "monthly";
     }
 
+    // Clear stale rows from previous (deleted) users that share the same Stripe
+    // customer_id or subscription_id. Prevents unique-constraint failures when
+    // an email is reused after account deletion.
+    const orFilter = subId
+      ? `stripe_customer_id.eq.${customerId},stripe_subscription_id.eq.${subId}`
+      : `stripe_customer_id.eq.${customerId}`;
+    await adminClient
+      .from("subscribers")
+      .delete()
+      .or(orFilter)
+      .neq("user_id", user.id);
+
     await adminClient.from("subscribers").upsert({
       user_id: user.id,
       email: user.email,
