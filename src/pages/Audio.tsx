@@ -58,7 +58,12 @@ const Audio = () => {
   const isLocked = !subLoading && !premium && !isAdmin;
 
   const [audio, setAudio] = useState<DailyAudio | null>(null);
+  const [dayLocked, setDayLocked] = useState(false);
   const [loading, setLoading] = useState(true);
+  // True when the user can't play this audio for ANY reason (no premium OR
+  // the day itself isn't unlocked yet in their journey). Used by the UI so
+  // future days show a cadeado preview instead of trying to play.
+  const effectivelyLocked = isLocked || dayLocked;
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -205,6 +210,8 @@ const Audio = () => {
         return;
       }
 
+      setDayLocked(false);
+
       const { data } = await supabase
         .from("daily_audios")
         .select("id,title,subtitle,day_number,r2_key,description,prayer_text")
@@ -214,6 +221,32 @@ const Audio = () => {
       if (cancelled) return;
 
       if (!data) {
+        // RLS hides future days from non-admins. If the requested day is in
+        // the future, fetch lightweight metadata via the safe RPC and render
+        // a locked preview (title/subtitle only, no audio playback).
+        if (!isAdmin && requestedDay > currentDay) {
+          const { data: previewRows } = await supabase.rpc("get_week_preview", {
+            _from_day: requestedDay,
+            _to_day: requestedDay,
+          });
+          if (cancelled) return;
+          const preview = (previewRows as Array<{ day_number: number; title: string; subtitle: string | null }> | null)?.[0];
+          if (preview) {
+            setAudio({
+              id: `locked-${requestedDay}`,
+              title: preview.title,
+              subtitle: preview.subtitle,
+              day_number: preview.day_number,
+              r2_key: "",
+              description: null,
+              prayer_text: null,
+            });
+            currentAudioRef.current = null;
+            setDayLocked(true);
+            setLoading(false);
+            return;
+          }
+        }
         setAudio(null);
         currentAudioRef.current = null;
         setLoading(false);
@@ -306,7 +339,7 @@ const Audio = () => {
       cancelled = true;
       persistProgressSnapshot();
     };
-  }, [requestedDay, userId, isLocked]);
+  }, [requestedDay, userId, isLocked, isAdmin, currentDay]);
 
   useEffect(() => {
     const el = audioRef.current;
@@ -649,6 +682,10 @@ const Audio = () => {
   }, []);
 
   const toggle = () => {
+    if (dayLocked) {
+      // Día bloqueado en la jornada — no hay nada que reproducir todavía.
+      return;
+    }
     if (isLocked) {
       navigate("/upgrade");
       return;
@@ -837,6 +874,11 @@ const Audio = () => {
             <div className="text-center">
               <h2 className="font-display text-2xl text-foreground">{audio.title}</h2>
               {audio.subtitle && <p className="mt-1 text-sm text-muted-foreground">{audio.subtitle}</p>}
+              {dayLocked && (
+                <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-3 py-1 text-[11px] font-medium text-muted-foreground ring-1 ring-border/60">
+                  <Lock className="h-3 w-3" /> Unlocks on day {requestedDay}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-10">
@@ -850,13 +892,13 @@ const Audio = () => {
               </button>
 
               <button
-                aria-label={isLocked ? "Unlock audio with Premium" : playing ? "Pause" : "Play"}
+                aria-label={effectivelyLocked ? (dayLocked ? "Locked — available on day " + requestedDay : "Unlock audio with Premium") : playing ? "Pause" : "Play"}
                 onClick={toggle}
-                disabled={!isLocked && !signedUrl}
+                disabled={!effectivelyLocked && !signedUrl}
                 className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40 transition-transform hover:scale-105 active:scale-95 disabled:cursor-wait disabled:opacity-60"
                 style={{ boxShadow: "0 0 30px hsl(var(--primary) / 0.4)" }}
               >
-                {isLocked ? (
+                {effectivelyLocked ? (
                   <Lock className="h-7 w-7" strokeWidth={1.8} />
                 ) : !signedUrl || buffering ? (
                   <Loader2 className="h-7 w-7 animate-spin" />

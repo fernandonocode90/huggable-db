@@ -576,7 +576,7 @@ const Index = () => {
                 <button
                   key={item.day_number}
                   type="button"
-                  onClick={() => navigate(unlocked ? `/audio?day=${item.day_number}` : "/audio")}
+                  onClick={() => navigate(`/audio?day=${item.day_number}`)}
                   className="glass-card flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-4 text-left transition-transform hover:scale-[1.01]"
                 >
                   <div>
