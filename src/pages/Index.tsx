@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
-  BookOpen,
-  Calculator,
   Crown,
   Flame,
   Headphones,
