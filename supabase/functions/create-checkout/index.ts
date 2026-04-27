@@ -51,6 +51,18 @@ serve(async (req) => {
       if (customers.data.length > 0) customerId = customers.data[0].id;
     }
 
+    // Anti–trial-abuse: if this email/customer has ever had a subscription
+    // (active, trialing, past_due, canceled, etc.), skip the free trial.
+    let allowTrial = true;
+    if (customerId) {
+      const prior = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 1,
+      });
+      if (prior.data.length > 0) allowTrial = false;
+    }
+
     const origin = req.headers.get("origin") ?? "https://example.com";
 
     const session = await stripe.checkout.sessions.create({
@@ -60,7 +72,7 @@ serve(async (req) => {
       client_reference_id: user.id,
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 7,
+        ...(allowTrial ? { trial_period_days: 7 } : {}),
         metadata: { user_id: user.id, plan },
       },
       allow_promotion_codes: true,
