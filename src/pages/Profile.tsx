@@ -8,9 +8,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PremiumCrown } from "@/components/swc/PremiumCrown";
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
+  const { premium } = useSubscription();
   const { currentDay, streak, completedCount } = useProgress();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
