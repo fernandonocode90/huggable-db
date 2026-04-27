@@ -43,7 +43,7 @@ const STEPS: Step[] = [
   {
     kind: "question",
     key: "intent",
-    eyebrow: "Question 1 of 5",
+    eyebrow: "Question 1 of 3",
     title: "What brings you here?",
     subtitle: "We'll tailor your daily journey to what matters most to you.",
     options: [
@@ -56,7 +56,7 @@ const STEPS: Step[] = [
   {
     kind: "question",
     key: "seasonOfLife",
-    eyebrow: "Question 2 of 5",
+    eyebrow: "Question 2 of 3",
     title: "Where are you right now?",
     subtitle: "Your season shapes the practice we suggest.",
     options: [
@@ -68,14 +68,14 @@ const STEPS: Step[] = [
   },
   {
     kind: "question",
-    key: "experience",
+    key: "commitment",
     eyebrow: "Question 3 of 3",
-    title: "How familiar are you with biblical wisdom on money?",
-    subtitle: "We'll meet you exactly where you are.",
+    title: "What's a realistic daily commitment?",
+    subtitle: "Small and consistent beats heroic and rare.",
     options: [
-      { id: "new", label: "New to it", desc: "Curious and open.", icon: Sprout },
-      { id: "some", label: "Some familiarity", desc: "I've heard the verses.", icon: Star },
-      { id: "deep", label: "I study it regularly", desc: "Give me depth.", icon: Brain },
+      { id: "5", label: "5 minutes", desc: "One audio. That's enough.", icon: Flame },
+      { id: "10", label: "10 minutes", desc: "Audio + a verse to sit with.", icon: Star },
+      { id: "20", label: "20 minutes", desc: "Audio, scripture, and reflection.", icon: Brain },
     ],
   },
   { kind: "disclaimer" },
