@@ -177,8 +177,10 @@ export const useProgress = (): ProgressState => {
   const awaitingFinalAudio = !finished && rawCurrentDay >= TOTAL_DAYS;
   const finalAudioOverdue = awaitingFinalAudio && rawCurrentDay > TOTAL_DAYS;
 
-  // Post-celebration state: day 365 finished, waiting for tomorrow's Day 1.
-  const journeyJustCompleted = finished;
+  // Post-celebration state, two cases:
+  //  1. Finished day 365 audio, still on day 365 (before pressing "Begin again")
+  //  2. Pressed "Begin again" but the new start_date is tomorrow (waiting today out)
+  const journeyJustCompleted = finished || (journeyCompletions >= 1 && startDateInFuture);
 
   return {
     loading,
