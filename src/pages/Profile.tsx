@@ -164,10 +164,7 @@ const Profile = () => {
           {profileLoading && !displayName ? (
             <Skeleton className="mx-auto h-8 w-40" />
           ) : (
-            <span className="inline-flex items-center justify-center gap-2">
-              {displayName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"}
-              {premium && <PremiumCrown size={22} />}
-            </span>
+            displayName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"
           )}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
