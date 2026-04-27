@@ -156,11 +156,9 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    /* Respect iPhone notch / home indicator */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    /* Safe-area is applied per-layout (AppShell, BottomNav, page headers)
+       instead of on <body>, otherwise min-h-screen pages overflow on
+       PWA/standalone with notch and create unwanted scroll bars. */
   }
 
   /* Disable text selection on interactive UI; allow it inside readable content */
