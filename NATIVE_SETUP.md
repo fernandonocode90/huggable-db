@@ -295,8 +295,10 @@ should reuse content from your landing page at https://www.solomonwealthcode.com
 - App description (4000 chars) — pull from landing
 - Keywords (100 chars)
 - Promotional text (170 chars)
-- Support URL: https://www.solomonwealthcode.com/support
-- Privacy URL: https://www.solomonwealthcode.com/privacy (or the in-app /privacy-policy hosted publicly)
+- Support URL: https://www.solomonwealthcode.com (or `/support` on landing)
+- **Privacy Policy URL: https://app.solomonwealthcode.com/privacy-policy** ✅ live
+- **Terms of Service URL: https://app.solomonwealthcode.com/terms** ✅ live
+- Marketing URL: https://www.solomonwealthcode.com
 - Category: Lifestyle (primary), Education or Reference (secondary)
 - Age rating: 4+ (no objectionable content)
 
