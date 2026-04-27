@@ -242,6 +242,7 @@ const UserDetail = () => {
           <Stat label="Capítulos lidos" value={data.reading_history_count} />
           <Stat label="Lembretes enviados" value={data.reminders_sent_count} />
           <Stat label="Dispositivos push" value={data.push_subscriptions.length} />
+          <Stat label="Jornadas concluídas" value={p.journey_completions} />
         </div>
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
