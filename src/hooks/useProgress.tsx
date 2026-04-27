@@ -23,6 +23,11 @@ export interface ProgressState {
   awaitingFinalAudio: boolean;
   /** True when the calendar has already moved past day 365 without the final audio being completed. */
   finalAudioOverdue: boolean;
+  /**
+   * True when the user finished day 365 and is waiting for tomorrow's reset
+   * (post-celebration "victory lap" state). Used to show the congrats banner.
+   */
+  journeyJustCompleted: boolean;
   refresh: () => Promise<void>;
   restartJourney: () => Promise<void>;
 }
@@ -154,6 +159,9 @@ export const useProgress = (): ProgressState => {
   const awaitingFinalAudio = !finished && rawCurrentDay >= TOTAL_DAYS;
   const finalAudioOverdue = awaitingFinalAudio && rawCurrentDay > TOTAL_DAYS;
 
+  // Post-celebration state: day 365 finished, waiting for tomorrow's Day 1.
+  const journeyJustCompleted = finished;
+
   return {
     loading,
     currentDay,
@@ -165,6 +173,7 @@ export const useProgress = (): ProgressState => {
     hasFinishedCurrentJourney: finished,
     awaitingFinalAudio,
     finalAudioOverdue,
+    journeyJustCompleted,
     refresh,
     restartJourney,
   };
