@@ -550,8 +550,8 @@ const Index = () => {
       <section className="mt-6 animate-fade-up" style={{ animationDelay: "230ms" }}>
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">This week</p>
-            <h2 className="mt-1 font-display text-2xl text-foreground">Journey preview</h2>
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Up next</p>
+            <h2 className="mt-1 font-display text-2xl text-foreground">Next 7 lessons</h2>
           </div>
         </div>
 
