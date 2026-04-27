@@ -23,6 +23,8 @@ import { isOnboardingComplete } from "@/lib/onboarding";
 import { generateVerseImage, shareOrDownloadVerse } from "@/lib/verseImage";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/use-toast";
+import { VeteranCrown } from "@/components/swc/VeteranCrown";
+import { JourneyCompleteCelebration } from "@/components/swc/JourneyCompleteCelebration";
 
 type TodayAudio = {
   title: string | null;
