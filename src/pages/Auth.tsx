@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NightBackground } from "@/components/swc/NightBackground";
+import crownLogo from "@/assets/crown-logo.png";
 import {
   Dialog,
   DialogContent,
@@ -134,6 +135,12 @@ const Auth = () => {
     <NightBackground>
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
         <div className="text-center mb-8 animate-fade-up">
+          <img
+            src={crownLogo}
+            alt="Solomon Wealth Code crown"
+            className="mx-auto mb-4 h-20 w-20 object-contain"
+            draggable={false}
+          />
           <h1 className="font-display text-4xl">
             <span className="gold-text">Solomon</span>{" "}
             <span className="text-foreground">Wealth Code</span>
