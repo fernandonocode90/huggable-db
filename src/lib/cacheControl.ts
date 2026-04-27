@@ -87,9 +87,41 @@ export async function fullCacheWipeAndReload() {
 /** Soft reload — used for app_version bumps. Activates a waiting SW first. */
 export async function softReload() {
   await activateLatestServiceWorker();
+  // Never interrupt active audio/video playback.
+  await waitUntilSafeToReload();
   const url = new URL(window.location.href);
   url.searchParams.set("_swc_v", Date.now().toString(36));
   window.location.replace(url.toString());
+}
+
+/**
+ * Resolves once no <audio>/<video> in the document is currently playing,
+ * so it's safe to navigate/reload without cutting off the user.
+ */
+function waitUntilSafeToReload(): Promise<void> {
+  return new Promise((resolve) => {
+    const isPlaying = () => {
+      try {
+        const els = document.querySelectorAll("audio, video");
+        for (const el of Array.from(els) as Array<HTMLMediaElement>) {
+          if (!el.paused && !el.ended && el.currentTime > 0) return true;
+        }
+      } catch { /* ignore */ }
+      return false;
+    };
+    if (!isPlaying()) return resolve();
+    const check = () => {
+      if (!isPlaying()) {
+        document.removeEventListener("pause", check, true);
+        document.removeEventListener("ended", check, true);
+        clearInterval(poll);
+        resolve();
+      }
+    };
+    document.addEventListener("pause", check, true);
+    document.addEventListener("ended", check, true);
+    const poll = setInterval(check, 5_000);
+  });
 }
 
 /**
@@ -97,6 +129,21 @@ export async function softReload() {
  * reload the page so the user sees the new build immediately, instead of
  * having to fully close the PWA.
  */
+/**
+ * Returns true if any <audio> or <video> in the document is currently playing.
+ * We must NEVER reload the page while the user is listening — it kills the
+ * playback and ruins the experience (especially on mobile / installed PWAs).
+ */
+function isMediaPlaying(): boolean {
+  try {
+    const els = document.querySelectorAll("audio, video");
+    for (const el of Array.from(els) as Array<HTMLMediaElement>) {
+      if (!el.paused && !el.ended && el.currentTime > 0) return true;
+    }
+  } catch { /* ignore */ }
+  return false;
+}
+
 let controllerChangeBound = false;
 export function bindServiceWorkerAutoReload() {
   if (controllerChangeBound) return;
@@ -115,21 +162,50 @@ export function bindServiceWorkerAutoReload() {
     }
     if (reloaded) return;
     reloaded = true;
-    // Defer the reload until the app is hidden/backgrounded so the user
-    // never sees a flash while actively using the PWA.
+
     const reloadNow = () => {
+      // Final guard: if media started playing in the gap between scheduling
+      // and firing, wait again instead of cutting it off.
+      if (isMediaPlaying()) {
+        scheduleReload();
+        return;
+      }
       try { window.location.reload(); } catch { /* ignore */ }
     };
-    if (document.visibilityState === "hidden") {
-      setTimeout(reloadNow, 50);
-    } else {
-      const onHide = () => {
-        if (document.visibilityState === "hidden") {
-          document.removeEventListener("visibilitychange", onHide);
+
+    // Wait for: (a) no media playing, AND (b) tab hidden/backgrounded.
+    // Whichever happens last wins. This way the reload is invisible — it
+    // never interrupts audio/video playback or active reading.
+    const scheduleReload = () => {
+      const ready = () =>
+        !isMediaPlaying() && document.visibilityState === "hidden";
+
+      if (ready()) {
+        setTimeout(reloadNow, 50);
+        return;
+      }
+
+      const onCheck = () => {
+        if (ready()) {
+          cleanup();
           reloadNow();
         }
       };
-      document.addEventListener("visibilitychange", onHide);
-    }
+      const cleanup = () => {
+        document.removeEventListener("visibilitychange", onCheck);
+        document.removeEventListener("pause", onCheck, true);
+        document.removeEventListener("ended", onCheck, true);
+        clearInterval(poll);
+      };
+      document.addEventListener("visibilitychange", onCheck);
+      // Media events bubble through capture phase from <audio>/<video>.
+      document.addEventListener("pause", onCheck, true);
+      document.addEventListener("ended", onCheck, true);
+      // Safety net: poll every 10s in case events are missed (e.g. element
+      // removed from DOM mid-playback).
+      const poll = setInterval(onCheck, 10_000);
+    };
+
+    scheduleReload();
   });
 }
