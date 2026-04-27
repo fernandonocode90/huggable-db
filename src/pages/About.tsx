@@ -3,7 +3,7 @@ import { ArrowLeft, Mail, Globe, FileText, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION, APP_BUILD_DATE, SUPPORT_EMAIL, LANDING_URL } from "@/lib/appVersion";
 import { getPlatform } from "@/lib/platform";
-import { openExternal } from "@/lib/externalUrl";
+import { openExternalUrl } from "@/lib/externalUrl";
 
 const About = () => {
   const platform = getPlatform();

@@ -12,8 +12,9 @@
 export const APP_VERSION = "1.0.0";
 
 // Replaced at build time. See vite.config.ts → define.
+declare const __APP_BUILD_DATE__: string;
 export const APP_BUILD_DATE: string =
-  (typeof __APP_BUILD_DATE__ !== "undefined" && __APP_BUILD_DATE__) || "dev";
+  typeof __APP_BUILD_DATE__ !== "undefined" ? __APP_BUILD_DATE__ : "dev";
 
 export const SUPPORT_EMAIL = "support@solomonwealthcode.com";
 export const LANDING_URL = "https://www.solomonwealthcode.com";
