@@ -176,10 +176,10 @@ const Index = () => {
     return String(raw).split(" ")[0];
   }, [user, profileName]);
 
-  const reflectionExcerpt = useMemo(() => {
+  const reflectionText = useMemo(() => {
     const text = devotional?.reflection_text?.trim();
     if (!text) return "Return to your daily teaching and keep the rhythm of the journey alive.";
-    return text.length > 180 ? `${text.slice(0, 177).trim()}...` : text;
+    return text;
   }, [devotional]);
 
   if (user && !onboardingComplete) {
