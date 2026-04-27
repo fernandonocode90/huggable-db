@@ -989,6 +989,19 @@ export type Database = {
       }
       admin_unban_user: { Args: { _user_id: string }; Returns: undefined }
       admin_wipe_user_data: { Args: { _user_id: string }; Returns: undefined }
+      get_audio_preview: {
+        Args: { _day: number }
+        Returns: {
+          day_number: number
+          description: string
+          duration_seconds: number
+          prayer_text: string
+          scripture_reference: string
+          scripture_text: string
+          subtitle: string
+          title: string
+        }[]
+      }
       get_current_day: { Args: { _user_id: string }; Returns: number }
       get_public_app_settings: { Args: never; Returns: Json }
       get_user_streak: { Args: { _user_id: string }; Returns: number }
