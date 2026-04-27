@@ -3,8 +3,12 @@ import { useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
 
 /**
- * Wraps app <Routes> with a subtle fade/slide page transition keyed by
- * pathname. framer-motion respects prefers-reduced-motion at OS level.
+ * Subtle fade-only page transition. No vertical slide — slides cause a
+ * perceptible "jump" on installed PWAs that reads as a flash. A short pure
+ * opacity fade (180ms) is invisible on fast devices and barely noticeable on
+ * slow ones, but still smooths route changes.
+ *
+ * framer-motion respects prefers-reduced-motion at OS level.
  */
 export const PageTransition = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
@@ -12,10 +16,10 @@ export const PageTransition = ({ children }: { children: ReactNode }) => {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
       >
         {children}
       </motion.div>
