@@ -195,6 +195,96 @@ const Settings = () => {
           </Button>
         </div>
       </Card>
+
+      {/* Cache control */}
+      <Card className="p-6 bg-card/40 backdrop-blur border-border/40">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="rounded-lg bg-sky-500/15 p-2">
+            <RefreshCw className="h-5 w-5 text-sky-400" />
+          </div>
+          <div>
+            <h2 className="font-medium text-foreground">Cache do app</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Use quando os usuários estiverem vendo uma versão antiga do app após uma atualização.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-border/40 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="font-medium text-sm text-foreground">Publicar nova versão</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Recomendado. Os apps abertos detectam em até 1 minuto e recarregam sozinhos
+                  (sem perder login). Use sempre que subir uma alteração no app.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={saving === "app_version"}
+                onClick={async () => {
+                  setSaving("app_version");
+                  try {
+                    const { error } = await supabase.rpc("admin_bump_app_version");
+                    if (error) throw error;
+                    toast.success("Nova versão publicada — usuários recarregam em até 1 min");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Falhou");
+                  } finally {
+                    setSaving(null);
+                  }
+                }}
+              >
+                {saving === "app_version" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Publicar versão
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="font-medium text-sm text-foreground">Forçar limpeza total</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Emergência. Limpa service worker, cache de assets e dados de sessão de
+                  todos os usuários, e recarrega. Use só se "Publicar nova versão" não resolver.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={saving === "force_clear"}
+                onClick={async () => {
+                  if (!confirm("Forçar limpeza total para TODOS os usuários agora?")) return;
+                  setSaving("force_clear");
+                  try {
+                    const { error } = await supabase.rpc("admin_force_clear_cache");
+                    if (error) throw error;
+                    toast.success("Limpeza disparada — usuários recarregam em até 1 min");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Falhou");
+                  } finally {
+                    setSaving(null);
+                  }
+                }}
+              >
+                {saving === "force_clear" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Forçar limpeza
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };
