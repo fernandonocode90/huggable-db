@@ -473,6 +473,19 @@ const Users = () => {
                         </AlertDialogContent>
                       </AlertDialog>
 
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title="Conceder cortesia premium"
+                        className="text-amber-400 hover:text-amber-300 hover:bg-amber-400/10"
+                        onClick={() => {
+                          setGiftTarget(u);
+                          setGiftMonths("12");
+                        }}
+                      >
+                        <Gift className="h-4 w-4" />
+                      </Button>
+
                       {u.id !== me?.id && (
                         <Button
                           size="icon"
