@@ -167,7 +167,9 @@ const WelcomePaywall = () => {
           </button>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            You won't be charged during your 7-day trial. Cancel anytime.
+            {trialEligible
+              ? "You won't be charged during your 7-day trial. Cancel anytime."
+              : "You'll be charged immediately. Cancel anytime."}
           </p>
         </div>
       </div>
