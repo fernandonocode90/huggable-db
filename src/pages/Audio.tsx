@@ -50,7 +50,7 @@ interface DailyAudio {
 const Audio = () => {
   const { user, isAdmin } = useAuth();
   const userId = user?.id ?? null;
-  const { currentDay, refresh: refreshProgress } = useProgress();
+  const { currentDay, isVeteran, refresh: refreshProgress } = useProgress();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const navigate = useNavigate();
