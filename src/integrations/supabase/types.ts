@@ -680,11 +680,13 @@ export type Database = {
         Args: { _reason: string; _user_id: string }
         Returns: undefined
       }
+      admin_bump_app_version: { Args: never; Returns: string }
       admin_clear_bookmark_note: {
         Args: { _bookmark_id: string }
         Returns: undefined
       }
       admin_delete_user_note: { Args: { _note_id: string }; Returns: undefined }
+      admin_force_clear_cache: { Args: never; Returns: string }
       admin_get_audio_metrics: {
         Args: never
         Returns: {
