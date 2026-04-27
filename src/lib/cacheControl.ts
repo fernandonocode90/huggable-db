@@ -102,8 +102,17 @@ export function bindServiceWorkerAutoReload() {
   if (controllerChangeBound) return;
   if (!("serviceWorker" in navigator)) return;
   controllerChangeBound = true;
+  // On a freshly installed PWA there is no controller yet. The first
+  // controllerchange is just the initial SW taking control; reloading there
+  // resets transient UI state (for example onboarding goes back to Begin).
+  // Only reload when a controller is being replaced by a newer one.
+  let hasControlledPage = !!navigator.serviceWorker.controller;
   let reloaded = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hasControlledPage) {
+      hasControlledPage = true;
+      return;
+    }
     if (reloaded) return;
     reloaded = true;
     // Small delay so any in-flight request can settle.
