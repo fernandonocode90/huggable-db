@@ -130,7 +130,11 @@ export const useProgress = (): ProgressState => {
   const restartJourney = useCallback(async () => {
     const { error } = await supabase.rpc("restart_journey");
     if (error) throw error;
-    try { sessionStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+      // Also clear the Home page cache so it doesn't briefly show the old day.
+      sessionStorage.removeItem("swc:home");
+    } catch { /* ignore */ }
     await refresh();
   }, [refresh]);
 

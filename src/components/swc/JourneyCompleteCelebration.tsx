@@ -31,7 +31,7 @@ export const JourneyCompleteCelebration = ({ onClose }: JourneyCompleteCelebrati
       await restartJourney();
       toast({
         title: "A new journey begins ✨",
-        description: "All 365 days are now unlocked. Read or listen at your own pace.",
+        description: "Day 1 unlocks tomorrow. All 365 days are already yours to explore.",
       });
       onClose();
     } catch (err) {
@@ -160,7 +160,7 @@ export const JourneyCompleteCelebration = ({ onClose }: JourneyCompleteCelebrati
           className="mt-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground animate-fade-up"
           style={{ animationDelay: "420ms" }}
         >
-          Day 1 starts today
+          Your new Day 1 begins tomorrow
         </p>
       </div>
     </div>
